@@ -1,0 +1,77 @@
+.table-container {
+  overflow-x: auto;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 16px;
+  background-color: #1e293b;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th {
+  background-color: rgba(15, 23, 42, 0.5);
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 700;
+  color: #94a3b8;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.5);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table tr {
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+  transition: background-color 0.2s;
+}
+
+.table tr:hover {
+  background-color: rgba(51, 65, 85, 0.3);
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  color: #cbd5e1;
+}
+
+.table-empty-cell {
+  padding: 2rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.table-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.table-icon-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-icon-btn:hover {
+  background-color: rgba(100, 116, 139, 0.2);
+  color: #e2e8f0;
+}
+
+.table-delete-icon-btn {
+  color: #ef4444;
+}
+
+.table-delete-icon-btn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}

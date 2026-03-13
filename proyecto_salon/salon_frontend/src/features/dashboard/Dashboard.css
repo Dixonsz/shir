@@ -1,0 +1,663 @@
+/* Dashboard Container */
+.dashboard-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+  padding: 1rem 1.5rem 1rem 0;
+  flex-shrink: 0;
+  background-color: transparent;
+  border-bottom: none;
+}
+
+.dashboard-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.dashboard-content {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dashboard-main {
+  flex: 1;
+  background-color: #f9fafb;
+  border-radius: 0;
+  padding-left: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Sidebar for Details/Forms */
+.dashboard-sidebar {
+  width: 450px;
+  background-color: white;
+  border-radius: 8px;
+  margin-right: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.sidebar-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.sidebar-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+/* Calendar Styles */
+.calendar-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  align-content: left;
+}
+
+.calendar-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  padding-left: 0;
+  border-bottom: none;
+  flex-shrink: 0;
+}
+
+.calendar-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.5rem 0;
+  margin-left: 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.25rem 0;
+}
+
+.legend-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.legend-item span:last-child {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  letter-spacing: 0.01em;
+}
+
+/* Button Styles */
+.btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Loading & Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 1.125rem;
+  color: #6b7280;
+}
+
+.error-container {
+  color: #dc2626;
+}
+
+/* React Big Calendar Custom Styles */
+.rbc-calendar {
+  font-family: inherit;
+  font-size: 0.875rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.rbc-calendar > * {
+  flex-shrink: 0;
+}
+
+.rbc-calendar .rbc-month-view,
+.rbc-calendar .rbc-time-view,
+.rbc-calendar .rbc-agenda-view {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Headers de días de la semana */
+.rbc-header {
+  padding: 12px 8px;
+  font-weight: 600;
+  color: #1f2937;
+  border-bottom: 2px solid #d1d5db;
+  background-color: #1f2937;
+  color: white;
+  text-transform: lowercase;
+  font-size: 0.875rem;
+}
+
+.rbc-header:first-child {
+  padding-left: 0;
+  border-left: 1px solid #d1d5db;
+}
+
+.rbc-header:first-letter {
+  text-transform: uppercase;
+}
+
+/* Celdas de días */
+.rbc-day-bg {
+  border-left: 1px solid #e5e7eb;
+}
+
+.rbc-day-bg:first-child {
+  border-left: none;
+}
+
+.rbc-month-row {
+  border-bottom: 1px solid #e5e7eb;
+  min-height: 100px;
+  overflow: visible;
+}
+
+.rbc-row-content {
+  position: relative;
+  user-select: none;
+  z-index: 4;
+}
+
+.rbc-row-segment {
+  padding: 0 2px 2px;
+}
+
+.rbc-date-cell {
+  padding: 6px 8px;
+  text-align: right;
+}
+
+.rbc-row > .rbc-date-cell:first-child {
+  padding-left: 4px;
+}
+
+.rbc-date-cell > a {
+  color: #111827 !important;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+/* Día actual */
+.rbc-today {
+  background-color: #607794;
+}
+
+.rbc-today .rbc-date-cell > a {
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* Días fuera del mes actual */
+.rbc-off-range {
+  color: #ffffff;
+}
+
+.rbc-off-range-bg {
+  background-color: #696969;
+}
+
+.rbc-off-range .rbc-date-cell > a {
+  color: #000000 !important;
+}
+
+/* Eventos */
+.rbc-event {
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin: 1px 2px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rbc-event:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.rbc-event:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.rbc-event-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.rbc-event-content {
+  font-size: 0.75rem;
+}
+
+/* Ver más eventos */
+.rbc-show-more {
+  background-color: transparent;
+  color: #3b82f6;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  margin: 2px;
+  cursor: pointer;
+  font-weight: 500;
+  border: none;
+  text-align: left;
+}
+
+.rbc-show-more:hover {
+  text-decoration: underline;
+  background-color: #eff6ff;
+}
+
+/* Toolbar de navegación */
+.rbc-toolbar {
+  padding: 12px 0;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.rbc-toolbar-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  text-transform: capitalize;
+  flex-grow: 1;
+  text-align: left;
+  padding-left: 0;
+}
+
+.rbc-toolbar button {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #374151;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.rbc-toolbar button:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.rbc-toolbar button:active {
+  background-color: #f3f4f6;
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.rbc-toolbar button.rbc-active:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.rbc-btn-group {
+  display: flex;
+  gap: 0;
+}
+
+.rbc-btn-group button {
+  border-right: none;
+}
+
+.rbc-btn-group button:last-child {
+  border-right: 1px solid #d1d5db;
+}
+
+.rbc-btn-group button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rbc-btn-group button:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.rbc-btn-group button:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+.rbc-btn-group button + button {
+  margin-left: -1px;
+}
+
+.rbc-btn-group button:hover {
+  z-index: 1;
+}
+
+/* Vista de tiempo (semana/día) */
+.rbc-time-view {
+  border: 1px solid #e5e7eb;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  overflow: hidden;
+}
+
+.rbc-time-header {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid #e5e7eb;
+}
+
+.rbc-time-content {
+  border-top: 1px solid #e5e7eb;
+}
+
+.rbc-time-column {
+  border-left: 1px solid #e5e7eb;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #f3f4f6;
+}
+
+.rbc-timeslot-group {
+  min-height: 60px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.rbc-time-slot {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.rbc-label {
+  padding: 0 8px;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.rbc-current-time-indicator {
+  background-color: #dc2626;
+  height: 2px;
+  pointer-events: none;
+}
+
+/* Vista de mes */
+.rbc-month-view {
+  border: 1px solid #d1d5db;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  overflow: hidden;
+  background-color: white;
+}
+
+.rbc-month-header {
+  background-color: #1f2937;
+}
+
+.rbc-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rbc-row:last-child {
+  border-bottom: none;
+}
+
+/* Overlay para eventos */
+.rbc-overlay {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.rbc-overlay-header {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.875rem;
+  margin-bottom: 4px;
+}
+
+/* Selección de rangos */
+.rbc-slot-selection {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid #3b82f6;
+}
+
+/* Agenda view */
+.rbc-agenda-view {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rbc-agenda-table {
+  border-spacing: 0;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell,
+.rbc-agenda-event-cell {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.rbc-agenda-date-cell {
+  font-weight: 600;
+  color: #111827;
+}
+
+.rbc-agenda-time-cell {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Estilos adicionales para mejor visualización */
+.rbc-addons-dnd .rbc-event {
+  cursor: move;
+}
+
+.rbc-addons-dnd-resizable {
+  position: relative;
+}
+
+.rbc-addons-dnd-resize-anchor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard-sidebar {
+    width: 400px;
+  }
+}
+
+@media (max-width: 968px) {
+  .dashboard-content {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    max-height: 600px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .calendar-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .rbc-toolbar {
+    flex-direction: column;
+  }
+
+  .rbc-toolbar button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,114 @@
+.marketing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.marketing-form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 0.5rem;
+}
+
+.marketing-form-error {
+  padding: 1rem;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.875rem;
+}
+
+.marketing-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.marketing-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.marketing-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.marketing-form-image-preview {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: rgba(15, 23, 42, 0.5);
+  border: 2px solid rgba(71, 85, 105, 0.3);
+}
+
+.marketing-form-preview-image {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.marketing-form-remove-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.marketing-form-image-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  border: 2px dashed rgba(71, 85, 105, 0.5);
+  border-radius: 12px;
+  background-color: rgba(15, 23, 42, 0.3);
+  transition: all 0.2s;
+}
+
+.marketing-form-file-input {
+  display: none;
+}
+
+.marketing-form-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background-color: rgba(238, 43, 140, 0.1);
+  color: #ee2b8c;
+  border: 2px solid rgba(238, 43, 140, 0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.marketing-form-help-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+}

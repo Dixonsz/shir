@@ -1,0 +1,13 @@
+.promotion-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.promotion-list-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}

@@ -1,0 +1,182 @@
+.team-section {
+    padding: 4rem 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--background-light);
+}
+
+.team-section h2 {
+    text-align: left;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.team-subtitle {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    margin-bottom: 2rem;
+    font-style: italic;
+}
+
+.team-info {
+    text-align: center;
+    color: var(--text-gray);
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Pagination styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(238, 43, 140, 0.1);
+}
+
+.pagination-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(238, 43, 140, 0.3);
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #d92580;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(238, 43, 140, 0.4);
+}
+
+.pagination-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.pagination-numbers {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pagination-number {
+    width: 45px;
+    height: 45px;
+    border: 2px solid rgba(238, 43, 140, 0.2);
+    background: white;
+    color: var(--text-dark);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pagination-number:hover {
+    border-color: var(--primary);
+    background: rgba(238, 43, 140, 0.05);
+}
+
+.pagination-number.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Loading and error states */
+.team-section > p {
+    text-align: center;
+    font-size: 1.2rem;
+    padding: 2rem;
+    color: var(--text-gray);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+
+    .team-section h2 {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .team-section {
+        padding: 3rem 1rem;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .team-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .team-subtitle {
+        font-size: 1rem;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .pagination-btn {
+        padding: 0.6rem 1.25rem;
+        font-size: 0.9rem;
+    }
+
+    .pagination-number {
+        width: 40px;
+        height: 40px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .team-section {
+        padding: 2rem 1rem;
+    }
+
+    .team-section h2 {
+        font-size: 1.25rem;
+    }
+
+    .team-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .pagination-numbers {
+        gap: 0.3rem;
+    }
+
+    .pagination-number {
+        width: 35px;
+        height: 35px;
+        font-size: 0.85rem;
+    }
+}

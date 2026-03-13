@@ -1,0 +1,41 @@
+.gallery-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.gallery-list-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.gallery-list-message {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+.gallery-list-error {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.gallery-list-action-button {
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}

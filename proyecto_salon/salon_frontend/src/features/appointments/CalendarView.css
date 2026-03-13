@@ -1,0 +1,139 @@
+/* Estilos adicionales para react-big-calendar */
+
+/* Asegurar que el calendario ocupe todo el espacio disponible */
+.rbc-calendar * {
+  box-sizing: border-box;
+}
+
+/* Mejorar la apariencia de las celdas en vista de mes */
+.rbc-row-content-scrollable {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilos para los eventos en el calendario */
+.rbc-event-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+/* Mejorar el espaciado en vista de día y semana */
+.rbc-time-view .rbc-allday-cell {
+  height: auto;
+  min-height: 40px;
+}
+
+.rbc-time-view .rbc-time-header-gutter {
+  background-color: #f9fafb;
+}
+
+/* Estilos para el drag and drop (si se habilita) */
+.rbc-addons-dnd .rbc-addons-dnd-over {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Mejorar la visualización del slot seleccionado */
+.rbc-slot-selecting {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+.rbc-slot-selecting .rbc-event {
+  z-index: 10;
+}
+
+/* Estilos para mejorar los tooltips */
+.rbc-event {
+  position: relative;
+}
+
+/* Ajustar la apariencia de los botones en la toolbar */
+.rbc-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mejorar la apariencia del header en vista de tiempo */
+.rbc-time-header-content > .rbc-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Ajustar el ancho de la columna de tiempo */
+.rbc-time-gutter {
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Mejorar la visualización de eventos superpuestos */
+.rbc-event-overlaps {
+  opacity: 0.95;
+}
+
+/* Estilos para eventos que continúan de días anteriores o siguientes */
+.rbc-event-continues-prior {
+  border-left-width: 3px;
+}
+
+.rbc-event-continues-after {
+  border-right-width: 3px;
+}
+
+/* Mejorar la accesibilidad */
+.rbc-event:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  z-index: 5;
+}
+
+/* Estilos para el estado de arrastre */
+.rbc-addons-dnd-dragging {
+  opacity: 0.5;
+}
+
+/* Mejorar la visualización en pantallas pequeñas */
+@media (max-width: 768px) {
+  .rbc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rbc-toolbar button {
+    width: 100%;
+    margin: 2px 0;
+  }
+
+  .rbc-btn-group {
+    flex-direction: row;
+  }
+
+  .rbc-toolbar-label {
+    order: -1;
+    margin-bottom: 10px;
+    font-size: 1.125rem;
+  }
+
+  .rbc-event {
+    font-size: 0.7rem;
+    padding: 1px 3px;
+  }
+
+  .rbc-date-cell {
+    padding: 4px;
+  }
+
+  .rbc-date-cell > a {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animaciones suaves */
+@media (prefers-reduced-motion: no-preference) {
+  .rbc-event {
+    transition: all 0.15s ease-in-out;
+  }
+
+  .rbc-day-bg {
+    transition: background-color 0.2s ease;
+  }
+}

@@ -1,0 +1,20 @@
+.landing-page {
+    min-height: 100vh;
+    background-color: var(--background-light);
+    padding-top: 80px; /* Espacio para header fijo */
+}
+
+.main-content {
+    width: 100%;
+}
+
+.location-schedule-wrapper {
+    background: rgba(238, 43, 140, 0.03);
+    padding: 3rem 0;
+}
+
+@media (max-width: 768px) {
+    .landing-page {
+        padding-top: 70px;
+    }
+}
