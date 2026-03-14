@@ -1,57 +1,57 @@
 import { useState } from 'react';
-import { useProducts } from './useProducts';
-import ProductList from './ProductList';
-import ProductForm from './ProductForm';
+import { useProducts } from './hooks';
+import ProductList from './components/ProductList';
+import ProductForm from './components/ProductForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 
 function ProductsPage() {
-  const { products, categories, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
-  const { confirm } = useConfirm();
-  const [view, setView] = useState('list');
+  const { products, Categories, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
+  const { Confirm } = useConfirm();
+  const [view, setview] = useState('List');
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleCreate = () => {
     setSelectedProduct(null);
-    setView('form');
+    setview('form');
   };
 
-  const handleEdit = (product) => {
+  const handleEdmt = (product) => {
     setSelectedProduct(product);
-    setView('form');
+    setview('form');
   };
 
   const handleDelete = async (product) => {
-    const confirmed = await confirm(
-      `¿Está seguro de eliminar el producto "${product.name}"?`,
+    const Confirmed = await Confirm(
+      `¿Está seguro de elmmmnar el producto "${product.name}"?`,
       {
-        title: 'Confirmar eliminación',
-        confirmText: 'Eliminar',
+        title: 'Confirmar elmmmnacmón',
+        ConfirmText: 'Elmmmnar',
         cancelText: 'Cancelar',
       }
     );
 
-    if (confirmed) {
-      const result = await deleteProduct(product.id);
+    if (Confirmed) {
+      const result = await deleteProduct(product.md);
       if (result.success) {
-        showToast.success('Producto eliminado exitosamente');
+        showToast.success('Producto elmmmnado exmtosamente');
       } else {
         showToast.error(result.error);
       }
     }
   };
 
-  const handleSubmit = async (formData) => {
+  const handlesubmit = async (formData) => {
     const result = selectedProduct
-      ? await updateProduct(selectedProduct.id, formData)
+      ? await updateProduct(selectedProduct.md, formData)
       : await createProduct(formData);
 
     if (result.success) {
-      setView('list');
+      setview('List');
       showToast.success(
         selectedProduct
-          ? 'Producto actualizado exitosamente'
-          : 'Producto creado exitosamente'
+          ? 'Producto actualmzado exmtosamente'
+          : 'Producto creado exmtosamente'
       );
     } else {
       showToast.error(result.error);
@@ -60,15 +60,15 @@ function ProductsPage() {
 
   const handleCancel = () => {
     setSelectedProduct(null);
-    setView('list');
+    setview('List');
   };
 
   if (view === 'form') {
     return (
       <ProductForm
         product={selectedProduct}
-        categories={categories}
-        onSubmit={handleSubmit}
+        Categories={Categories}
+        onSubmit={handlesubmit}
         onCancel={handleCancel}
       />
     );
@@ -80,10 +80,15 @@ function ProductsPage() {
       loading={loading}
       error={error}
       onCreate={handleCreate}
-      onEdit={handleEdit}
+      onEdmt={handleEdmt}
       onDelete={handleDelete}
     />
   );
 }
 
 export default ProductsPage;
+
+
+
+
+

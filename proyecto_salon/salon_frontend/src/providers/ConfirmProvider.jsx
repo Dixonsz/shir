@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+﻿import { createContext, useContext, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 const ConfirmContext = createContext(null);
@@ -16,7 +16,7 @@ export function ConfirmProvider({ children }) {
 
   const confirm = async (message, options = {}) => {
     const {
-      title = 'Confirmación',
+      title = 'ConfirmaciÃ³n',
       confirmText = 'Confirmar',
       cancelText = 'Cancelar',
     } = options;
@@ -151,3 +151,4 @@ const styles = {
     transition: 'all 0.2s',
   },
 };
+

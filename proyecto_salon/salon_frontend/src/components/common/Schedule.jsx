@@ -1,4 +1,4 @@
-import "./Schedule.css";
+﻿import "./Schedule.css";
 
 export default function Schedule() {
   return (
@@ -21,7 +21,7 @@ export default function Schedule() {
               <polyline points="12 6 12 12 16 14" />
             </svg>
           </span>
-          Horario de Atención
+          Horario de AtenciÃ³n
         </h3>
         <div className="schedule-list">
           <div className="schedule-item">
@@ -29,7 +29,7 @@ export default function Schedule() {
             <span className="schedule-hours">09:00 AM - 06:30 PM</span>
           </div>
           <div className="schedule-item">
-            <span className="schedule-days">Sábado</span>
+            <span className="schedule-days">SÃ¡bado</span>
             <span className="schedule-hours">09:00 AM - 06:30 PM</span>
           </div>
           <div className="schedule-item schedule-item-closed">
@@ -41,3 +41,4 @@ export default function Schedule() {
     </div>
   );
 }
+

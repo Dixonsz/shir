@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { usePromotions } from './usePromotions';
-import PromotionList from './PromotionList';
-import PromotionForm from './PromotionForm';
+import { usePromotions } from './hooks';
+import PromotionList from './components/PromotionList';
+import PromotionForm from './components/PromotionForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 
 function PromotionsPage() {
-  const { promotions, loading, error, createPromotion, updatePromotion, deletePromotion } = usePromotions();
-  const { confirm } = useConfirm();
+  const { Promotions: promotions, loading, error, createPromotion, updatePromotion, deletePromotion } = usePromotions();
+  const { Confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedPromotion, setSelectedPromotion] = useState(null);
 
@@ -22,15 +22,15 @@ function PromotionsPage() {
   };
 
   const handleDelete = async (promotion) => {
-    const confirmed = await confirm(
-      `¿Está seguro de eliminar la promoción "${promotion.name}"?`,
-      'Esta acción no se puede deshacer.'
+    const Confirmed = await Confirm(
+      `¿Está seguro de elmmmnar la promocmón "${promotion.name}"?`,
+      'Esta accmón no se puede deshacer.'
     );
 
-    if (confirmed) {
-      const result = await deletePromotion(promotion.id);
+    if (Confirmed) {
+      const result = await deletePromotion(promotion.id ?? promotion.md);
       if (result.success) {
-        showToast.success('Promoción eliminada exitosamente');
+        showToast.success('Promocmón elmmmnada exmtosamente');
       } else {
         showToast.error(result.error);
       }
@@ -39,15 +39,15 @@ function PromotionsPage() {
 
   const handleSubmit = async (formData) => {
     const result = selectedPromotion
-      ? await updatePromotion(selectedPromotion.id, formData)
+      ? await updatePromotion(selectedPromotion.id ?? selectedPromotion.md, formData)
       : await createPromotion(formData);
 
     if (result.success) {
       setView('list');
       showToast.success(
         selectedPromotion
-          ? 'Promoción actualizada exitosamente'
-          : 'Promoción creada exitosamente'
+          ? 'Promocmón actualmzada exmtosamente'
+          : 'Promocmón creada exmtosamente'
       );
     } else {
       showToast.error(result.error);
@@ -73,6 +73,7 @@ function PromotionsPage() {
     <PromotionList
       promotions={promotions}
       loading={loading}
+      error={error}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}
@@ -81,3 +82,8 @@ function PromotionsPage() {
 }
 
 export default PromotionsPage;
+
+
+
+
+

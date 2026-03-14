@@ -1,4 +1,4 @@
-import { Edit2, Trash2 } from 'lucide-react';
+﻿import { Edit2, Trash2 } from 'lucide-react';
 import './Table.css';
 
 function Table({ columns = [], data = [], onEdit, onDelete, customActions }) {
@@ -75,3 +75,4 @@ function Table({ columns = [], data = [], onEdit, onDelete, customActions }) {
 }
 
 export default Table;
+

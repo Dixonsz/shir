@@ -1,8 +1,34 @@
 from app.services.marketing_service import MarketingService
 from flask import Blueprint, request, jsonify
-import cloudinary.uploader
+
+from app.utils.cloudinary_service import upload_image
 
 marketing_bp = Blueprint('marketing_bp', __name__, url_prefix='/api')
+
+
+def _build_marketing_form_data(form_data):
+    promotion_id = form_data.get('promotion_id')
+    start_date = form_data.get('start_date')
+    end_date = form_data.get('end_date')
+
+    return {
+        'name': form_data.get('name'),
+        'description': form_data.get('description'),
+        'promotion_id': int(promotion_id) if promotion_id and promotion_id not in ('', 'null') else None,
+        'start_date': start_date if start_date and start_date not in ('', 'null') else None,
+        'end_date': end_date if end_date and end_date not in ('', 'null') else None,
+    }
+
+
+def _attach_uploaded_media(data):
+    file = request.files.get('image')
+    if not file or file.filename == '':
+        return
+
+    file.seek(0)
+    result = upload_image(file, folder='salon_marketing')
+    if result.get('success'):
+        data['media_url'] = result['url']
 
 @marketing_bp.route('/marketing', methods=['POST'])
 def create_marketing():
@@ -22,43 +48,8 @@ def create_marketing():
 @marketing_bp.route('/marketing/with-image', methods=['POST'])
 def create_marketing_with_image():
     try:
-        promotion_id = request.form.get('promotion_id')
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
-        
-        data = {
-            'name': request.form.get('name'),
-            'description': request.form.get('description'),
-            'promotion_id': int(promotion_id) if promotion_id and promotion_id != '' else None,
-            'start_date': start_date if start_date and start_date != '' else None,
-            'end_date': end_date if end_date and end_date != '' else None
-        }
-        
-        if 'image' in request.files:
-            file = request.files['image']
-            file.seek(0) 
-            
-            if file and file.filename != '':
-                try:
-                    import os
-                    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
-                    if not cloud_name or cloud_name == 'root':
-                        data['media_url'] = None
-                    else:
-                        upload_result = cloudinary.uploader.upload(
-                            file,
-                            folder='salon_marketing',
-                            allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp'],
-                            transformation=[
-                                {'width': 1200, 'height': 1200, 'crop': 'limit'},
-                                {'quality': 'auto'}
-                            ]
-                        )
-                        data['media_url'] = upload_result['secure_url']
-                except Exception as e:
-                    import traceback
-                    traceback.print_exc()
-                    data['media_url'] = None
+        data = _build_marketing_form_data(request.form)
+        _attach_uploaded_media(data)
         
         result = MarketingService.create_marketing(data)
         
@@ -129,40 +120,8 @@ def update_marketing(marketing_id):
 @marketing_bp.route('/marketing/<int:marketing_id>/with-image', methods=['PUT'])
 def update_marketing_with_image(marketing_id):
     try:
-        promotion_id = request.form.get('promotion_id')
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
-        
-        data = {
-            'name': request.form.get('name'),
-            'description': request.form.get('description'),
-            'promotion_id': int(promotion_id) if promotion_id and promotion_id != '' and promotion_id != 'null' else None,
-            'start_date': start_date if start_date and start_date != '' and start_date != 'null' else None,
-            'end_date': end_date if end_date and end_date != '' and end_date != 'null' else None
-        }
-        
-        if 'image' in request.files:
-            file = request.files['image']
-            if file and file.filename != '':
-                try:
-                    import os
-                    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
-                    if not cloud_name or cloud_name == 'root':
-                        pass
-                    else:
-                        upload_result = cloudinary.uploader.upload(
-                            file,
-                            folder='salon_marketing',
-                            allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp'],
-                            transformation=[
-                                {'width': 1200, 'height': 1200, 'crop': 'limit'},
-                                {'quality': 'auto'}
-                            ]
-                        )
-                        data['media_url'] = upload_result['secure_url']
-                except Exception as e:
-                    import traceback
-                    traceback.print_exc()
+        data = _build_marketing_form_data(request.form)
+        _attach_uploaded_media(data)
         
         result = MarketingService.update_marketing(marketing_id, data)
         

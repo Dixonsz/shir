@@ -1,6 +1,7 @@
 from app.models.client import Client
 from app.repositories.client_repository import ClientRepository
-import cloudinary.uploader
+
+from app.utils.cloudinary_service import delete_image, upload_image
 
 class ClientService:
 
@@ -89,7 +90,7 @@ class ClientService:
         if client.photo_public_id:
             try:
                 print(f"Eliminando foto de Cloudinary: {client.photo_public_id}")
-                cloudinary.uploader.destroy(client.photo_public_id)
+                delete_image(client.photo_public_id)
                 print(f"Foto eliminada: {client.photo_public_id}")
             except Exception as e:
                 print(f"Error al eliminar imagen de Cloudinary: {str(e)}")
@@ -132,21 +133,26 @@ class ClientService:
         try:
             if client.photo_public_id:
                 try:
-                    cloudinary.uploader.destroy(client.photo_public_id)
+                    delete_image(client.photo_public_id)
                 except Exception as e:
                     print(f"Error al eliminar imagen anterior: {str(e)}")
-            
-            result = cloudinary.uploader.upload(
+
+            result = upload_image(
                 file,
                 folder='salon/clients',
-                allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp'],
                 transformation=[
                     {'width': 400, 'height': 400, 'crop': 'fill', 'gravity': 'face'},
                     {'quality': 'auto'}
                 ]
             )
+
+            if not result.get('success'):
+                return {
+                    "success": False,
+                    "error": result.get('error', 'Error al subir imagen')
+                }
             
-            client.photo_url = result['secure_url']
+            client.photo_url = result['url']
             client.photo_public_id = result['public_id']
             
             updated = ClientRepository.update(client)
@@ -180,7 +186,7 @@ class ClientService:
             }
         
         try:
-            cloudinary.uploader.destroy(client.photo_public_id)
+            delete_image(client.photo_public_id)
             
             client.photo_url = None
             client.photo_public_id = None

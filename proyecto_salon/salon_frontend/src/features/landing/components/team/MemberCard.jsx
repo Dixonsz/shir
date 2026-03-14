@@ -26,3 +26,14 @@ export default function MemberCard({ member }) {
         </div>
     );
 }
+
+
+
+
+
+
+
+
+
+
+

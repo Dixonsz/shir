@@ -1,52 +1,14 @@
 from flask import Blueprint, request, jsonify
-import cloudinary.uploader
-import cloudinary
+
+from app.utils.cloudinary_service import delete_image, upload_image
 
 cloudinary_bp = Blueprint('cloudinary', __name__, url_prefix='/api')
 
 def upload_photo(file, folder='salon_photos'):
-  
-    try:
-        data = cloudinary.uploader.upload(
-            file,
-            folder=folder,
-            allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp'],
-            transformation=[
-                {'width': 1200, 'height': 1200, 'crop': 'limit'},
-                {'quality': 'auto'}
-            ]
-        )
-        
-        return {
-            'success': True,
-            'url': data['secure_url'],
-            'public_id': data['public_id']
-        }
-    except Exception as e:
-        return {
-            'success': False,
-            'error': f'Error al subir imagen: {str(e)}'
-        }
+    return upload_image(file, folder=folder)
 
 def delete_photo(public_id):
-    
-    if not public_id:
-        return {
-            'success': False,
-            'error': 'No se proporcionó public_id'
-        }
-    
-    try:
-        result = cloudinary.uploader.destroy(public_id)
-        return {
-            'success': True,
-            'data': result
-        }
-    except Exception as e:
-        return {
-            'success': False,
-            'error': f'Error al eliminar imagen: {str(e)}'
-        }
+    return delete_image(public_id)
 
 @cloudinary_bp.route('/upload', methods=['POST'])
 def upload_image():
@@ -87,4 +49,4 @@ def delete_image():
     if result['success']:
         return jsonify(result), 200
     else:
-        return jsonify(result), 400 if 'No se proporcionó' in result.get('error', '') else 500
+        return jsonify(result), 400 if 'No se proporciono' in result.get('error', '') else 500

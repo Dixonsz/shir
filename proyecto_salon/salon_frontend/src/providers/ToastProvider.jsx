@@ -1,4 +1,4 @@
-import { Toaster, toast } from 'react-hot-toast';
+﻿import { Toaster, toast } from 'react-hot-toast';
 
 export function ToastProvider({ children }) {
   return (
@@ -39,3 +39,4 @@ export const showToast = {
   loading: (message) => toast.loading(message),
   dismiss: (toastId) => toast.dismiss(toastId),
 };
+

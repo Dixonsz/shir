@@ -1,4 +1,4 @@
-import './Select.css';
+﻿import './Select.css';
 
 function Select({
   label,
@@ -7,7 +7,7 @@ function Select({
   onChange,
   options = [],
   error,
-  placeholder = 'Seleccione una opción',
+  placeholder = 'Seleccione una opciÃ³n',
   required = false,
   disabled = false,
   children,
@@ -60,3 +60,4 @@ function Select({
 }
 
 export default Select;
+

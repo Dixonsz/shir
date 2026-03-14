@@ -1,4 +1,4 @@
-import './Footer.css';
+﻿import './Footer.css';
 import { Instagram, Facebook, Mail, Sparkles } from 'lucide-react';
 
 export default function Footer() {
@@ -13,7 +13,7 @@ export default function Footer() {
                 </div>
                 
                 <p className="footer-description">
-                    Síguenos para más inspiración diaria sobre belleza y cuidado personal.
+                    SÃ­guenos para mÃ¡s inspiraciÃ³n diaria sobre belleza y cuidado personal.
                 </p>
                 
                 <div className="footer-social">

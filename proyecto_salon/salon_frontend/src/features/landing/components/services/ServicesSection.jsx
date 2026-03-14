@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { servicesApi } from '../../../services/services.api';
+import { servicesApi } from '../../../services/api';
 import ServiceCard from './ServiceCard';
 import './ServicesSection.css';
 
@@ -83,7 +83,7 @@ export default function ServicesSection() {
                         className="pagination-btn" 
                         onClick={goToPreviousPage}
                         disabled={currentPage === 1}
-                        aria-label="Página anterior"
+                        aria-label="Pagina anterior"
                     >
                         ❮ Anterior
                     </button>
@@ -94,7 +94,7 @@ export default function ServicesSection() {
                                 key={page}
                                 className={`pagination-number ${currentPage === page ? 'active' : ''}`}
                                 onClick={() => goToPage(page)}
-                                aria-label={`Ir a página ${page}`}
+                                aria-label={`Ir a pagina ${page}`}
                                 aria-current={currentPage === page ? 'page' : undefined}
                             >
                                 {page}
@@ -106,7 +106,7 @@ export default function ServicesSection() {
                         className="pagination-btn" 
                         onClick={goToNextPage}
                         disabled={currentPage === totalPages}
-                        aria-label="Página siguiente"
+                        aria-label="Pagina siguiente"
                     >
                         Siguiente ❯
                     </button>
@@ -115,3 +115,14 @@ export default function ServicesSection() {
         </section>
     );
 }
+
+
+
+
+
+
+
+
+
+
+

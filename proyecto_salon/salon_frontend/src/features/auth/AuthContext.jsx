@@ -1,7 +1,9 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from './auth.api';
+import { getApiErrorMessage } from '../../core/api/errors';
+import { clearToken, getToken, setToken } from '../../core/auth/tokenStorage';
 import { decodeToken, isTokenExpired } from '../../utils/jwt';
+import { authApi } from './api';
 
 export const AuthContext = createContext(null);
 
@@ -16,16 +18,16 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       if (token && !isTokenExpired(token)) {
         const userData = decodeToken(token);
         setUser(userData);
       } else {
-        localStorage.removeItem('token');
+        clearToken();
       }
     } catch (error) {
       console.error('Error checking auth:', error);
-      localStorage.removeItem('token');
+      clearToken();
     } finally {
       setLoading(false);
     }
@@ -34,7 +36,7 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     try {
       const data = await authApi.login(credentials);
-      localStorage.setItem('token', data.token);
+      setToken(data.token);
       const userData = decodeToken(data.token);
       setUser(userData);
       navigate('/dashboard');
@@ -42,13 +44,13 @@ export function AuthProvider({ children }) {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Error al iniciar sesión',
+        error: error.userMessage || getApiErrorMessage(error, 'Error al iniciar sesion'),
       };
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    clearToken();
     setUser(null);
     navigate('/login');
   };
@@ -63,3 +65,8 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
+
+
+
+

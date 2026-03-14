@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { Camera, X, Upload } from 'lucide-react';
 import Avatar from './Avatar';
 import Button from './Button';
@@ -19,7 +19,7 @@ function PhotoUpload({
     if (file) {
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        alert('Por favor seleccione un archivo de imagen válido (JPG, PNG, GIF, WEBP)');
+        alert('Por favor seleccione un archivo de imagen vÃ¡lido (JPG, PNG, GIF, WEBP)');
         return;
       }
 
@@ -71,7 +71,7 @@ function PhotoUpload({
 
         {loading && (
           <div className="photo-upload-loading-overlay">
-            <div className="photo-upload-spinner">⟳</div>
+            <div className="photo-upload-spinner">âŸ³</div>
           </div>
         )}
       </div>
@@ -110,10 +110,11 @@ function PhotoUpload({
       </div>
 
       <p className="photo-upload-hint">
-        Formatos: JPG, PNG, GIF, WEBP (máx. 5MB)
+        Formatos: JPG, PNG, GIF, WEBP (mÃ¡x. 5MB)
       </p>
     </div>
   );
 }
 
 export default PhotoUpload;
+

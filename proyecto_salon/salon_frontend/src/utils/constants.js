@@ -1,4 +1,4 @@
-// API Base URL
+﻿// API Base URL
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Auth
@@ -57,3 +57,4 @@ export const VALIDATION = {
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 100,
 };
+

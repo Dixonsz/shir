@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { galleryApi } from '../../../gallery/gallery.api';
+import { galleryApi } from '../../../gallery/api';
 import './Gallery.css';
 
 export default function Gallery() {
@@ -22,7 +22,7 @@ export default function Gallery() {
     }, []);
 
     if (loading) {
-        return <div className="gallery-loading">Cargando galería...</div>;
+        return <div className="gallery-loading">Cargando galeria...</div>;
     }
 
     if (images.length === 0) {
@@ -33,8 +33,8 @@ export default function Gallery() {
         <section className="gallery-section">
             <div className="gallery-header">
                 <div className="gallery-header-content">
-                    <h2 className="gallery-title">Nuestra Galería</h2>
-                    <p className="gallery-subtitle">Resultados que hablan por sí solos</p>
+                    <h2 className="gallery-title">Nuestra Galeria</h2>
+                    <p className="gallery-subtitle">Resultados que hablan por si solos</p>
                 </div>
             </div>
             <div className="gallery">
@@ -51,3 +51,13 @@ export default function Gallery() {
         </section>
     );
 }
+
+
+
+
+
+
+
+
+
+

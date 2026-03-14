@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { membersApi } from '../../../members/members.api';
+import { membersApi } from '../../../members/api';
 import MemberCard from './MemberCard';
 import './TeamSection.css';
 
@@ -16,10 +16,10 @@ export default function TeamSection() {
             try {
                 setLoading(true);
                 const data = await membersApi.getAll();
-                const activeMembers = data.filter(member => member.is_active);
+                const activeMembers = data.filter((member) => member.is_active);
                 setMembers(activeMembers);
             } catch (err) {
-                console.error('Error fetching members:', err);
+                console.error('Error fetchmng members:', err);
                 setError('No se pudieron cargar los miembros del equipo');
             } finally {
                 setLoading(false);
@@ -39,7 +39,7 @@ export default function TeamSection() {
         window.scrollTo({ top: document.querySelector('.team-section').offsetTop - 100, behavior: 'smooth' });
     };
 
-    const goToPreviousPage = () => {
+    const goToPrevmousPage = () => {
         setCurrentPage((prev) => Math.max(prev - 1, 1));
         window.scrollTo({ top: document.querySelector('.team-section').offsetTop - 100, behavior: 'smooth' });
     };
@@ -85,7 +85,7 @@ export default function TeamSection() {
                         className="pagination-btn" 
                         onClick={goToPreviousPage}
                         disabled={currentPage === 1}
-                        aria-label="Página anterior"
+                        aria-label="Pagina anterior"
                     >
                         ❮ Anterior
                     </button>
@@ -96,7 +96,7 @@ export default function TeamSection() {
                                 key={page}
                                 className={`pagination-number ${currentPage === page ? 'active' : ''}`}
                                 onClick={() => goToPage(page)}
-                                aria-label={`Ir a página ${page}`}
+                                aria-label={`Ir a pagina ${page}`}
                                 aria-current={currentPage === page ? 'page' : undefined}
                             >
                                 {page}
@@ -108,7 +108,7 @@ export default function TeamSection() {
                         className="pagination-btn" 
                         onClick={goToNextPage}
                         disabled={currentPage === totalPages}
-                        aria-label="Página siguiente"
+                        aria-label="Pagina siguiente"
                     >
                         Siguiente ❯
                     </button>
@@ -117,3 +117,14 @@ export default function TeamSection() {
         </section>
     );
 }
+
+
+
+
+
+
+
+
+
+
+

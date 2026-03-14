@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Bell, Search } from 'lucide-react';
 // import { useAuth } from '../../features/auth/useAuth';
 
@@ -100,3 +100,4 @@ const styles = {
 };
 
 export default Navbar;
+

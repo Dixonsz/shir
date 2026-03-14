@@ -1,4 +1,6 @@
-import axios from 'axios';
+﻿import axios from 'axios';
+import { getApiErrorMessage } from '../core/api/errors';
+import { clearToken, getToken } from '../core/auth/tokenStorage';
 import { API_BASE_URL } from '../utils/constants';
 
 const apiClient = axios.create({
@@ -10,7 +12,7 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,17 +33,24 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    const status = error.response?.status;
+    const message = getApiErrorMessage(error);
+
+    error.userMessage = message;
+
+    if (status === 401) {
+      clearToken();
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
 
-    if (error.response?.status === 403) {
-      console.error('No tienes permisos para realizar esta acción');
+    if (status === 403) {
+      console.error(message || 'No tienes permisos para realizar esta accion');
     }
 
-    if (error.response?.status === 500) {
-      console.error('Error del servidor. Por favor, intenta más tarde.');
+    if (status === 500) {
+      console.error(message || 'Error del servidor. Por favor, intenta mas tarde.');
     }
 
     return Promise.reject(error);
@@ -49,3 +58,4 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+

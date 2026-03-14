@@ -2,8 +2,9 @@ from app.models.marketing import Marketing
 from app.repositories.marketing_repository import MarketingRepository
 from app.repositories.promotion_repository import PromotionRepository
 from datetime import datetime
-import cloudinary.uploader
 import re
+
+from app.utils.cloudinary_service import delete_image
 
 class MarketingService:
     
@@ -27,7 +28,7 @@ class MarketingService:
         try:
             public_id = MarketingService._extract_public_id_from_url(url)
             if public_id:
-                result = cloudinary.uploader.destroy(public_id)
+                result = delete_image(public_id)
                 print(f"Imagen eliminada de Cloudinary: {public_id}, resultado: {result}")
         except Exception as e:
             print(f"Error al eliminar imagen de Cloudinary: {str(e)}")

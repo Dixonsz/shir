@@ -1,4 +1,4 @@
-import './Badge.css';
+﻿import './Badge.css';
 
 function Badge({ children, variant = 'default', ...props }) {
   return (
@@ -9,3 +9,4 @@ function Badge({ children, variant = 'default', ...props }) {
 }
 
 export default Badge;
+

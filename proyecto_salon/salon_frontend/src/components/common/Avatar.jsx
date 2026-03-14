@@ -1,4 +1,4 @@
-import { User } from 'lucide-react';
+﻿import { User } from 'lucide-react';
 import './Avatar.css';
 
 function Avatar({ src, alt = 'Avatar', size = 'medium', onClick }) {
@@ -36,3 +36,4 @@ function Avatar({ src, alt = 'Avatar', size = 'medium', onClick }) {
 }
 
 export default Avatar;
+

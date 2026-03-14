@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useMarketing } from './useMarketing';
-import MarketingForm from './MarketingForm';
+import { useMarketing } from './hooks';
+import MarketingForm from './components/MarketingForm';
 import Card from '../../components/common/Card';
 import { showToast } from '../../providers/ToastProvider';
 import { ArrowLeft } from 'lucide-react';
@@ -15,8 +15,8 @@ function MarketingFormPage() {
 
   useEffect(() => {
     if (id && campaigns.length > 0) {
-      const campaign = campaigns.find((c) => c.id === parseInt(id));
-      setSelectedCampaign(campaign);
+      const campaign = campaigns.find((c) => String(c.id ?? c.md) === String(id));
+      setSelectedCampaign(campaign || null);
     }
   }, [id, campaigns]);
 
@@ -82,3 +82,8 @@ const styles = {
 };
 
 export default MarketingFormPage;
+
+
+
+
+

@@ -1,10 +1,7 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from './useAuth';
+import { useAuth } from './hooks';
 
 function ProtectedRoute({ children }) {
-  return children;
-
-  /* DESCOMENTAR PARA ACTIVAR LA SEGURIDAD:
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -20,7 +17,6 @@ function ProtectedRoute({ children }) {
   }
 
   return children;
-  */
 }
 
 const styles = {
@@ -37,3 +33,8 @@ const styles = {
 };
 
 export default ProtectedRoute;
+
+
+
+
+

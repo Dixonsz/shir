@@ -4,9 +4,9 @@ import Button from '../../components/common/Button';
 import Input from '../../components/forms/Input';
 import FormButtons from '../../components/forms/FormButtons';
 import { ArrowLeft, Plus, Trash2, X, DollarSign, Package, Sparkles } from 'lucide-react';
-import { clientsApi } from '../clients/clients.api';
-import { servicesApi } from '../services/services.api';
-import { productsApi } from '../products/products.api';
+import { clientsApi } from '../clients/api';
+import { servicesApi } from '../services/api';
+import { productsApi } from '../products/api';
 import { showToast } from '../../providers/ToastProvider';
 
 function AppointmentFormV2({ appointment, clients, members, appointments, onSubmit, onCancel, onClientCreated, initialDate }) {
@@ -1112,3 +1112,8 @@ const styles = {
 };
 
 export default AppointmentFormV2;
+
+
+
+
+

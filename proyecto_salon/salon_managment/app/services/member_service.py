@@ -1,7 +1,8 @@
 from app.models.member import Member
 from app import bcrypt
 from app.repositories.member_repository import MemberRepository
-import cloudinary.uploader
+
+from app.utils.cloudinary_service import delete_image, upload_image
 
 class MemberService:
 
@@ -138,7 +139,7 @@ class MemberService:
         if member.photo_public_id:
             try:
                 print(f"Eliminando foto de Cloudinary: {member.photo_public_id}")
-                cloudinary.uploader.destroy(member.photo_public_id)
+                delete_image(member.photo_public_id)
                 print(f"Foto eliminada: {member.photo_public_id}")
             except Exception as e:
                 print(f"Error al eliminar imagen de Cloudinary: {str(e)}")
@@ -167,21 +168,26 @@ class MemberService:
         try:
             if member.photo_public_id:
                 try:
-                    cloudinary.uploader.destroy(member.photo_public_id)
+                    delete_image(member.photo_public_id)
                 except Exception as e:
                     print(f"Error al eliminar imagen anterior: {str(e)}")
-            
-            result = cloudinary.uploader.upload(
+
+            result = upload_image(
                 file,
                 folder='salon/members',
-                allowed_formats=['jpg', 'jpeg', 'png', 'gif', 'webp'],
                 transformation=[
                     {'width': 400, 'height': 400, 'crop': 'fill', 'gravity': 'face'},
                     {'quality': 'auto'}
                 ]
             )
+
+            if not result.get('success'):
+                return {
+                    "success": False,
+                    "error": result.get('error', 'Error al subir imagen')
+                }
             
-            member.photo_url = result['secure_url']
+            member.photo_url = result['url']
             member.photo_public_id = result['public_id']
             
             updated = MemberRepository.update(member)
@@ -215,7 +221,7 @@ class MemberService:
             }
         
         try:
-            cloudinary.uploader.destroy(member.photo_public_id)
+            delete_image(member.photo_public_id)
             
             member.photo_url = None
             member.photo_public_id = None

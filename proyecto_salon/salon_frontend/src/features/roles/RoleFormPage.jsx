@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useRoles } from './useRoles';
-import Card from '../../components/common/Card';
+import { useRoles } from './hooks';
 import Input from '../../components/forms/Input';
 import Textarea from '../../components/forms/Textarea';
 import FormButtons from '../../components/forms/FormButtons';
+import EntityFormView from '../../components/layout/EntityFormView';
 import { showToast } from '../../providers/ToastProvider';
-import { ArrowLeft } from 'lucide-react';
 
 function RoleFormPage() {
   const { id } = useParams();
@@ -15,45 +14,54 @@ function RoleFormPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    is_active: true,
   });
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = Boolean(id);
 
   useEffect(() => {
-    if (id && roles.length > 0) {
-      const role = roles.find((r) => r.id === parseInt(id));
-      if (role) {
-        setFormData({
-          name: role.name || '',
-          description: role.description || '',
-        });
-      }
+    if (!id || roles.length === 0) {
+      return;
+    }
+
+    const roleId = Number(id);
+    const role = roles.find((item) => item.id === roleId || item.md === roleId);
+
+    if (role) {
+      setFormData({
+        name: role.name || '',
+        description: role.description || '',
+        is_active: role.is_active ?? true,
+      });
     }
   }, [id, roles]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
 
+    const roleId = Number(id);
     const result = isEditing
-      ? await updateRole(id, formData)
+      ? await updateRole(roleId, formData)
       : await createRole(formData);
 
-    setLoading(false);
+    setIsSubmitting(false);
 
     if (result.success) {
-      showToast.success(
-        isEditing ? 'Rol actualizado exitosamente' : 'Rol creado exitosamente'
-      );
+      showToast.success(isEditing ? 'Rol actualizado exitosamente' : 'Rol creado exitosamente');
       navigate('/dashboard/roles');
-    } else {
-      showToast.error(result.error);
+      return;
     }
+
+    showToast.error(result.error);
   };
 
   const handleCancel = () => {
@@ -61,80 +69,46 @@ function RoleFormPage() {
   };
 
   return (
-    <div>
-      <button onClick={handleCancel} style={styles.backButton}>
-        <ArrowLeft size={20} />
-        Volver a Roles
-      </button>
+    <EntityFormView title={isEditing ? 'Editar Rol' : 'Nuevo Rol'} onBack={handleCancel}>
+      <form onSubmit={handleSubmit}>
+        <Input
+          name="name"
+          label="Nombre del Rol"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          placeholder="Ej: Administrador"
+        />
 
-      <Card style={styles.card}>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <h2 style={styles.title}>
-            {isEditing ? 'Editar Rol' : 'Nuevo Rol'}
-          </h2>
+        <Textarea
+          name="description"
+          label="Descripción"
+          value={formData.description}
+          onChange={handleChange}
+          rows={4}
+          placeholder="Describe las responsabilidades del rol..."
+        />
 
-          <Input
-            id="name"
-            name="name"
-            label="Nombre del Rol"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            placeholder="Ej: Administrador"
-          />
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#e2e8f0' }}>
+            <input
+              type="checkbox"
+              name="is_active"
+              checked={formData.is_active}
+              onChange={handleChange}
+            />
+            <span>Activo</span>
+          </label>
+        </div>
 
-          <Textarea
-            id="description"
-            name="description"
-            label="Descripción"
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-            placeholder="Describe las responsabilidades del rol..."
-          />
-
-          <FormButtons
-            onCancel={handleCancel}
-            submitText={isEditing ? 'Actualizar' : 'Crear Rol'}
-            loading={loading}
-          />
-        </form>
-      </Card>
-    </div>
+        <FormButtons
+          onCancel={handleCancel}
+          submitLabel={isEditing ? 'Actualizar' : 'Crear Rol'}
+          isSubmitting={isSubmitting}
+        />
+      </form>
+    </EntityFormView>
   );
 }
-
-const styles = {
-  backButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.75rem 1rem',
-    backgroundColor: 'transparent',
-    color: '#94a3b8',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    marginBottom: '1.5rem',
-    transition: 'all 0.2s',
-  },
-  card: {
-    maxWidth: '600px',
-    margin: '0 auto',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#e2e8f0',
-    marginBottom: '0.5rem',
-  },
-};
 
 export default RoleFormPage;

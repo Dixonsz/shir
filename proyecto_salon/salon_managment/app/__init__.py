@@ -1,33 +1,20 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_cors import CORS
-from config import config
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager
-from dotenv import load_dotenv
 import os
-import cloudinary
 
-db = SQLAlchemy()
-migrate = Migrate()
-bcrypt = Bcrypt()
-jwt = JWTManager()
+from dotenv import load_dotenv
+from flask import Flask
+from flask_cors import CORS
+
+from app.core.cloudinary import configure_cloudinary
+from app.core.extensions import bcrypt, db, jwt, migrate
+from config import config
+
 load_dotenv()
-
-# Configurar Cloudinary
-cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-    api_key=os.getenv('CLOUDINARY_API_KEY'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
-    secure=True
-)
 
 def create_app(config_name=None):
     if config_name is None:
         config_name = os.getenv('FLASK_ENV', 'development')
-    
-   
+
+    configure_cloudinary()
 
     app = Flask(__name__)
     app.config.from_object(config[config_name])
@@ -47,13 +34,9 @@ def create_app(config_name=None):
     jwt.init_app(app)
 
     with app.app_context():
-        from app.models import (
-            Client, Member, Rol, CategoryService, CategoryProduct,
-            Service, Product, Appointment, AppointmentService,
-            ServiceProduct, Promotion, ServicePromotion, Marketing,
-            MarketingItem, Additional
-        )
-        
+        # Import package so SQLAlchemy registers models metadata.
+        from app import models  # noqa: F401
+
         from app.routes import register_routes
         register_routes(app)
   

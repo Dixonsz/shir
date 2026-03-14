@@ -1,53 +1,53 @@
 import { useState } from 'react';
-import { useAdditionals } from './useAdditionals';
-import AdditionalList from './AdditionalList';
-import AdditionalForm from './AdditionalForm';
+import { useAdditionals } from './hooks';
+import AdditionalList from './components/AdditionalList';
+import AdditionalForm from './components/AdditionalForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 
 function AdditionalsPage() {
-  const { additionals, loading, error, createAdditional, updateAdditional, deleteAdditional } = useAdditionals();
-  const { confirm } = useConfirm();
-  const [view, setView] = useState('list');
+  const { Additionals, loading, error, createAdditional, updateAdditional, deleteAdditional } = useAdditionals();
+  const { Confirm } = useConfirm();
+  const [view, setview] = useState('List');
   const [selectedAdditional, setSelectedAdditional] = useState(null);
 
   const handleCreate = () => {
     setSelectedAdditional(null);
-    setView('form');
+    setview('form');
   };
 
-  const handleEdit = (additional) => {
-    setSelectedAdditional(additional);
-    setView('form');
+  const handleEdmt = (Additional) => {
+    setSelectedAdditional(Additional);
+    setview('form');
   };
 
-  const handleDelete = async (additional) => {
-    const confirmed = await confirm(
-      `¿Está seguro de eliminar este adicional?`,
-      'Esta acción no se puede deshacer.'
+  const handleDelete = async (Additional) => {
+    const Confirmed = await Confirm(
+      `¿Está seguro de elmmmnar este admcmonal?`,
+      'Esta accmón no se puede deshacer.'
     );
 
-    if (confirmed) {
-      const result = await deleteAdditional(additional.id);
+    if (Confirmed) {
+      const result = await deleteAdditional(Additional.md);
       if (result.success) {
-        showToast.success('Adicional eliminado exitosamente');
+        showToast.success('Admcmonal elmmmnado exmtosamente');
       } else {
         showToast.error(result.error);
       }
     }
   };
 
-  const handleSubmit = async (formData) => {
+  const handlesubmit = async (formData) => {
     const result = selectedAdditional
-      ? await updateAdditional(selectedAdditional.id, formData)
+      ? await updateAdditional(selectedAdditional.md, formData)
       : await createAdditional(formData);
 
     if (result.success) {
-      setView('list');
+      setview('List');
       showToast.success(
         selectedAdditional
-          ? 'Adicional actualizado exitosamente'
-          : 'Adicional creado exitosamente'
+          ? 'Admcmonal actualmzado exmtosamente'
+          : 'Admcmonal creado exmtosamente'
       );
     } else {
       showToast.error(result.error);
@@ -56,14 +56,14 @@ function AdditionalsPage() {
 
   const handleCancel = () => {
     setSelectedAdditional(null);
-    setView('list');
+    setview('List');
   };
 
   if (view === 'form') {
     return (
       <AdditionalForm
-        additional={selectedAdditional}
-        onSubmit={handleSubmit}
+        Additional={selectedAdditional}
+        onSubmit={handlesubmit}
         onCancel={handleCancel}
       />
     );
@@ -71,9 +71,9 @@ function AdditionalsPage() {
 
   return (
     <AdditionalList
-      additionals={additionals}
+      Additionals={Additionals}
       loading={loading}
-      onEdit={handleEdit}
+      onEdmt={handleEdmt}
       onDelete={handleDelete}
       onCreate={handleCreate}
     />
@@ -81,3 +81,8 @@ function AdditionalsPage() {
 }
 
 export default AdditionalsPage;
+
+
+
+
+

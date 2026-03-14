@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppointments } from '../appointments/useAppointments';
-import CalendarView from '../appointments/CalendarView';
+import { useAppointments } from '../appointments/hooks';
+import CalendarView from '../appointments/components/CalendarView';
 import AppointmentDetails from './AppointmentDetails';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
@@ -9,71 +9,56 @@ import './Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { 
-    appointments, 
-    clients, 
-    members, 
-    loading, 
-    error, 
-    deleteAppointment 
-  } = useAppointments();
-  
+  const { appointments, clients, members, loading, error, deleteAppointment } = useAppointments();
   const { confirm } = useConfirm();
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  const handleSelectEvent = async (appointment) => {
+  const handleSelectEvent = (appointment) => {
     setSelectedAppointment(appointment);
     setShowDetails(true);
   };
 
   const handleSelectSlot = (slotInfo) => {
-    navigate('/dashboard/appointments', { 
-      state: { 
+    navigate('/dashboard/appointments', {
+      state: {
         initialDate: slotInfo.start,
-        fromCalendar: true 
-      } 
+        fromCalendar: true,
+      },
     });
   };
 
   const handleCreateNew = () => {
-  
     navigate('/dashboard/appointments', {
-      state: {
-        fromCalendar: true
-      }
+      state: { fromCalendar: true },
     });
-  
-};
+  };
 
   const handleEdit = () => {
-    if (selectedAppointment) {
-      navigate('/dashboard/appointments', { 
-        state: { 
-          appointment: selectedAppointment,
-          editMode: true 
-        } 
-      });
-    }
+    if (!selectedAppointment) return;
+    navigate('/dashboard/appointments', {
+      state: {
+        appointment: selectedAppointment,
+        editMode: true,
+      },
+    });
   };
 
   const handleDelete = async () => {
     if (!selectedAppointment) return;
-
     const confirmed = await confirm(
-      `¿Está seguro de eliminar esta cita?`,
+      '¿Está seguro de eliminar esta cita?',
       'Esta acción no se puede deshacer.'
     );
+    if (!confirmed) return;
 
-    if (confirmed) {
-      const result = await deleteAppointment(selectedAppointment.id);
-      if (result.success) {
-        showToast.success('Cita eliminada exitosamente');
-        setShowDetails(false);
-        setSelectedAppointment(null);
-      } else {
-        showToast.error(result.error);
-      }
+    const result = await deleteAppointment(selectedAppointment.id);
+    if (result.success) {
+      showToast.success('Cita eliminada exitosamente');
+      setShowDetails(false);
+      setSelectedAppointment(null);
+    } else {
+      showToast.error(result.error);
     }
   };
 
@@ -105,7 +90,7 @@ function Dashboard() {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Dashboard - Gestión de Citas</h1>
+        <h1>Dashboard - Gestion de Citas</h1>
         <button className="btn btn-primary" onClick={handleCreateNew}>
           + Nueva Cita
         </button>
@@ -122,7 +107,6 @@ function Dashboard() {
           />
         </div>
 
-        {/* Panel lateral para detalles */}
         {showDetails && selectedAppointment && (
           <div className="dashboard-sidebar">
             <div className="sidebar-content">
@@ -151,3 +135,8 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+
+
+
+

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+﻿import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -27,12 +27,12 @@ function Sidebar() {
   ];
 
   const generalMenuItems = [
-    { path: '/dashboard/category-services', label: 'Categorías de Servicios', icon: Layers },
-    { path: '/dashboard/category-products', label: 'Categorías de Productos', icon: Layers },
+    { path: '/dashboard/category-services', label: 'CategorÃ­as de Servicios', icon: Layers },
+    { path: '/dashboard/category-products', label: 'CategorÃ­as de Productos', icon: Layers },
     { path: '/dashboard/products', label: 'Productos', icon: Store },
     { path: '/dashboard/promotions', label: 'Promociones', icon: Tag },
     { path: '/dashboard/marketing', label: 'Marketing', icon: Megaphone },
-    { path: '/dashboard/gallery', label: 'Galería', icon: Image },
+    { path: '/dashboard/gallery', label: 'GalerÃ­a', icon: Image },
     { path: '/dashboard/roles', label: 'Roles', icon: UserCog },
   ];
 
@@ -95,7 +95,7 @@ function Sidebar() {
             }
           >
             <Settings size={20} className="sidebar-nav-icon" />
-            <span className="sidebar-nav-text">Configuración</span>
+            <span className="sidebar-nav-text">ConfiguraciÃ³n</span>
           </NavLink>
         </div>
       </nav>
@@ -122,3 +122,4 @@ function Sidebar() {
 }
 
 export default Sidebar;
+
