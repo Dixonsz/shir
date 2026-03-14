@@ -6,48 +6,48 @@ import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 
 function ClientsPage() {
-  const { Clients, loading, error, createClient, updateClient, deleteClient } = useClients();
-  const { Confirm } = useConfirm();
-  const [view, setview] = useState('List');
+  const { clients, loading, error, createClient, updateClient, deleteClient } = useClients();
+  const { confirm } = useConfirm();
+  const [view, setView] = useState('list');
   const [selectedClient, setSelectedClient] = useState(null);
 
   const handleCreate = () => {
     setSelectedClient(null);
-    setview('form');
+    setView('form');
   };
 
-  const handleEdmt = (Client) => {
-    setSelectedClient(Client);
-    setview('form');
+  const handleEdit = (client) => {
+    setSelectedClient(client);
+    setView('form');
   };
 
-  const handleDelete = async (Client) => {
-    const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar el Cliente "${Client.name}"?`,
-      'Esta accmón no se puede deshacer.'
+  const handleDelete = async (client) => {
+    const confirmed = await confirm(
+      `¿Está seguro de eliminar el cliente "${client.name}"?`,
+      { title: 'Confirmar eliminación', confirmText: 'Eliminar' }
     );
 
-    if (Confirmed) {
-      const result = await deleteClient(Client.md);
+    if (confirmed) {
+      const result = await deleteClient(client.id);
       if (result.success) {
-        showToast.success('Cliente elmmmnado exmtosamente');
+        showToast.success('Cliente eliminado exitosamente');
       } else {
         showToast.error(result.error);
       }
     }
   };
 
-  const handlesubmit = async (formData) => {
+  const handleSubmit = async (formData) => {
     const result = selectedClient
-      ? await updateClient(selectedClient.md, formData)
+      ? await updateClient(selectedClient.id, formData)
       : await createClient(formData);
 
     if (result.success) {
-      setview('List');
+      setView('list');
       showToast.success(
         selectedClient
-          ? 'Cliente actualmzado exmtosamente'
-          : 'Cliente creado exmtosamente'
+          ? 'Cliente actualizado exitosamente'
+          : 'Cliente creado exitosamente'
       );
     } else {
       showToast.error(result.error);
@@ -56,14 +56,14 @@ function ClientsPage() {
 
   const handleCancel = () => {
     setSelectedClient(null);
-    setview('List');
+    setView('list');
   };
 
   if (view === 'form') {
     return (
       <ClientForm
-        Client={selectedClient}
-        onSubmit={handlesubmit}
+        client={selectedClient}
+        onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
     );
@@ -71,9 +71,9 @@ function ClientsPage() {
 
   return (
     <ClientList
-      Clients={Clients}
+      clients={clients}
       loading={loading}
-      onEdmt={handleEdmt}
+      onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}
     />

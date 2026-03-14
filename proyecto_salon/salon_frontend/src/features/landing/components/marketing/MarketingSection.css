@@ -1,0 +1,122 @@
+.marketing-section {
+  padding: 4rem 1.5rem;
+}
+
+.marketing-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.marketing-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.marketing-kicker {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin: 0 0 0.5rem;
+}
+
+.marketing-header h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--text-dark);
+}
+
+.marketing-header > p {
+  margin: 0.75rem auto 0;
+  max-width: 700px;
+  color: var(--text-gray);
+}
+
+.marketing-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.marketing-card {
+  background: #fff;
+  border: 1px solid rgba(238, 43, 140, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(34, 16, 25, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.marketing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px rgba(34, 16, 25, 0.12);
+}
+
+.marketing-media {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.marketing-media-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--primary), #ff9ac9);
+}
+
+.marketing-content {
+  padding: 1rem 1rem 1.25rem;
+}
+
+.marketing-content h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text-dark);
+}
+
+.marketing-content p {
+  margin: 0.6rem 0 0;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+
+.marketing-period {
+  margin-top: 0.9rem;
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--primary);
+  background: rgba(238, 43, 140, 0.08);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-weight: 600;
+}
+
+.marketing-feedback {
+  text-align: center;
+  color: var(--text-gray);
+}
+
+@media (max-width: 1024px) {
+  .marketing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .marketing-section {
+    padding: 3rem 1rem;
+  }
+
+  .marketing-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .marketing-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -90,7 +90,7 @@ function Dashboard() {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Dashboard - Gestion de Citas</h1>
+        <h1>Dashboard | Gestión de Citas</h1>
         <button className="btn btn-primary" onClick={handleCreateNew}>
           + Nueva Cita
         </button>

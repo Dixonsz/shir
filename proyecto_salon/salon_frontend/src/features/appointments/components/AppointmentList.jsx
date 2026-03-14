@@ -3,6 +3,7 @@ import Button from '../../../components/common/Button';
 import Badge from '../../../components/common/Badge';
 import { Plus, ClipboardCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getAppointmentStatusConfig } from '../utils/appointmentStatus';
 
 function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate }) {
   const navigate = useNavigate();
@@ -33,28 +34,6 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
     return member ? `${member.first_name} ${member.last_name}` : `ID: ${memberId}`;
   };
 
-  const getStatusVariant = (status) => {
-    const variants = {
-      'scheduled': 'info',
-      'confirmed': 'success',
-      'completed': 'success',
-      'cancelled': 'danger',
-      'no-show': 'warning'
-    };
-    return variants[status] || 'secondary';
-  };
-
-  const getStatusLabel = (status) => {
-    const labels = {
-      'scheduled': 'Programada',
-      'confirmed': 'Confirmada',
-      'completed': 'Completada',
-      'cancelled': 'Cancelada',
-      'no-show': 'No asistió'
-    };
-    return labels[status] || status;
-  };
-
   const columns = [
     { key: 'id', label: 'ID' },
     { 
@@ -76,8 +55,8 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
       key: 'status',
       label: 'Estado',
       render: (value, row) => (
-        <Badge variant={getStatusVariant(row.status)}>
-          {getStatusLabel(row.status)}
+        <Badge variant={getAppointmentStatusConfig(row.status).badgeVariant}>
+          {getAppointmentStatusConfig(row.status).label}
         </Badge>
       ),
     },

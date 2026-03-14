@@ -11,7 +11,7 @@ def delete_photo(public_id):
     return delete_image(public_id)
 
 @cloudinary_bp.route('/upload', methods=['POST'])
-def upload_image():
+def upload_image_endpoint():
     if 'file' not in request.files:
         return jsonify({
             'success': False,
@@ -40,7 +40,7 @@ def upload_image():
         return jsonify(result), 500
 
 @cloudinary_bp.route('/delete', methods=['POST'])
-def delete_image():
+def delete_image_endpoint():
     data = request.json
     public_id = data.get('public_id')
 

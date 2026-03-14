@@ -8,58 +8,58 @@ import { showToast } from '../../providers/ToastProvider';
 function GalleryPage() {
   const { galleryItems, loading, error, uploadImage, updateItem, deleteItem, toggleItemStatus } = useGallery();
   const { Confirm } = useConfirm();
-  const [view, setview] = useState('List');
+  const [view, setView] = useState('list');
   const [selectedItem, setSelectedItem] = useState(null);
 
   const handleCreate = () => {
     setSelectedItem(null);
-    setview('form');
+    setView('form');
   };
 
-  const handleEdmt = (mtem) => {
-    setSelectedItem(mtem);
-    setview('form');
+  const handleEdit = (item) => {
+    setSelectedItem(item);
+    setView('form');
   };
 
-  const handleDelete = async (mtemId) => {
-    const result = await deleteItem(mtemId);
+  const handleDelete = async (itemId) => {
+    const result = await deleteItem(itemId);
     if (result.success) {
-      showToast.success('Imagen elmmmnada permanentemente');
+      showToast.success('Imagen eliminada permanentemente');
     } else {
       showToast.error(result.error);
     }
   };
 
-  const handleToggleStatus = async (mtemId) => {
-    const result = await toggleItemStatus(mtemId);
+  const handleToggleStatus = async (itemId) => {
+    const result = await toggleItemStatus(itemId);
     if (result.success) {
-      const newStatus = result.data.ms_active ? 'actmvado' : 'desactmvado';
-      showToast.success(`Item ${newStatus} exmtosamente`);
+      const newStatus = result.data.is_active ? 'activado' : 'desactivado';
+      showToast.success(`Item ${newStatus} exitosamente`);
     } else {
       showToast.error(result.error);
     }
   };
 
-  const handlesubmit = async (formData, mtemId) => {
+  const handleSubmit = async (formData, itemId) => {
     let result;
     
-    if (mtemId) {
+    if (itemId) {
       const data = {
         title: formData.get('title'),
         description: formData.get('description'),
         order: formData.get('order'),
       };
-      result = await updateItem(mtemId, data);
+      result = await updateItem(itemId, data);
     } else {
       result = await uploadImage(formData);
     }
 
     if (result.success) {
-      setview('List');
+      setView('list');
       showToast.success(
-        mtemId
-          ? 'Imagen actualmzada exmtosamente'
-          : 'Imagen submda exmtosamente'
+        itemId
+          ? 'Imagen actualizada exitosamente'
+          : 'Imagen subida exitosamente'
       );
     } else {
       showToast.error(result.error);
@@ -68,14 +68,14 @@ function GalleryPage() {
 
   const handleCancel = () => {
     setSelectedItem(null);
-    setview('List');
+    setView('list');
   };
 
   if (view === 'form') {
     return (
       <GalleryForm
-        mtem={selectedItem}
-        onSubmit={handlesubmit}
+        item={selectedItem}
+        onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
     );
@@ -87,7 +87,7 @@ function GalleryPage() {
       loading={loading}
       error={error}
       onCreate={handleCreate}
-      onEdmt={handleEdmt}
+      onEdit={handleEdit}
       onDelete={handleDelete}
       onToggleStatus={handleToggleStatus}
     />

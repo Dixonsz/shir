@@ -2,6 +2,7 @@ import './Landing.css';
 import Header from "./components/header/Header";
 import Hero from "./components/hero/Hero";
 import Gallery from "./components/gallery/Gallery";
+import MarketingSection from "./components/marketing/MarketingSection";
 import ServicesSection from "./components/services/ServicesSection";
 import TeamSection from "./components/team/TeamSection";
 import Location from "../../components/common/Location";
@@ -15,6 +16,7 @@ export default function Landing() {
             <main className="main-content">
                 <Hero />
                 <Gallery />
+                <MarketingSection />
                 <ServicesSection />
                 <TeamSection />
                 <div className="location-schedule-wrapper">

@@ -15,6 +15,63 @@ from datetime import datetime
 class AppointmentService:
 
     @staticmethod
+    def _get_reserved_quantity_for_product(appointment_id, product_id):
+        required_products = AppointmentService._get_required_products_by_appointment(appointment_id)
+        return int(required_products.get(product_id, 0))
+
+    @staticmethod
+    def _get_required_products_by_appointment(appointment_id):
+        """Agrupa la cantidad requerida por producto en toda la cita."""
+        required_products = {}
+        appointment_services = AppointmentServiceRepository.get_by_appointment_id(appointment_id)
+
+        for appointment_service in appointment_services:
+            service_products = ServiceProductRepository.get_by_appointment_service_id(appointment_service.id)
+            for service_product in service_products:
+                quantity = int(service_product.quantity_product or 0)
+                if quantity <= 0:
+                    continue
+                required_products[service_product.product_id] = (
+                    required_products.get(service_product.product_id, 0) + quantity
+                )
+
+        return required_products
+
+    @staticmethod
+    def _consume_products_stock(appointment_id):
+        """Descuenta stock de productos asociados a la cita (sin commit aquí)."""
+        required_products = AppointmentService._get_required_products_by_appointment(appointment_id)
+
+        if not required_products:
+            return {"success": True}
+
+        products_to_update = []
+
+        for product_id, required_quantity in required_products.items():
+            product = ProductRepository.get_product_by_id(product_id)
+            if not product:
+                return {
+                    "success": False,
+                    "error": f"Producto asociado no encontrado o inactivo (ID: {product_id})."
+                }
+
+            if product.stock < required_quantity:
+                return {
+                    "success": False,
+                    "error": (
+                        f"Stock insuficiente para '{product.name}'. "
+                        f"Disponible: {product.stock}, requerido: {required_quantity}."
+                    )
+                }
+
+            products_to_update.append((product, required_quantity))
+
+        for product, required_quantity in products_to_update:
+            product.stock -= required_quantity
+
+        return {"success": True}
+
+    @staticmethod
     def create_appointment(data):
         client_id = int(data['client_id']) if data.get('client_id') else None
         member_id = int(data['member_id']) if data.get('member_id') else None
@@ -134,6 +191,15 @@ class AppointmentService:
                 "success": False,
                 "error": "Cita no encontrada."
             }
+
+        current_status = appointment.status
+        next_status = data.get('status', current_status)
+
+        # El consumo de inventario se aplica una sola vez al cerrar la cita.
+        if current_status != 'completed' and next_status == 'completed':
+            stock_result = AppointmentService._consume_products_stock(appointment_id)
+            if not stock_result['success']:
+                return stock_result
         
         if 'client_id' in data and data['client_id']:
             appointment.client_id = int(data['client_id'])
@@ -147,7 +213,7 @@ class AppointmentService:
             except:
                 appointment.scheduled_date = datetime.strptime(data['scheduled_date'], '%Y-%m-%dT%H:%M')
         
-        appointment.status = data.get('status', appointment.status)
+        appointment.status = next_status
         appointment.is_active = data.get('is_active', appointment.is_active)
 
         updated = AppointmentRepository.update(appointment)
@@ -341,7 +407,31 @@ class AppointmentService:
                 "error": "Este producto ya está agregado a este servicio."
             }
         
-        quantity = data.get('quantity_product', 1)
+        try:
+            quantity = int(data.get('quantity_product', 1))
+        except (TypeError, ValueError):
+            return {
+                "success": False,
+                "error": "La cantidad del producto debe ser un numero entero valido."
+            }
+
+        if quantity <= 0:
+            return {
+                "success": False,
+                "error": "La cantidad del producto debe ser mayor a cero."
+            }
+
+        reserved_quantity = AppointmentService._get_reserved_quantity_for_product(appointment_id, product_id)
+        available_quantity = int(product.stock or 0) - reserved_quantity
+
+        if quantity > available_quantity:
+            return {
+                "success": False,
+                "error": (
+                    f"Stock insuficiente para '{product.name}'. "
+                    f"Disponible para esta cita: {max(available_quantity, 0)}, solicitado: {quantity}."
+                )
+            }
         
         service_product = ServiceProduct(
             appointment_service_id=appointment_service_id,
@@ -380,7 +470,43 @@ class AppointmentService:
             }
         
         if 'quantity_product' in data:
-            service_product.quantity_product = data['quantity_product']
+            try:
+                new_quantity = int(data['quantity_product'])
+            except (TypeError, ValueError):
+                return {
+                    "success": False,
+                    "error": "La cantidad del producto debe ser un numero entero valido."
+                }
+
+            if new_quantity <= 0:
+                return {
+                    "success": False,
+                    "error": "La cantidad del producto debe ser mayor a cero."
+                }
+
+            product = ProductRepository.get_product_by_id(service_product.product_id)
+            if not product:
+                return {
+                    "success": False,
+                    "error": "Producto no encontrado o inactivo."
+                }
+
+            reserved_quantity = AppointmentService._get_reserved_quantity_for_product(
+                appointment_id,
+                service_product.product_id,
+            )
+            available_quantity = int(product.stock or 0) - (reserved_quantity - int(service_product.quantity_product or 0))
+
+            if new_quantity > available_quantity:
+                return {
+                    "success": False,
+                    "error": (
+                        f"Stock insuficiente para '{product.name}'. "
+                        f"Disponible para esta cita: {max(available_quantity, 0)}, solicitado: {new_quantity}."
+                    )
+                }
+
+            service_product.quantity_product = new_quantity
         
         updated = ServiceProductRepository.update(service_product)
         

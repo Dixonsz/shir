@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
+import Modal from '../../components/common/Modal';
 import Input from '../../components/forms/Input';
 import FormButtons from '../../components/forms/FormButtons';
 import { ArrowLeft, Plus, Trash2, X, DollarSign, Package, Sparkles } from 'lucide-react';
@@ -731,62 +732,62 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
         />
       </form>
 
-      {showClientModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h2 style={styles.modalTitle}>Nuevo Cliente</h2>
-            <form onSubmit={handleCreateClient} style={styles.modalForm}>
-              <Input
-                label="Número de Identificación"
-                name="number_id"
-                value={newClient.number_id}
-                onChange={(e) => setNewClient(prev => ({ ...prev, number_id: e.target.value }))}
-                required
-                placeholder="Ej: 1-2345-6789"
-              />
-              <Input
-                label="Nombre Completo"
-                name="name"
-                value={newClient.name}
-                onChange={(e) => setNewClient(prev => ({ ...prev, name: e.target.value }))}
-                required
-                placeholder="Nombre del cliente"
-              />
-              <Input
-                label="Correo Electrónico"
-                name="email"
-                type="email"
-                value={newClient.email}
-                onChange={(e) => setNewClient(prev => ({ ...prev, email: e.target.value }))}
-                required
-                placeholder="correo@ejemplo.com"
-              />
-              <Input
-                label="Teléfono"
-                name="phone_number"
-                value={newClient.phone_number}
-                onChange={(e) => setNewClient(prev => ({ ...prev, phone_number: e.target.value }))}
-                placeholder="Ej: 8888-8888"
-              />
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setShowClientModal(false);
-                    setNewClient({ number_id: '', name: '', email: '', phone_number: '' });
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  Crear Cliente
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showClientModal}
+        onClose={() => {
+          setShowClientModal(false);
+          setNewClient({ number_id: '', name: '', email: '', phone_number: '' });
+        }}
+        title="Nuevo Cliente"
+      >
+        <form onSubmit={handleCreateClient} style={styles.modalForm}>
+          <Input
+            label="Numero de Identificacion"
+            name="number_id"
+            value={newClient.number_id}
+            onChange={(e) => setNewClient((prev) => ({ ...prev, number_id: e.target.value }))}
+            required
+            placeholder="Ej: 1-2345-6789"
+          />
+          <Input
+            label="Nombre Completo"
+            name="name"
+            value={newClient.name}
+            onChange={(e) => setNewClient((prev) => ({ ...prev, name: e.target.value }))}
+            required
+            placeholder="Nombre del cliente"
+          />
+          <Input
+            label="Correo Electronico"
+            name="email"
+            type="email"
+            value={newClient.email}
+            onChange={(e) => setNewClient((prev) => ({ ...prev, email: e.target.value }))}
+            required
+            placeholder="correo@ejemplo.com"
+          />
+          <Input
+            label="Telefono"
+            name="phone_number"
+            value={newClient.phone_number}
+            onChange={(e) => setNewClient((prev) => ({ ...prev, phone_number: e.target.value }))}
+            placeholder="Ej: 8888-8888"
+          />
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowClientModal(false);
+                setNewClient({ number_id: '', name: '', email: '', phone_number: '' });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">Crear Cliente</Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }
@@ -801,13 +802,13 @@ const styles = {
   title: {
     fontSize: '2rem',
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: '#e2e8f0',
     margin: 0,
   },
   sectionTitle: {
     fontSize: '1.25rem',
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#e2e8f0',
     marginBottom: '1rem',
     display: 'flex',
     alignItems: 'center',
@@ -832,12 +833,12 @@ const styles = {
   label: {
     fontSize: '0.9rem',
     fontWeight: '500',
-    color: '#ffffff',
+    color: '#cbd5e1',
   },
   labelSmall: {
     fontSize: '0.85rem',
     fontWeight: '500',
-    color: '#ffffff',
+    color: '#94a3b8',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
@@ -845,49 +846,58 @@ const styles = {
   select: {
     padding: '0.6rem',
     fontSize: '0.95rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '6px',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
     cursor: 'pointer',
   },
   selectSmall: {
     padding: '0.4rem',
     fontSize: '0.85rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '4px',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
     cursor: 'pointer',
     flex: 2,
   },
   input: {
     padding: '0.6rem',
     fontSize: '0.95rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '6px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
   },
   inputSmall: {
     padding: '0.4rem',
     fontSize: '0.85rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '4px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
     width: '70px',
     textAlign: 'center',
   },
   priceInput: {
     padding: '0.4rem 0.6rem',
     fontSize: '0.9rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(16, 185, 129, 0.55)',
     borderRadius: '4px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     width: '100px',
     textAlign: 'right',
     fontWeight: '600',
-    color: '#28a745',
+    color: '#10b981',
   },
   quantityInput: {
     padding: '0.3rem',
     fontSize: '0.85rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '4px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
     width: '50px',
     textAlign: 'center',
   },
@@ -901,7 +911,7 @@ const styles = {
     gap: '0.5rem',
     cursor: 'pointer',
     fontSize: '0.95rem',
-    color: '#ffffff',
+    color: '#e2e8f0',
   },
   checkbox: {
     width: '18px',
@@ -911,9 +921,9 @@ const styles = {
   addSection: {
     marginBottom: '1rem',
     padding: '1rem',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
     borderRadius: '8px',
-    border: '2px dashed #dee2e6',
+    border: '2px dashed rgba(71, 85, 105, 0.6)',
   },
   addRow: {
     display: 'flex',
@@ -923,10 +933,10 @@ const styles = {
   emptyState: {
     padding: '2rem',
     textAlign: 'center',
-    color: '#999',
-    backgroundColor: '#f8f9fa',
+    color: '#94a3b8',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
     borderRadius: '8px',
-    border: '1px solid #e9ecef',
+    border: '1px solid rgba(71, 85, 105, 0.35)',
   },
   itemsList: {
     display: 'flex',
@@ -934,10 +944,10 @@ const styles = {
     gap: '1rem',
   },
   serviceCard: {
-    border: '2px solid #e9ecef',
+    border: '1px solid rgba(71, 85, 105, 0.45)',
     borderRadius: '8px',
     padding: '1rem',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
   },
   serviceHeader: {
     display: 'flex',
@@ -945,7 +955,7 @@ const styles = {
     alignItems: 'center',
     marginBottom: '1rem',
     paddingBottom: '0.75rem',
-    borderBottom: '1px solid #e9ecef',
+    borderBottom: '1px solid rgba(71, 85, 105, 0.4)',
   },
   serviceInfo: {
     display: 'flex',
@@ -956,14 +966,14 @@ const styles = {
     fontSize: '0.85rem',
     fontWeight: '600',
     color: '#fff',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#6b7280',
     padding: '0.25rem 0.5rem',
     borderRadius: '4px',
   },
   serviceName: {
     fontSize: '1rem',
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#e2e8f0',
   },
   serviceActions: {
     display: 'flex',
@@ -973,7 +983,7 @@ const styles = {
   productsSection: {
     marginTop: '0.75rem',
     padding: '0.75rem',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     borderRadius: '6px',
   },
   productsHeader: {
@@ -991,20 +1001,20 @@ const styles = {
     gap: '0.5rem',
     marginTop: '0.75rem',
     paddingTop: '0.75rem',
-    borderTop: '1px solid #dee2e6',
+    borderTop: '1px solid rgba(71, 85, 105, 0.4)',
   },
   productItem: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '0.5rem',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
     borderRadius: '4px',
-    border: '1px solid #e9ecef',
+    border: '1px solid rgba(71, 85, 105, 0.45)',
   },
   productName: {
     fontSize: '0.9rem',
-    color: '#ffffff',
+    color: '#e2e8f0',
     fontWeight: '500',
   },
   productDetails: {
@@ -1015,7 +1025,7 @@ const styles = {
   productTotal: {
     fontSize: '0.9rem',
     fontWeight: '600',
-    color: '#28a745',
+    color: '#10b981',
     minWidth: '70px',
     textAlign: 'right',
   },
@@ -1024,15 +1034,15 @@ const styles = {
     gap: '0.75rem',
     alignItems: 'center',
     padding: '0.75rem',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     borderRadius: '6px',
-    border: '1px solid #e9ecef',
+    border: '1px solid rgba(71, 85, 105, 0.4)',
   },
   additionalNumber: {
     fontSize: '0.85rem',
     fontWeight: '600',
     color: '#fff',
-    backgroundColor: '#6c757d',
+    backgroundColor: '#475569',
     padding: '0.25rem 0.5rem',
     borderRadius: '4px',
     minWidth: '35px',
@@ -1041,17 +1051,19 @@ const styles = {
   summaryRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '0.5rem 0',
+    padding: '0.75rem',
+    borderRadius: '6px',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     fontSize: '1rem',
-    color: '#495057',
+    color: '#cbd5e1',
   },
   summaryValue: {
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#e2e8f0',
   },
   divider: {
     height: '2px',
-    backgroundColor: '#dee2e6',
+    backgroundColor: 'rgba(71, 85, 105, 0.5)',
     margin: '1rem 0',
   },
   totalRow: {
@@ -1059,14 +1071,13 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '1rem',
-    backgroundColor: '#f8f9fa',
+    background: 'linear-gradient(135deg, #ee2b8c 0%, #be185d 100%)',
     borderRadius: '8px',
-    border: '2px solid #28a745',
   },
   totalLabel: {
     fontSize: '1.25rem',
     fontWeight: '700',
-    color: '#212529',
+    color: '#ffffff',
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
@@ -1074,34 +1085,6 @@ const styles = {
   totalValue: {
     fontSize: '1.75rem',
     fontWeight: '700',
-    color: '#28a745',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  modal: {
-    backgroundColor: 'white',
-    padding: '2rem',
-    borderRadius: '12px',
-    maxWidth: '500px',
-    width: '90%',
-    maxHeight: '90vh',
-    overflow: 'auto',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
-  },
-  modalTitle: {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    marginBottom: '1.5rem',
     color: '#ffffff',
   },
   modalForm: {

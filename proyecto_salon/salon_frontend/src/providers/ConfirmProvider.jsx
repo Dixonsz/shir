@@ -1,5 +1,7 @@
 ﻿import { createContext, useContext, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import Button from '../components/common/Button';
+import Modal from '../components/common/Modal';
 
 const ConfirmContext = createContext(null);
 
@@ -16,7 +18,7 @@ export function ConfirmProvider({ children }) {
 
   const confirm = async (message, options = {}) => {
     const {
-      title = 'ConfirmaciÃ³n',
+      title = 'Confirmacion',
       confirmText = 'Confirmar',
       cancelText = 'Cancelar',
     } = options;
@@ -40,34 +42,34 @@ export function ConfirmProvider({ children }) {
     });
   };
 
+  const closeConfirm = () => {
+    if (confirmState.onCancel) {
+      confirmState.onCancel();
+    }
+  };
+
   return (
-    <ConfirmContext.Provider value={{ confirm }}>
+    <ConfirmContext.Provider value={{ confirm, Confirm: confirm }}>
       {children}
-      {confirmState.isOpen && (
-        <div style={styles.overlay} onClick={confirmState.onCancel}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.iconContainer}>
-              <AlertTriangle size={48} style={styles.icon} />
-            </div>
-            <h2 style={styles.title}>{confirmState.title}</h2>
-            <p style={styles.message}>{confirmState.message}</p>
-            <div style={styles.buttons}>
-              <button
-                onClick={confirmState.onCancel}
-                style={styles.cancelBtn}
-              >
-                {confirmState.cancelText}
-              </button>
-              <button
-                onClick={confirmState.onConfirm}
-                style={styles.confirmBtn}
-              >
-                {confirmState.confirmText}
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={confirmState.isOpen}
+        onClose={closeConfirm}
+        title={confirmState.title}
+        maxWidth="420px"
+      >
+        <div style={styles.iconContainer}>
+          <AlertTriangle size={44} style={styles.icon} />
         </div>
-      )}
+        <p style={styles.message}>{confirmState.message}</p>
+        <div style={styles.buttons}>
+          <Button variant="outline" onClick={confirmState.onCancel}>
+            {confirmState.cancelText}
+          </Button>
+          <Button variant="danger" onClick={confirmState.onConfirm}>
+            {confirmState.confirmText}
+          </Button>
+        </div>
+      </Modal>
     </ConfirmContext.Provider>
   );
 }
@@ -81,44 +83,17 @@ export function useConfirm() {
 }
 
 const styles = {
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-  },
-  modal: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '2rem',
-    maxWidth: '400px',
-    width: '90%',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-  },
   iconContainer: {
     display: 'flex',
     justifyContent: 'center',
-    marginBottom: '1rem',
+    marginBottom: '0.75rem',
   },
   icon: {
-    color: '#ff9800',
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: '600',
-    marginBottom: '0.5rem',
-    textAlign: 'center',
-    color: '#333',
+    color: '#f59e0b',
   },
   message: {
     fontSize: '1rem',
-    color: '#666',
+    color: '#cbd5e1',
     marginBottom: '1.5rem',
     textAlign: 'center',
     lineHeight: '1.5',
@@ -127,28 +102,6 @@ const styles = {
     display: 'flex',
     gap: '0.75rem',
     justifyContent: 'flex-end',
-  },
-  cancelBtn: {
-    padding: '0.6rem 1.5rem',
-    borderRadius: '6px',
-    border: '1px solid #ddd',
-    backgroundColor: 'white',
-    color: '#666',
-    fontSize: '0.95rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  confirmBtn: {
-    padding: '0.6rem 1.5rem',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#d32f2f',
-    color: 'white',
-    fontSize: '0.95rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
   },
 };
 

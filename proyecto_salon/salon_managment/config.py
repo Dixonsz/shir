@@ -19,6 +19,17 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
 
+    # Seed para miembro por defecto al iniciar la app
+    ENABLE_DEFAULT_MEMBER_SEED = os.getenv('ENABLE_DEFAULT_MEMBER_SEED', 'true').lower() == 'true'
+    DEFAULT_ROLE_NAME = os.getenv('DEFAULT_ROLE_NAME', 'Administrador')
+    DEFAULT_ROLE_DESCRIPTION = os.getenv('DEFAULT_ROLE_DESCRIPTION', 'Rol creado automaticamente para el seed inicial')
+    DEFAULT_MEMBER_FIRST_NAME = os.getenv('DEFAULT_MEMBER_FIRST_NAME', 'Admin')
+    DEFAULT_MEMBER_LAST_NAME = os.getenv('DEFAULT_MEMBER_LAST_NAME', 'Salon')
+    DEFAULT_MEMBER_EMAIL = os.getenv('DEFAULT_MEMBER_EMAIL', 'admin@salon.local')
+    DEFAULT_MEMBER_PASSWORD = os.getenv('DEFAULT_MEMBER_PASSWORD', 'Admin123*')
+    DEFAULT_MEMBER_PHONE = os.getenv('DEFAULT_MEMBER_PHONE', '8888-8888')
+    DEFAULT_MEMBER_SPECIALTY = os.getenv('DEFAULT_MEMBER_SPECIALTY', 'Administracion')
+
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_ECHO = True

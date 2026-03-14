@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200">
+  <defs>
+    <linearGradient id="gradPink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4da6;stop-opacity:1"></stop>
+      <stop offset="100%" style="stop-color:#d81b78;stop-opacity:1"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- Circle background -->
+  <circle cx="100" cy="100" r="70" fill="url(#gradPink)"></circle>
+
+  <!-- Hair silhouette -->
+  <path d="M90 60 
+           C70 80, 70 120, 90 140 
+           C80 120, 95 100, 110 90 
+           C125 80, 130 65, 110 60 
+           C105 75, 95 70, 90 60 Z" fill="white"></path>
+
+  <!-- Text -->
+  <text x="200" y="95" font-family="Poppins, Arial, sans-serif" font-size="50" font-weight="bold" fill="#ff2d8d">
+        SHIR
+  </text>
+
+  <text x="200" y="145" font-family="Poppins, Arial, sans-serif" font-size="50" font-weight="bold" fill="#2f3247">
+        SALÓN
+  </text>
+
+</svg>

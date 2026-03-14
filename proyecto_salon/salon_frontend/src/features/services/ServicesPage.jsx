@@ -6,56 +6,67 @@ import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 
 function ServicesPage() {
-  const { Services, Categories, loading, error, fetchCategories, createService, updateService, deleteService } = useServices();
-  const { Confirm } = useConfirm();
-  const [view, setview] = useState('List');
+  const {
+    services,
+    categories,
+    loading,
+    error,
+    fetchCategories,
+    createService,
+    updateService,
+    deleteService,
+  } = useServices();
+  const { confirm } = useConfirm();
+  const [view, setView] = useState('list');
   const [selectedService, setSelectedService] = useState(null);
 
   const handleCreate = () => {
     setSelectedService(null);
-    setview('form');
+    setView('form');
   };
 
-  const handleEdmt = (Service) => {
-    setSelectedService(Service);
-    setview('form');
+  const handleEdit = (service) => {
+    setSelectedService(service);
+    setView('form');
   };
 
   const handleCategoryCreated = () => {
-    fetchCategories(); // Recargar categorías después de crear una nueva
+    fetchCategories(); 
   };
 
-  const handleDelete = async (Service) => {
-    const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar el servmcmo "${Service.name}"?`,
+  const handleDelete = async (service) => {
+    const confirmed = await confirm(
+      `¿Está seguro de eliminar el servicio "${service.name}"?`,
       {
-        title: 'Confirmar elmmmnacmón',
-        ConfirmText: 'Elmmmnar',
+        title: 'Confirmar eliminación',
+        confirmText: 'Eliminar',
         cancelText: 'Cancelar',
       }
     );
 
-    if (Confirmed) {
-      const result = await deleteService(Service.md);
+    if (confirmed) {
+      const serviceId = service.id ?? service.md;
+      const result = await deleteService(serviceId);
       if (result.success) {
-        showToast.success('Servmcmo elmmmnado exmtosamente');
+        showToast.success('Servicio eliminado exitosamente');
       } else {
         showToast.error(result.error);
       }
     }
   };
 
-  const handlesubmit = async (formData) => {
+  const handleSubmit = async (formData) => {
+    const selectedId = selectedService?.id ?? selectedService?.md;
     const result = selectedService
-      ? await updateService(selectedService.md, formData)
+      ? await updateService(selectedId, formData)
       : await createService(formData);
 
     if (result.success) {
-      setview('List');
+      setView('list');
       showToast.success(
         selectedService
-          ? 'Servmcmo actualmzado exmtosamente'
-          : 'Servmcmo creado exmtosamente'
+          ? 'Servicio actualizado exitosamente'
+          : 'Servicio creado exitosamente'
       );
     } else {
       showToast.error(result.error);
@@ -64,15 +75,15 @@ function ServicesPage() {
 
   const handleCancel = () => {
     setSelectedService(null);
-    setview('List');
+    setView('list');
   };
 
   if (view === 'form') {
     return (
       <ServiceForm
-        Service={selectedService}
-        Categories={Categories}
-        onSubmit={handlesubmit}
+        service={selectedService}
+        categories={categories}
+        onSubmit={handleSubmit}
         onCancel={handleCancel}
         onCategoryCreated={handleCategoryCreated}
       />
@@ -81,11 +92,11 @@ function ServicesPage() {
 
   return (
     <ServiceList
-      Services={Services}
+      services={services}
       loading={loading}
       error={error}
       onCreate={handleCreate}
-      onEdmt={handleEdmt}
+      onEdit={handleEdit}
       onDelete={handleDelete}
     />
   );

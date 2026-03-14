@@ -156,6 +156,16 @@
   border: 2px solid rgba(238, 43, 140, 0.2);
 }
 
+.sidebar-avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(238, 43, 140, 0.2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
 .sidebar-status-dot {
   position: absolute;
   bottom: 0;

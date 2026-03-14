@@ -4,14 +4,14 @@ import Sidebar from './Sidebar';
 
 function PageLayout() {
   const location = useLocation();
-  const isDashboard = location.pathname === '/dashboard' || location.pathname === '/';
+  const isLoginRoute = location.pathname === '/login';
 
   return (
     <div style={styles.container}>
       <Sidebar />
       <div style={{
         ...styles.content,
-        marginLeft: isDashboard ? 0 : '288px',
+        marginLeft: isLoginRoute ? 0 : '288px',
       }}>
         <Navbar />
         <main style={styles.main}>

@@ -6,16 +6,38 @@ import { ArrowLeft, User, Calendar, DollarSign, Plus, Trash2, Package, X, Check,
 import { appointmentsApi } from '../api';
 import { servicesApi } from '../../services/api';
 import { productsApi } from '../../products/api';
+import { useConfirm } from '../../../providers/ConfirmProvider';
 import { showToast } from '../../../providers/ToastProvider';
 
 function AppointmentServiceView() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { confirm } = useConfirm();
   
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
   const [availableServices, setAvailableServices] = useState([]);
   const [availableProducts, setAvailableProducts] = useState([]);
+
+  const getReservedQuantity = (productId) => {
+    if (!summary?.services || !productId) return 0;
+
+    return summary.services.reduce((total, service) => {
+      const serviceTotal = (service.products || []).reduce((subtotal, product) => {
+        if (parseInt(product.product_id) !== parseInt(productId)) return subtotal;
+        return subtotal + parseInt(product.quantity_product || 0);
+      }, 0);
+      return total + serviceTotal;
+    }, 0);
+  };
+
+  const getAvailableForAppointment = (productId) => {
+    const selectedProduct = availableProducts.find((product) => parseInt(product.id) === parseInt(productId));
+    if (!selectedProduct) return 0;
+
+    const reservedQuantity = getReservedQuantity(productId);
+    return Math.max(parseInt(selectedProduct.stock || 0) - reservedQuantity, 0);
+  };
   
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [selectedServicePrice, setSelectedServicePrice] = useState('');
@@ -52,7 +74,7 @@ function AppointmentServiceView() {
       }
     } catch (error) {
       console.error('Error cargando datos:', error);
-      showToast.error('Error al cargar la informaci�n de la cita');
+      showToast.error('Error al cargar la información de la cita');
     } finally {
       setLoading(false);
     }
@@ -96,7 +118,11 @@ function AppointmentServiceView() {
   };
   
   const handleRemoveService = async (appointmentServiceId, serviceName) => {
-    if (!confirm(`Eliminar el servicio "${serviceName}"?`)) return;
+    const confirmed = await confirm(`Eliminar el servicio "${serviceName}"?`, {
+      title: 'Confirmar eliminacion',
+      confirmText: 'Eliminar',
+    });
+    if (!confirmed) return;
     
     try {
       await appointmentsApi.removeService(id, appointmentServiceId);
@@ -117,7 +143,15 @@ function AppointmentServiceView() {
     
     const quantity = parseInt(selector.quantity);
     if (isNaN(quantity) || quantity < 1) {
-      showToast.error('La cantidad debe ser un n�mero v�lido mayor a 0');
+      showToast.error('La cantidad debe ser un número válido mayor a 0');
+      return;
+    }
+
+    const availableForAppointment = getAvailableForAppointment(selector.product_id);
+    if (quantity > availableForAppointment) {
+      showToast.error(
+        `Stock insuficiente. Disponible para esta cita: ${availableForAppointment}, solicitado: ${quantity}`
+      );
       return;
     }
     
@@ -156,14 +190,18 @@ function AppointmentServiceView() {
   };
   
   const handleRemoveProduct = async (appointmentServiceId, serviceProductId, productName) => {
-    if (!confirm(`Eliminar el producto "${productName}"?`)) return;
+    const confirmed = await confirm(`Eliminar el producto "${productName}"?`, {
+      title: 'Confirmar eliminacion',
+      confirmText: 'Eliminar',
+    });
+    if (!confirmed) return;
     
     try {
       await appointmentsApi.removeProductFromService(id, appointmentServiceId, serviceProductId);
       showToast.success('Producto eliminado correctamente');
       loadData();
     } catch (error) {
-      console.error('Error elimin ando producto:', error);
+      console.error('Error eliminando producto:', error);
       showToast.error('Error al eliminar producto');
     }
   };
@@ -206,7 +244,11 @@ function AppointmentServiceView() {
   };
   
   const handleRemoveAdditional = async (additionalId, concept) => {
-    if (!confirm(`Eliminar el adicional "${concept}"?`)) return;
+    const confirmed = await confirm(`Eliminar el adicional "${concept}"?`, {
+      title: 'Confirmar eliminacion',
+      confirmText: 'Eliminar',
+    });
+    if (!confirmed) return;
     
     try {
       await appointmentsApi.removeAdditional(id, additionalId);
@@ -219,12 +261,16 @@ function AppointmentServiceView() {
   };
   
   const handleCompleteAppointment = async () => {
-    if (!confirm('Marcar esta cita como completada?')) return;
+    const confirmed = await confirm('Marcar esta cita como completada?', {
+      title: 'Completar cita',
+      confirmText: 'Completar',
+    });
+    if (!confirmed) return;
     
     try {
       await appointmentsApi.update(id, { status: 'completed' });
       showToast.success('Cita completada correctamente');
-      navigate('/appointments');
+      navigate('/dashboard/appointments');
     } catch (error) {
       console.error('Error completando cita:', error);
       showToast.error('Error al completar la cita');
@@ -232,7 +278,7 @@ function AppointmentServiceView() {
   };
   
   const formatCurrency = (amount) => {
-    return `�${parseFloat(amount || 0).toFixed(2)}`;
+    return `₡${parseFloat(amount || 0).toFixed(2)}`;
  };
   
   const formatDate = (dateString) => {
@@ -263,7 +309,7 @@ function AppointmentServiceView() {
   if (!summary) {
     return (
       <div style={styles.loadingContainer}>
-        <div style={styles.errorText}>No se encontr� la cita</div>
+        <div style={styles.errorText}>No se encontró la cita</div>
       </div>
     );
   }
@@ -279,7 +325,7 @@ function AppointmentServiceView() {
             <ArrowLeft size={20} />
             Volver
           </Button>
-          <h1 style={styles.pageTitle}>Atenci�n de Cita</h1>
+          <h1 style={styles.pageTitle}>Atención de Cita</h1>
         </div>
         {!isCompleted && (
           <Button onClick={handleCompleteAppointment} variant="success">
@@ -289,7 +335,7 @@ function AppointmentServiceView() {
         )}
       </div>
       
-      {/* Alerta cuando la cita est� completada */}
+      
       {isCompleted && (
         <div style={styles.completedAlert}>
           <Check size={20} />
@@ -300,7 +346,7 @@ function AppointmentServiceView() {
         </div>
       )}
       
-      {/* Informaci�n de la Cita */}
+  
       <Card style={{ marginBottom: '1.5rem' }}>
         <div style={styles.infoGrid}>
           <div style={styles.infoItem}>
@@ -437,7 +483,7 @@ function AppointmentServiceView() {
                               <option value="">Seleccione un producto</option>
                               {availableProducts.map((product) => (
                                 <option key={product.id} value={product.id}>
-                                  {product.name}
+                                  {product.name} (stock: {product.stock})
                                 </option>
                               ))}
                             </select>
@@ -449,6 +495,7 @@ function AppointmentServiceView() {
                               onChange={(e) => updateProductSelector(service.id, 'quantity', e.target.value)}
                               style={styles.inputSmall}
                               placeholder="Cant."
+                              max={selector.product_id ? getAvailableForAppointment(selector.product_id) : undefined}
                             />
 
                             <Button
@@ -456,12 +503,18 @@ function AppointmentServiceView() {
                               variant="secondary"
                               size="sm"
                               onClick={() => handleAddProduct(service.id)}
-                              disabled={!selector.product_id}
+                              disabled={!selector.product_id || getAvailableForAppointment(selector.product_id) <= 0}
                             >
                               <Plus size={14} />
                             </Button>
                           </div>
                         )}
+
+                        {!isCompleted && selector.product_id ? (
+                          <p style={styles.stockHint}>
+                            Disponible para esta cita: {getAvailableForAppointment(selector.product_id)}
+                          </p>
+                        ) : null}
 
                         {/* Lista de productos agregados */}
                         {service.products && service.products.length > 0 ? (
@@ -538,7 +591,6 @@ function AppointmentServiceView() {
               </div>
             )}
             
-            {/* Formularios de adicionales en edici�n */}
             {additionalForm.length > 0 && (
               <div style={styles.itemsList}>
                 {additionalForm.map((additional) => (
@@ -678,13 +730,13 @@ const styles = {
   pageTitle: {
     fontSize: '1.875rem',
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#e2e8f0',
     margin: 0,
   },
   completedAlert: {
-    backgroundColor: '#dbeafe',
-    border: '1px solid #93c5fd',
-    color: '#1e40af',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    border: '1px solid rgba(16, 185, 129, 0.35)',
+    color: '#d1fae5',
     padding: '1rem',
     borderRadius: '0.5rem',
     display: 'flex',
@@ -698,6 +750,7 @@ const styles = {
   },
   completedText: {
     fontSize: '0.875rem',
+    color: '#a7f3d0',
     margin: 0,
   },
   infoGrid: {
@@ -712,24 +765,24 @@ const styles = {
   },
   infoIcon: {
     padding: '0.75rem',
-    backgroundColor: '#e0e7ff',
+    backgroundColor: 'rgba(238, 43, 140, 0.14)',
     borderRadius: '0.5rem',
-    color: '#4f46e5',
+    color: '#f9a8d4',
   },
   infoLabel: {
     fontSize: '0.875rem',
-    color: '#6b7280',
+    color: '#94a3b8',
     margin: 0,
   },
   infoValue: {
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#e2e8f0',
     fontSize: '1rem',
     margin: '0.25rem 0 0 0',
   },
   infoSecondary: {
     fontSize: '0.875rem',
-    color: '#9ca3af',
+    color: '#94a3b8',
     margin: '0.25rem 0 0 0',
   },
   mainGrid: {
@@ -749,7 +802,7 @@ const styles = {
   sectionTitle: {
     fontSize: '1.25rem',
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#e2e8f0',
     marginBottom: '1rem',
     display: 'flex',
     alignItems: 'center',
@@ -763,9 +816,9 @@ const styles = {
   addSection: {
     marginBottom: '1rem',
     padding: '1rem',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
     borderRadius: '8px',
-    border: '2px dashed #dee2e6',
+    border: '2px dashed rgba(71, 85, 105, 0.6)',
   },
   addRow: {
     display: 'flex',
@@ -775,39 +828,46 @@ const styles = {
   select: {
     padding: '0.6rem',
     fontSize: '0.95rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '6px',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
     cursor: 'pointer',
   },
   selectSmall: {
     padding: '0.4rem',
     fontSize: '0.85rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '4px',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
     cursor: 'pointer',
     flex: 2,
   },
   input: {
     padding: '0.6rem',
     fontSize: '0.95rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '6px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
   },
   inputSmall: {
     padding: '0.4rem',
     fontSize: '0.85rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
     borderRadius: '4px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
     width: '70px',
     textAlign: 'center',
   },
   priceInput: {
     padding: '0.4rem 0.6rem',
     fontSize: '0.9rem',
-    border: '1px solid #ddd',
+    border: '1px solid rgba(16, 185, 129, 0.55)',
     borderRadius: '4px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     width: '100px',
     textAlign: 'right',
     fontWeight: '600',
@@ -816,17 +876,22 @@ const styles = {
   emptyState: {
     padding: '2rem',
     textAlign: 'center',
-    color: '#9ca3af',
-    backgroundColor: '#f9fafb',
+    color: '#94a3b8',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
     borderRadius: '8px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(71, 85, 105, 0.35)',
   },
   emptyText: {
     fontSize: '0.875rem',
-    color: '#9ca3af',
+    color: '#94a3b8',
     fontStyle: 'italic',
     textAlign: 'center',
     padding: '0.5rem',
+  },
+  stockHint: {
+    fontSize: '0.8rem',
+    color: '#94a3b8',
+    margin: '0.5rem 0 0 0',
   },
   itemsList: {
     display: 'flex',
@@ -834,10 +899,10 @@ const styles = {
     gap: '1rem',
   },
   serviceCard: {
-    border: '2px solid #e5e7eb',
+    border: '1px solid rgba(71, 85, 105, 0.45)',
     borderRadius: '8px',
     padding: '1rem',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
   },
   serviceHeader: {
     display: 'flex',
@@ -845,7 +910,7 @@ const styles = {
     alignItems: 'center',
     marginBottom: '1rem',
     paddingBottom: '0.75rem',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid rgba(71, 85, 105, 0.4)',
   },
   serviceInfo: {
     display: 'flex',
@@ -863,7 +928,7 @@ const styles = {
   serviceName: {
     fontSize: '1rem',
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#e2e8f0',
   },
   serviceActions: {
     display: 'flex',
@@ -873,7 +938,7 @@ const styles = {
   productsSection: {
     marginTop: '0.75rem',
     padding: '0.75rem',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     borderRadius: '6px',
   },
   productsHeader: {
@@ -882,7 +947,7 @@ const styles = {
   labelSmall: {
     fontSize: '0.85rem',
     fontWeight: '500',
-    color: '#6b7280',
+    color: '#94a3b8',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
@@ -899,24 +964,24 @@ const styles = {
     gap: '0.5rem',
     marginTop: '0.75rem',
     paddingTop: '0.75rem',
-    borderTop: '1px solid #e5e7eb',
+    borderTop: '1px solid rgba(71, 85, 105, 0.4)',
   },
   productItem: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '0.5rem',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
     borderRadius: '4px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(71, 85, 105, 0.45)',
   },
   productName: {
     fontSize: '0.9rem',
-    color: '#374151',
+    color: '#e2e8f0',
     fontWeight: '500',
   },
   productQuantity: {
-    color: '#9ca3af',
+    color: '#94a3b8',
     fontWeight: 'normal',
   },
   additionalCard: {
@@ -924,9 +989,9 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '0.75rem',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     borderRadius: '6px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid rgba(71, 85, 105, 0.4)',
   },
   additionalInfo: {
     display: 'flex',
@@ -936,7 +1001,7 @@ const styles = {
   additionalConcept: {
     fontSize: '1rem',
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#e2e8f0',
   },
   additionalPrice: {
     fontSize: '1.125rem',
@@ -948,18 +1013,18 @@ const styles = {
     gap: '0.5rem',
     alignItems: 'center',
     padding: '0.75rem',
-    backgroundColor: '#fff7ed',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
     borderRadius: '6px',
-    border: '2px dashed #fb923c',
+    border: '2px dashed rgba(238, 43, 140, 0.45)',
   },
   summaryCard: {
-    background: 'linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%)',
-    border: '2px solid #10b981',
+    background: 'linear-gradient(160deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)',
+    border: '1px solid rgba(71, 85, 105, 0.45)',
   },
   summaryTitle: {
     fontSize: '1.25rem',
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#e2e8f0',
     marginBottom: '1rem',
   },
   summaryContent: {
@@ -971,18 +1036,18 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '0.75rem',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     borderRadius: '6px',
     fontSize: '1rem',
-    color: '#374151',
+    color: '#cbd5e1',
   },
   summaryAmount: {
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#e2e8f0',
   },
   divider: {
     height: '2px',
-    backgroundColor: '#e5e7eb',
+    backgroundColor: 'rgba(71, 85, 105, 0.5)',
     margin: '0.5rem 0',
   },
   totalRow: {
@@ -990,7 +1055,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '1rem',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    background: 'linear-gradient(135deg, #ee2b8c 0%, #be185d 100%)',
     borderRadius: '8px',
   },
   totalLabel: {
@@ -1009,12 +1074,12 @@ const styles = {
   statusSection: {
     marginTop: '1.5rem',
     paddingTop: '1rem',
-    borderTop: '2px solid #e5e7eb',
+    borderTop: '1px solid rgba(71, 85, 105, 0.45)',
   },
   statusLabel: {
     fontSize: '0.875rem',
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#94a3b8',
     marginBottom: '0.5rem',
   },
   statusBadge: {

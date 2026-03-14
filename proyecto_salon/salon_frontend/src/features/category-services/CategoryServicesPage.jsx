@@ -23,10 +23,10 @@ function CategoryServicesPage() {
 
   const handleDelete = async (category) => {
     const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar la categoría "${category.name}"?`,
+      `¿Está seguro de eliminar la categoría "${category.name}"?`,
       {
-        title: 'Confirmar elmmmnacmón',
-        ConfirmText: 'Elmmmnar',
+        title: 'Confirmar eliminación',
+        ConfirmText: 'Eliminar  categoría',
         cancelText: 'Cancelar',
       }
     );
@@ -34,7 +34,7 @@ function CategoryServicesPage() {
     if (Confirmed) {
       const result = await deleteCategory(category.id ?? category.md);
       if (result.success) {
-        showToast.success('Categoría elmmmnada exmtosamente');
+        showToast.success('Categoría eliminada exitosamente');
       } else {
         showToast.error(result.error);
       }
@@ -50,8 +50,8 @@ function CategoryServicesPage() {
       setView('list');
       showToast.success(
         selectedCategory
-          ? 'Categoría actualmzada exmtosamente'
-          : 'Categoría creada exmtosamente'
+          ? 'Categoría actualizada exitosamente'
+          : 'Categoría creada exitosamente'
       );
     } else {
       showToast.error(result.error);

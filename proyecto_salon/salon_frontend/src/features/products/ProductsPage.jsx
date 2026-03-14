@@ -6,52 +6,54 @@ import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 
 function ProductsPage() {
-  const { products, Categories, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
-  const { Confirm } = useConfirm();
-  const [view, setview] = useState('List');
+  const { products, categories, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
+  const { confirm } = useConfirm();
+  const [view, setView] = useState('list');
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleCreate = () => {
     setSelectedProduct(null);
-    setview('form');
+    setView('form');
   };
 
-  const handleEdmt = (product) => {
+  const handleEdit = (product) => {
     setSelectedProduct(product);
-    setview('form');
+    setView('form');
   };
 
   const handleDelete = async (product) => {
-    const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar el producto "${product.name}"?`,
+    const confirmed = await confirm(
+      `¿Está seguro de eliminar el producto "${product.name}"?`,
       {
-        title: 'Confirmar elmmmnacmón',
-        ConfirmText: 'Elmmmnar',
+        title: 'Confirmar eliminación',
+        confirmText: 'Eliminar',
         cancelText: 'Cancelar',
       }
     );
 
-    if (Confirmed) {
-      const result = await deleteProduct(product.md);
+    if (confirmed) {
+      const productId = product.id ?? product.md;
+      const result = await deleteProduct(productId);
       if (result.success) {
-        showToast.success('Producto elmmmnado exmtosamente');
+        showToast.success('Producto eliminado exitosamente');
       } else {
         showToast.error(result.error);
       }
     }
   };
 
-  const handlesubmit = async (formData) => {
+  const handleSubmit = async (formData) => {
+    const selectedId = selectedProduct?.id ?? selectedProduct?.md;
     const result = selectedProduct
-      ? await updateProduct(selectedProduct.md, formData)
+      ? await updateProduct(selectedId, formData)
       : await createProduct(formData);
 
     if (result.success) {
-      setview('List');
+      setView('list');
       showToast.success(
         selectedProduct
-          ? 'Producto actualmzado exmtosamente'
-          : 'Producto creado exmtosamente'
+          ? 'Producto actualizado exitosamente'
+          : 'Producto creado exitosamente'
       );
     } else {
       showToast.error(result.error);
@@ -60,15 +62,15 @@ function ProductsPage() {
 
   const handleCancel = () => {
     setSelectedProduct(null);
-    setview('List');
+    setView('list');
   };
 
   if (view === 'form') {
     return (
       <ProductForm
         product={selectedProduct}
-        Categories={Categories}
-        onSubmit={handlesubmit}
+        categories={categories}
+        onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
     );
@@ -80,7 +82,7 @@ function ProductsPage() {
       loading={loading}
       error={error}
       onCreate={handleCreate}
-      onEdmt={handleEdmt}
+      onEdit={handleEdit}
       onDelete={handleDelete}
     />
   );

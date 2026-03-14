@@ -4,10 +4,11 @@ import Textarea from '../../../components/forms/Textarea';
 import FormButtons from '../../../components/forms/FormButtons';
 import { Plus } from 'lucide-react';
 import EntityFormView from '../../../components/layout/EntityFormView';
+import Modal from '../../../components/common/Modal';
 import { useServiceForm } from '../logic/ServiceForm.logic';
 import '../ServiceForm.css';
 
-function ServiceForm({ service, categories, onSubmit, onCancel, onCategoryCreated }) {
+function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryCreated }) {
   const {
     formData,
     showCategoryModal,
@@ -119,46 +120,46 @@ function ServiceForm({ service, categories, onSubmit, onCancel, onCategoryCreate
       </EntityFormView>
 
       {/* Modal para crear categoría */}
-      {showCategoryModal && (
-        <div className="service-form-modal-overlay">
-          <div className="service-form-modal">
-            <h2 className="service-form-modal-title">Nueva Categoría</h2>
-            <form onSubmit={handleCreateCategory} className="service-form-modal-form">
-              <Input
-                label="Nombre"
-                name="name"
-                value={newCategory.name}
-                onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
-                required
-                placeholder="Nombre de la categoría"
-              />
-              <Textarea
-                label="Descripción"
-                name="description"
-                value={newCategory.description}
-                onChange={(e) => setNewCategory(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Descripción de la categoría"
-                rows={3}
-              />
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setShowCategoryModal(false);
-                    setNewCategory({ name: '', description: '' });
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  Crear Categoría
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showCategoryModal}
+        onClose={() => {
+          setShowCategoryModal(false);
+          setNewCategory({ name: '', description: '' });
+        }}
+        title="Nueva Categoria"
+      >
+        <form onSubmit={handleCreateCategory} className="service-form-modal-form">
+          <Input
+            label="Nombre"
+            name="name"
+            value={newCategory.name}
+            onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
+            required
+            placeholder="Nombre de la categoria"
+          />
+          <Textarea
+            label="Descripcion"
+            name="description"
+            value={newCategory.description}
+            onChange={(e) => setNewCategory((prev) => ({ ...prev, description: e.target.value }))}
+            placeholder="Descripcion de la categoria"
+            rows={3}
+          />
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowCategoryModal(false);
+                setNewCategory({ name: '', description: '' });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">Crear Categoria</Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </>
   );
 }

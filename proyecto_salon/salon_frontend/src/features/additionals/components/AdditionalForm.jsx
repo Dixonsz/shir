@@ -1,9 +1,7 @@
-import Card from '../../../components/common/Card';
-import Button from '../../../components/common/Button';
 import Input from '../../../components/forms/Input';
 import Textarea from '../../../components/forms/Textarea';
 import FormButtons from '../../../components/forms/FormButtons';
-import { ArrowLeft } from 'lucide-react';
+import EntityFormView from '../../../components/layout/EntityFormView';
 import { useAdditionalForm } from '../logic/AdditionalForm.logic';
 import '../AdditionalForm.css';
 
@@ -11,19 +9,7 @@ function AdditionalForm({ additional, onSubmit, onCancel }) {
   const { formData, handleChange, handleSubmit } = useAdditionalForm(additional);
 
   return (
-    <div>
-      <div className="additional-form-header">
-        <Button onClick={onCancel} variant="secondary">
-          <ArrowLeft size={20} />
-          Volver
-        </Button>
-        <h1 className="additional-form-title">
-          {additional ? 'Editar Adicional' : 'Nuevo Adicional'}
-        </h1>
-        <div className="additional-form-spacer"></div>
-      </div>
-
-      <Card>
+    <EntityFormView title={additional ? 'Editar Adicional' : 'Nuevo Adicional'} onBack={onCancel}>
         <form onSubmit={(e) => handleSubmit(e, onSubmit)} className="additional-form">
           <Textarea
             label="Concepto"
@@ -62,8 +48,7 @@ function AdditionalForm({ additional, onSubmit, onCancel }) {
             submitLabel={additional ? 'Actualizar' : 'Crear'}
           />
         </form>
-      </Card>
-    </div>
+    </EntityFormView>
   );
 }
 

@@ -8,10 +8,11 @@ def create_product():
     result = ProductService.create_product(request.json)
 
     if not result["success"]:
+        status_code = 409 if result["error"] == "Nombre de producto ya registrado." else 400
         return jsonify(
             success=False,
             message=result["error"]
-        ), 409
+        ), status_code
 
     return jsonify(
         success=True,
@@ -53,10 +54,11 @@ def update_product(product_id):
     result = ProductService.update_product(product_id, request.json)
     
     if not result["success"]:
+        status_code = 404 if result["error"] == "Producto no encontrado." else 400
         return jsonify(
             success=False,
             message=result["error"]
-        ), 404
+        ), status_code
     
     return jsonify(
         success=True,

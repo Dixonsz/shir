@@ -12,6 +12,11 @@ export const clientsApi = {
     return extractData(response);
   },
 
+  getByNumberId: async (numberId) => {
+    const response = await apiClient.get(`/clients/number_id/${numberId}`);
+    return extractData(response);
+  },
+
   create: async (clientData) => {
     const response = await apiClient.post('/clients', clientData);
     return extractData(response);

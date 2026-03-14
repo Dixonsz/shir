@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { APPOINTMENT_STATUS_CONFIG, getAppointmentStatusConfig } from '../utils/appointmentStatus';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../CalendarView.css';
 
@@ -18,24 +19,7 @@ const localizer = dateFnsLocalizer({
 });
 
 const eventStyleGetter = (event) => {
-  let backgroundColor = '#3174ad';
-  
-  switch (event.status) {
-    case 'scheduled':
-      backgroundColor = '#ffe600'; // azul
-      break;
-    case 'confirmed':
-      backgroundColor = '#10b981'; // verde
-      break;
-    case 'completed':
-      backgroundColor = '#6366f1'; // índigo
-      break;
-    case 'cancelled':
-      backgroundColor = '#ef4444'; // rojo
-      break;
-    default:
-      backgroundColor = '#6b7280'; // gris
-  }
+  const backgroundColor = getAppointmentStatusConfig(event.status).color;
 
   return {
     style: {
@@ -85,7 +69,7 @@ function CalendarView({ appointments, clients, members, onSelectEvent, onSelectS
         end: new Date(scheduledDate.getTime() + 60 * 60 * 1000), 
         resource: appointment,
         status: appointment.status,
-        memberName: member ? `${member.name} ${member.last_name}` : 'Sin asignar',
+        memberName: member ? `${member.first_name} ${member.last_name}` : 'Sin asignar',
       };
     });
   }, [appointments, clients, members]);
@@ -114,22 +98,12 @@ function CalendarView({ appointments, clients, members, onSelectEvent, onSelectS
     <div className="calendar-container">
       <div className="calendar-header">
         <div className="calendar-legend">
-          <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: '#ffe600' }}></span>
-            <span>Programada</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: '#10b981' }}></span>
-            <span>Confirmada</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: '#6366f1' }}></span>
-            <span>Completada</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: '#ef4444' }}></span>
-            <span>Cancelada</span>
-          </div>
+          {Object.entries(APPOINTMENT_STATUS_CONFIG).map(([status, config]) => (
+            <div className="legend-item" key={status}>
+              <span className="legend-color" style={{ backgroundColor: config.color }}></span>
+              <span>{config.label}</span>
+            </div>
+          ))}
         </div>
       </div>
       
@@ -156,7 +130,7 @@ function CalendarView({ appointments, clients, members, onSelectEvent, onSelectS
         min={new Date(1970, 0, 1, 9, 0, 0)}
         max={new Date(1970, 0, 1, 18, 30, 0)}
         tooltipAccessor={(event) => {
-          return `${event.title} - ${event.memberName}\nEstado: ${event.status}`;
+          return `${event.title} - ${event.memberName}\nEstado: ${getAppointmentStatusConfig(event.status).label}`;
         }}
       />
     </div>

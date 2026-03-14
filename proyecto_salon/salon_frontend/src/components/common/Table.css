@@ -1,3 +1,56 @@
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.table-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.table-filter-input,
+.table-filter-select,
+.table-filter-date {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(71, 85, 105, 0.55);
+  border-radius: 10px;
+  color: #cbd5e1;
+  padding: 0.55rem 0.75rem;
+  min-height: 38px;
+}
+
+.table-filter-input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.table-filter-select,
+.table-filter-date {
+  min-width: 150px;
+}
+
+.table-filter-input::placeholder {
+  color: #94a3b8;
+}
+
+.table-filter-clear {
+  background: transparent;
+  color: #fda4af;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  border-radius: 10px;
+  padding: 0.55rem 0.85rem;
+  min-height: 38px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.table-filter-clear:hover {
+  background: rgba(244, 63, 94, 0.12);
+}
+
 .table-container {
   overflow-x: auto;
   border: 1px solid rgba(71, 85, 105, 0.3);
@@ -74,4 +127,13 @@
 .table-delete-icon-btn:hover {
   background-color: rgba(239, 68, 68, 0.2);
   color: #f87171;
+}
+
+@media (max-width: 760px) {
+  .table-filter-input,
+  .table-filter-select,
+  .table-filter-date,
+  .table-filter-clear {
+    width: 100%;
+  }
 }

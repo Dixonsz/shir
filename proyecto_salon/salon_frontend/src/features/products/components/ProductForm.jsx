@@ -5,7 +5,7 @@ import EntityFormView from '../../../components/layout/EntityFormView';
 import { useProductForm } from '../logic/ProductForm.logic';
 import '../ProductForm.css';
 
-function ProductForm({ product, categories, onSubmit, onCancel }) {
+function ProductForm({ product, categories = [], onSubmit, onCancel }) {
   const { formData, handleChange } = useProductForm(product);
 
   const handleSubmit = (e) => {

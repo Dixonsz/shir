@@ -5,6 +5,7 @@ import Textarea from '../../../components/forms/Textarea';
 import Select from '../../../components/forms/Select';
 import FormButtons from '../../../components/forms/FormButtons';
 import { Upload, X } from 'lucide-react';
+import '../MarketingForm.css';
 
 const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -109,13 +110,9 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <h2 style={styles.title}>
-        {marketing ? 'Editar Campaña' : 'Nueva Campaña de Marketing'}
-      </h2>
-      
+    <form onSubmit={handleSubmit} className="marketing-form">
       {error && (
-        <div style={styles.error}>
+        <div className="marketing-form-error">
           {error}
         </div>
       )}
@@ -133,11 +130,11 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
       <Textarea
         md="description"
         name="description"
-        label="Descrmpcmón"
+        label="Descripción"
         value={formData.description}
         onChange={handleChange}
         rows={4}
-        placeholder="Descrmbe la campaña..."
+        placeholder="Describe la campaña..."
       />
 
       <Select
@@ -155,7 +152,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
         ))}
       </Select>
 
-      <div style={styles.formRow}>
+      <div className="marketing-form-row">
         <Input
           md="start_date"
           name="start_date"
@@ -175,35 +172,35 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
         />
       </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label}>Imagen de la Campaña</label>
+      <div className="marketing-form-group">
+        <label className="marketing-form-label">Imagen de la Campaña</label>
         
         {imagePreview ? (
-          <div style={styles.imagePreview}>
-            <img src={imagePreview} alt="Preview" style={styles.previewImage} />
+          <div className="marketing-form-image-preview">
+            <img src={imagePreview} alt="Preview" className="marketing-form-preview-image" />
             <button 
               type="button" 
               onClick={handleRemoveImage}
-              style={styles.removeButton}
+              className="marketing-form-remove-button"
             >
               <X size={16} />
               Quitar imagen
             </button>
           </div>
         ) : (
-          <div style={styles.imageUpload}>
+          <div className="marketing-form-image-upload">
             <input
               type="file"
               id="image"
               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
               onChange={handleImageChange}
-              style={styles.fileInput}
+              className="marketing-form-file-input"
             />
-            <label htmlFor="image" style={styles.uploadLabel}>
+            <label htmlFor="image" className="marketing-form-upload-label">
               <Upload size={24} />
               <span>Seleccionar imagen</span>
             </label>
-            <p style={styles.helpText}>
+            <p className="marketing-form-help-text">
               JPG, PNG, GIF o WEBP. Maximo 5MB
             </p>
           </div>
@@ -217,111 +214,6 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
       />
     </form>
   );
-};
-
-const styles = {
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#e2e8f0',
-    marginBottom: '0.5rem',
-  },
-  error: {
-    padding: '1rem',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '8px',
-    color: '#ef4444',
-    fontSize: '0.875rem',
-  },
-  formRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '1rem',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  label: {
-    display: 'block',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#94a3b8',
-    marginBottom: '0.5rem',
-  },
-  imagePreview: {
-    position: 'relative',
-    width: '100%',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-    border: '2px solid rgba(71, 85, 105, 0.3)',
-  },
-  previewImage: {
-    width: '100%',
-    height: 'auto',
-    maxHeight: '300px',
-    objectFit: 'cover',
-    display: 'block',
-  },
-  removeButton: {
-    position: 'absolute',
-    top: '1rem',
-    right: '1rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    backgroundColor: 'rgba(239, 68, 68, 0.9)',
-    color: 'white',
-    border: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    transition: 'all 0.2s',
-  },
-  imageUpload: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '2rem',
-    border: '2px dashed rgba(71, 85, 105, 0.5)',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(15, 23, 42, 0.3)',
-    transition: 'all 0.2s',
-  },
-  fileInput: {
-    display: 'none',
-  },
-  uploadLabel: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '1rem 2rem',
-    backgroundColor: 'rgba(238, 43, 140, 0.1)',
-    color: '#ee2b8c',
-    border: '2px solid rgba(238, 43, 140, 0.3)',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    fontSize: '1rem',
-    fontWeight: '600',
-    transition: 'all 0.2s',
-  },
-  helpText: {
-    fontSize: '0.75rem',
-    color: '#64748b',
-    margin: 0,
-  },
 };
 
 export default MarketingForm;

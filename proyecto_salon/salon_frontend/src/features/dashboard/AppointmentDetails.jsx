@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar, Clock, User, UserCircle, Edit, Trash2 } from 'lucide-react';
+import { getAppointmentStatusConfig } from '../appointments/utils/appointmentStatus';
 
 function AppointmentDetails({ appointment, clients, members, onEdit, onDelete, onClose }) {
   const client = clients.find((c) => c.id === appointment?.client_id);
@@ -9,36 +10,7 @@ function AppointmentDetails({ appointment, clients, members, onEdit, onDelete, o
   if (!appointment) return null;
 
   const scheduledDate = new Date(appointment.scheduled_date);
-  
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'scheduled':
-        return '#3b82f6';
-      case 'confirmed':
-        return '#10b981';
-      case 'completed':
-        return '#6366f1';
-      case 'cancelled':
-        return '#ef4444';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'scheduled':
-        return 'Programada';
-      case 'confirmed':
-        return 'Confirmada';
-      case 'completed':
-        return 'Completada';
-      case 'cancelled':
-        return 'Cancelada';
-      default:
-        return status;
-    }
-  };
+  const statusConfig = getAppointmentStatusConfig(appointment.status);
 
   return (
     <div style={styles.container}>
@@ -47,10 +19,10 @@ function AppointmentDetails({ appointment, clients, members, onEdit, onDelete, o
           <div
             style={{
               ...styles.statusDot,
-              backgroundColor: getStatusColor(appointment.status),
+              backgroundColor: statusConfig.color,
             }}
           />
-          <span style={styles.statusText}>{getStatusLabel(appointment.status)}</span>
+          <span style={styles.statusText}>{statusConfig.label}</span>
         </div>
 
         <div style={styles.section}>

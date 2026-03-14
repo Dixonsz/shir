@@ -5,9 +5,6 @@ import { API_BASE_URL } from '../utils/constants';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 apiClient.interceptors.request.use(
@@ -18,7 +15,10 @@ apiClient.interceptors.request.use(
     }
     
     if (config.data instanceof FormData) {
-      delete config.headers['Content-Type'];
+      if (config.headers) {
+        delete config.headers['Content-Type'];
+        delete config.headers['content-type'];
+      }
     }
     
     return config;

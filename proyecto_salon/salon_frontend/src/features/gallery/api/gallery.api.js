@@ -23,11 +23,8 @@ export const galleryApi = {
   },
 
   uploadImage: async (formData) => {
-    const response = await apiClient.post('/gallery/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // Axios agrega el boundary multipart automaticamente en navegador.
+    const response = await apiClient.post('/gallery/upload', formData);
     return extractData(response);
   },
 

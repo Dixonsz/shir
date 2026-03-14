@@ -26,6 +26,7 @@ export function useGallery() {
       setGalleryItems((prev) => [...(Array.isArray(prev) ? prev : []), newItem]);
       return { success: true, data: newItem };
     } catch (err) {
+      console.error('Error upload galeria:', err.response?.data || err.message);
       return {
         success: false,
         error: err.response?.data?.message || "Error al subir imagen",

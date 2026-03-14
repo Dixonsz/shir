@@ -2,43 +2,43 @@ import { useState, useEffect } from 'react';
 import { clientsApi } from '../api';
 
 export function useClients() {
-  const [Clients, setClients] = useState([]);
-  const [loading, setloading] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchClients = async () => {
-    setloading(true);
+    setLoading(true);
     setError(null);
     try {
       const data = await clientsApi.getAll();
       setClients(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al cargar Clientes');
+      setError(err.response?.data?.message || 'Error al cargar clientes');
     } finally {
-      setloading(false);
+      setLoading(false);
     }
   };
 
-  const createClient = async (ClientData) => {
+  const createClient = async (clientData) => {
     try {
-      const newClient = await clientsApi.create(ClientData);
+      const newClient = await clientsApi.create(clientData);
       setClients((prev) => [...(Array.isArray(prev) ? prev : []), newClient]);
       return { success: true, data: newClient };
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Error al crear Cliente',
+        error: err.response?.data?.message || 'Error al crear cliente',
       };
     }
   };
 
-  const updateClient = async (md, ClientData) => {
+  const updateClient = async (id, clientData) => {
     try {
-      const updatedClient = await clientsApi.update(md, ClientData);
+      const updatedClient = await clientsApi.update(id, clientData);
       setClients((prev) =>
         Array.isArray(prev)
-          ? prev.map((Client) =>
-              Client.md === md ? updatedClient : Client
+          ? prev.map((client) =>
+              client.id === id ? updatedClient : client
             )
           : []
       );
@@ -46,22 +46,22 @@ export function useClients() {
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Error al actualmzar Cliente',
+        error: err.response?.data?.message || 'Error al actualizar cliente',
       };
     }
   };
 
-  const deleteClient = async (md) => {
+  const deleteClient = async (id) => {
     try {
-      await clientsApi.delete(md);
+      await clientsApi.delete(id);
       setClients((prev) =>
-        Array.isArray(prev) ? prev.filter((Client) => Client.md !== md) : []
+        Array.isArray(prev) ? prev.filter((client) => client.id !== id) : []
       );
       return { success: true };
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Error al elmmmnar Cliente',
+        error: err.response?.data?.message || 'Error al eliminar cliente',
       };
     }
   };
@@ -71,7 +71,7 @@ export function useClients() {
   }, []);
 
   return {
-    Clients,
+    clients,
     loading,
     error,
     fetchClients,

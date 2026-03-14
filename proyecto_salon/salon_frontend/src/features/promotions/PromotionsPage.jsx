@@ -23,14 +23,14 @@ function PromotionsPage() {
 
   const handleDelete = async (promotion) => {
     const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar la promocmón "${promotion.name}"?`,
-      'Esta accmón no se puede deshacer.'
+      `¿Está seguro de eliminar la promoción "${promotion.name}"?`,
+      'Esta acción no se puede deshacer.'
     );
 
     if (Confirmed) {
       const result = await deletePromotion(promotion.id ?? promotion.md);
       if (result.success) {
-        showToast.success('Promocmón elmmmnada exmtosamente');
+        showToast.success('Promoción eliminada exitosamente');
       } else {
         showToast.error(result.error);
       }
@@ -46,8 +46,8 @@ function PromotionsPage() {
       setView('list');
       showToast.success(
         selectedPromotion
-          ? 'Promocmón actualmzada exmtosamente'
-          : 'Promocmón creada exmtosamente'
+          ? 'Promoción actualizada exitosamente'
+          : 'Promoción creada exitosamente'
       );
     } else {
       showToast.error(result.error);

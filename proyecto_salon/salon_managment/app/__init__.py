@@ -36,9 +36,13 @@ def create_app(config_name=None):
     with app.app_context():
         # Import package so SQLAlchemy registers models metadata.
         from app import models  # noqa: F401
+        from app.core.seeding import seed_default_member
 
         from app.routes import register_routes
         register_routes(app)
+
+        # Seed inicial idempotente para rol y miembro por defecto.
+        seed_default_member()
   
     @app.route('/health')
     def health():

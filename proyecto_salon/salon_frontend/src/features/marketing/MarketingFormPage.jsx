@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMarketing } from './hooks';
 import MarketingForm from './components/MarketingForm';
-import Card from '../../components/common/Card';
+import EntityFormView from '../../components/layout/EntityFormView';
 import { showToast } from '../../providers/ToastProvider';
-import { ArrowLeft } from 'lucide-react';
 
 function MarketingFormPage() {
   const { id } = useParams();
@@ -42,44 +41,18 @@ function MarketingFormPage() {
   };
 
   return (
-    <div>
-      <button onClick={handleCancel} style={styles.backButton}>
-        <ArrowLeft size={20} />
-        Volver a Campañas
-      </button>
-
-      <Card style={styles.card}>
+    <EntityFormView
+      title={isEditing ? 'Editar Campaña' : 'Nueva Campaña de Marketing'}
+      onBack={handleCancel}
+    >
         <MarketingForm
           marketing={selectedCampaign}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />
-      </Card>
-    </div>
+    </EntityFormView>
   );
 }
-
-const styles = {
-  backButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    padding: '0.75rem 1rem',
-    backgroundColor: 'transparent',
-    color: '#94a3b8',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    marginBottom: '1.5rem',
-    transition: 'all 0.2s',
-  },
-  card: {
-    maxWidth: '800px',
-    margin: '0 auto',
-  },
-};
 
 export default MarketingFormPage;
 

@@ -15,9 +15,17 @@ import {
   LogOut,
   Sparkles
 } from 'lucide-react';
+import { useAuth } from '../../features/auth/hooks';
 import './Sidebar.css';
 
 function Sidebar() {
+  const { user, logout } = useAuth();
+
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim();
+  const displayName = fullName || user?.name || user?.email || 'Usuario';
+  const displayRole = user?.role || 'Miembro';
+  const avatarText = (displayName?.[0] || 'U').toUpperCase();
+
   const mainMenuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/dashboard/appointments', label: 'Citas', icon: Calendar },
@@ -27,12 +35,12 @@ function Sidebar() {
   ];
 
   const generalMenuItems = [
-    { path: '/dashboard/category-services', label: 'CategorÃ­as de Servicios', icon: Layers },
-    { path: '/dashboard/category-products', label: 'CategorÃ­as de Productos', icon: Layers },
+    { path: '/dashboard/category-services', label: 'Categoría de Servicios', icon: Layers },
+    { path: '/dashboard/category-products', label: 'Categorías de Productos', icon: Layers },
     { path: '/dashboard/products', label: 'Productos', icon: Store },
     { path: '/dashboard/promotions', label: 'Promociones', icon: Tag },
     { path: '/dashboard/marketing', label: 'Marketing', icon: Megaphone },
-    { path: '/dashboard/gallery', label: 'GalerÃ­a', icon: Image },
+    { path: '/dashboard/gallery', label: 'Galería', icon: Image },
     { path: '/dashboard/roles', label: 'Roles', icon: UserCog },
   ];
 
@@ -95,7 +103,7 @@ function Sidebar() {
             }
           >
             <Settings size={20} className="sidebar-nav-icon" />
-            <span className="sidebar-nav-text">ConfiguraciÃ³n</span>
+            <span className="sidebar-nav-text">Configuración</span>
           </NavLink>
         </div>
       </nav>
@@ -104,15 +112,19 @@ function Sidebar() {
         <div className="sidebar-user-card">
           <div className="sidebar-user-info">
             <div className="sidebar-avatar-container">
-              
+              {user?.photo_url ? (
+                <img src={user.photo_url} alt={displayName} className="sidebar-avatar" />
+              ) : (
+                <div className="sidebar-avatar sidebar-avatar-fallback">{avatarText}</div>
+              )}
               <div className="sidebar-status-dot"></div>
             </div>
             <div>
-              <p className="sidebar-user-name">Admin</p>
-              <p className="sidebar-user-role">Super Usuario</p>
+              <p className="sidebar-user-name">{displayName}</p>
+              <p className="sidebar-user-role">{displayRole}</p>
             </div>
           </div>
-          <button className="sidebar-logout-button">
+          <button className="sidebar-logout-button" onClick={logout} title="Cerrar sesión">
             <LogOut size={20} />
           </button>
         </div>

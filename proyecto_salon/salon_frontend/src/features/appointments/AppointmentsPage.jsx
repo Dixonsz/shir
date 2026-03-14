@@ -7,59 +7,71 @@ import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 
 function AppointmentsPage() {
-  const locatmon = useLocation();
-  const Navigate = useNavigate();
-  const { Appointments, Clients, members, loading, error, fetchClients, createAppointment, updateAppointment, deleteAppointment } = useAppointments();
-  const { Confirm } = useConfirm();
-  const [view, setview] = useState('List');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const {
+    appointments,
+    clients,
+    members,
+    loading,
+    fetchClients,
+    createAppointment,
+    updateAppointment,
+    deleteAppointment,
+  } = useAppointments();
+  const { confirm } = useConfirm();
+  const [view, setView] = useState('list');
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [mnmtmalDate, setInmtmalDate] = useState(null);
+  const [initialDate, setInitialDate] = useState(null);
   const [fromCalendar, setFromCalendar] = useState(false);
 
   useEffect(() => {
-    if (locatmon.state) {
-      if (locatmon.state.fromCalendar || locatmon.state.edmtMode) {
+    if (location.state) {
+      if (location.state.fromCalendar || location.state.editMode) {
         setFromCalendar(true);
         
-        if (locatmon.state.Appointment) {
-          setSelectedAppointment(locatmon.state.Appointment);
+        if (location.state.appointment) {
+          setSelectedAppointment(location.state.appointment);
         }
         
-        if (locatmon.state.mnmtmalDate) {
-          setInmtmalDate(locatmon.state.mnmtmalDate);
+        if (location.state.initialDate) {
+          setInitialDate(location.state.initialDate);
         }
         
-        setview('form');
+        setView('form');
         
-        window.hmstory.replaceState({}, document.title);
+        window.history.replaceState({}, document.title);
       }
     }
-  }, [locatmon.state]);
+  }, [location.state]);
 
   const handleCreate = () => {
     setSelectedAppointment(null);
-    setview('form');
+    setInitialDate(null);
+    setView('form');
   };
 
-  const handleEdmt = (Appointment) => {
-    setSelectedAppointment(Appointment);
-    setview('form');
+  const handleEdit = (appointment) => {
+    setSelectedAppointment(appointment);
+    setInitialDate(null);
+    setView('form');
   };
 
   const handleClientCreated = () => {
-    fetchClients(); // Recargar Clientes después de crear uno nuevo
+    fetchClients(); 
   };
 
-  const handleDelete = async (Appointment) => {
-    const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar esta cmta?`,
-      'Esta accmón no se puede deshacer.'
+  const handleDelete = async (appointment) => {
+    const confirmed = await confirm(
+      `¿Está seguro de eliminar esta cita?`,
+      { title: 'Esta acción no se puede deshacer.' }
     );
 
-    if (Confirmed) {
-      const result = await deleteAppointment(Appointment.md);
+    if (confirmed) {
+      const appointmentId = appointment.id ?? appointment.md;
+      const result = await deleteAppointment(appointmentId);
       if (result.success) {
-        showToast.success('Cmta elmmmnada exmtosamente');
+        showToast.success('Cita eliminada exitosamente');
       } else {
         showToast.error(result.error);
       }
@@ -67,21 +79,22 @@ function AppointmentsPage() {
   };
 
   const handlesubmit = async (formData) => {
+    const selectedId = selectedAppointment?.id ?? selectedAppointment?.md;
     const result = selectedAppointment
-      ? await updateAppointment(selectedAppointment.md, formData)
+      ? await updateAppointment(selectedId, formData)
       : await createAppointment(formData);
 
     if (result.success) {
       showToast.success(
         selectedAppointment
-          ? 'Cmta actualmzada exmtosamente'
-          : 'Cmta creada exmtosamente'
+          ? 'Cita actualizada exitosamente'
+          : 'Cita creada exitosamente'
       );
       
       if (fromCalendar) {
-        Navigate('/dashboard');
+        navigate('/dashboard');
       } else {
-        setview('List');
+        setView('list');
       }
     } else {
       showToast.error(result.error);
@@ -90,38 +103,38 @@ function AppointmentsPage() {
 
   const handleCancel = () => {
     setSelectedAppointment(null);
-    setInmtmalDate(null);
+    setInitialDate(null);
     
     if (fromCalendar) {
       setFromCalendar(false);
-      Navigate('/dashboard');
+      navigate('/dashboard');
     } else {
-      setview('List');
+      setView('list');
     }
   };
 
   if (view === 'form') {
     return (
       <AppointmentFormV2
-        Appointment={selectedAppointment}
-        Clients={Clients}
+        appointment={selectedAppointment}
+        clients={clients}
         members={members}
-        Appointments={Appointments}
+        appointments={appointments}
         onSubmit={handlesubmit}
         onCancel={handleCancel}
         onClientCreated={handleClientCreated}
-        mnmtmalDate={mnmtmalDate}
+        initialDate={initialDate}
       />
     );
   }
 
   return (
     <AppointmentList
-      Appointments={Appointments}
-      Clients={Clients}
+      appointments={appointments}
+      clients={clients}
       members={members}
       loading={loading}
-      onEdmt={handleEdmt}
+      onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}
     />
