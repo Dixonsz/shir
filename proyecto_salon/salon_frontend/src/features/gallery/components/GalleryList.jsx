@@ -3,9 +3,12 @@ import Button from '../../../components/common/Button';
 import Table from '../../../components/common/Table';
 import { Plus, CheckCircle2, XCircle, Power } from 'lucide-react';
 import { useConfirm } from '../../../providers/ConfirmProvider';
+import { usePermissions } from '../../auth/hooks';
 
 function GalleryList({ galleryItems, loading, error, onCreate, onEdit, onDelete, onToggleStatus }) {
   const { confirm } = useConfirm();
+  const { canWriteResource } = usePermissions();
+  const canWrite = canWriteResource('gallery');
 
   const handleDelete = async (item) => {
     const confirmed = await confirm(
@@ -94,19 +97,21 @@ function GalleryList({ galleryItems, loading, error, onCreate, onEdit, onDelete,
     <div>
       <div style={styles.header}>
         <h1 style={styles.title}>Gestión de Galería</h1>
-        <Button onClick={onCreate} variant="primary">
-          <Plus size={20} />
-          Nueva Imagen
-        </Button>
+        {canWrite ? (
+          <Button onClick={onCreate} variant="primary">
+            <Plus size={20} />
+            Nueva Imagen
+          </Button>
+        ) : null}
       </div>
 
       <Card>
         <Table
           columns={columns}
           data={galleryItems}
-          onEdit={onEdit}
-          onDelete={handleDelete}
-          customActions={(item) => (
+          onEdit={canWrite ? onEdit : undefined}
+          onDelete={canWrite ? handleDelete : undefined}
+          customActions={canWrite ? (item) => (
             <button
               onClick={() => handleToggleStatus(item)}
               title={item.is_active ? 'Desactivar' : 'Activar'}
@@ -120,7 +125,7 @@ function GalleryList({ galleryItems, loading, error, onCreate, onEdit, onDelete,
             >
               <Power size={18} />
             </button>
-          )}
+          ) : undefined}
         />
       </Card>
     </div>

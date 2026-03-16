@@ -16,6 +16,7 @@ function AppointmentServiceView() {
   
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
+  const [notes, setNotes] = useState('');
   const [availableServices, setAvailableServices] = useState([]);
   const [availableProducts, setAvailableProducts] = useState([]);
 
@@ -58,8 +59,8 @@ function AppointmentServiceView() {
         servicesApi.getAll(false),
         productsApi.getAll()
       ]);
-      
-      setSummary(summaryData);
+
+      let finalSummary = summaryData;
       setAvailableServices(services);
       setAvailableProducts(products);
       
@@ -67,11 +68,14 @@ function AppointmentServiceView() {
         try {
           await appointmentsApi.update(id, { status: 'in_progress' });
           const updatedSummary = await appointmentsApi.getSummary(id);
-          setSummary(updatedSummary);
+          finalSummary = updatedSummary;
         } catch (error) {
           console.error('Error actualizando estado de cita:', error);
         }
       }
+
+      setSummary(finalSummary);
+      setNotes(finalSummary?.notes || '');
     } catch (error) {
       console.error('Error cargando datos:', error);
       showToast.error('Error al cargar la información de la cita');
@@ -268,12 +272,32 @@ function AppointmentServiceView() {
     if (!confirmed) return;
     
     try {
-      await appointmentsApi.update(id, { status: 'completed' });
+      await appointmentsApi.update(id, {
+        status: 'completed',
+        notes,
+      });
       showToast.success('Cita completada correctamente');
       navigate('/dashboard/appointments');
     } catch (error) {
       console.error('Error completando cita:', error);
       showToast.error('Error al completar la cita');
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    try {
+      await appointmentsApi.update(id, { notes });
+      showToast.success('Anotaciones guardadas');
+      setSummary((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          notes,
+        };
+      });
+    } catch (error) {
+      console.error('Error guardando anotaciones:', error);
+      showToast.error(error.response?.data?.message || 'Error al guardar anotaciones');
     }
   };
   
@@ -385,6 +409,29 @@ function AppointmentServiceView() {
       <div style={styles.mainGrid}>
         {/* Servicios y Productos */}
         <div style={styles.mainContent}>
+          <Card style={{ marginBottom: '1.5rem' }}>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>Anotaciones del proceso</h2>
+              {!isCompleted && (
+                <Button type="button" variant="secondary" size="sm" onClick={handleSaveNotes}>
+                  Guardar anotaciones
+                </Button>
+              )}
+            </div>
+
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ejemplo: Lavado + hidratación profunda, tinte tono 6.1, tiempo de exposición 35 min, recomendaciones al cliente..."
+              rows={5}
+              style={styles.notesTextarea}
+              readOnly={isCompleted}
+            />
+            <p style={styles.notesHelp}>
+              Guarda aquí los procesos aplicados, observaciones técnicas o cualquier detalle relevante de la atención.
+            </p>
+          </Card>
+
           {/* SERVICIOS */}
           <Card style={{ marginBottom: '1.5rem' }}>
             <h2 style={styles.sectionTitle}>Servicios</h2>
@@ -1016,6 +1063,24 @@ const styles = {
     backgroundColor: 'rgba(15, 23, 42, 0.45)',
     borderRadius: '6px',
     border: '2px dashed rgba(238, 43, 140, 0.45)',
+  },
+  notesTextarea: {
+    width: '100%',
+    resize: 'vertical',
+    minHeight: '120px',
+    padding: '0.75rem',
+    fontSize: '0.95rem',
+    border: '1px solid rgba(71, 85, 105, 0.6)',
+    borderRadius: '6px',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    color: '#e2e8f0',
+    fontFamily: 'inherit',
+    lineHeight: 1.5,
+  },
+  notesHelp: {
+    margin: '0.75rem 0 0 0',
+    fontSize: '0.85rem',
+    color: '#94a3b8',
   },
   summaryCard: {
     background: 'linear-gradient(160deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)',

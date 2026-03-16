@@ -26,6 +26,29 @@ function formatCurrency(value) {
   }).format(Number(value) || 0);
 }
 
+function normalizeRole(value) {
+  if (!value) return '';
+
+  const normalized = String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (normalized === 'employee') return 'estilista';
+  return normalized;
+}
+
+function memberHasStylistRole(member) {
+  const roleNames = Array.isArray(member?.role_names)
+    ? member.role_names
+    : member?.rol_name
+      ? [member.rol_name]
+      : [];
+
+  return roleNames.some((roleName) => normalizeRole(roleName) === 'estilista');
+}
+
 function getConflict(appointments, memberId, scheduledDate) {
   if (!memberId || !scheduledDate) {
     return null;
@@ -71,7 +94,11 @@ export default function PublicAppointmentPage() {
           appointmentsApi.getAll(false, false),
         ]);
 
-        setMembers(Array.isArray(membersData) ? membersData.filter((m) => m.is_active) : []);
+        setMembers(
+          Array.isArray(membersData)
+            ? membersData.filter((member) => member.is_active && memberHasStylistRole(member))
+            : []
+        );
         setServices(Array.isArray(servicesData) ? servicesData.filter((s) => s.is_active) : []);
         setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
       } catch (error) {

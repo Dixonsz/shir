@@ -15,11 +15,12 @@ import {
   LogOut,
   Sparkles
 } from 'lucide-react';
-import { useAuth } from '../../features/auth/hooks';
+import { useAuth, usePermissions } from '../../features/auth/hooks';
 import './Sidebar.css';
 
 function Sidebar() {
   const { user, logout } = useAuth();
+  const { canReadResource } = usePermissions();
 
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim();
   const displayName = fullName || user?.name || user?.email || 'Usuario';
@@ -27,22 +28,25 @@ function Sidebar() {
   const avatarText = (displayName?.[0] || 'U').toUpperCase();
 
   const mainMenuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/dashboard/appointments', label: 'Citas', icon: Calendar },
-    { path: '/dashboard/clients', label: 'Clientes', icon: Users },
-    { path: '/dashboard/services', label: 'Servicios', icon: Scissors },
-    { path: '/dashboard/members', label: 'Equipo', icon: User },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, resource: 'dashboard' },
+    { path: '/dashboard/appointments', label: 'Citas', icon: Calendar, resource: 'appointments' },
+    { path: '/dashboard/clients', label: 'Clientes', icon: Users, resource: 'clients' },
+    { path: '/dashboard/services', label: 'Servicios', icon: Scissors, resource: 'services' },
+    { path: '/dashboard/members', label: 'Equipo', icon: User, resource: 'members' },
   ];
 
   const generalMenuItems = [
-    { path: '/dashboard/category-services', label: 'Categoría de Servicios', icon: Layers },
-    { path: '/dashboard/category-products', label: 'Categorías de Productos', icon: Layers },
-    { path: '/dashboard/products', label: 'Productos', icon: Store },
-    { path: '/dashboard/promotions', label: 'Promociones', icon: Tag },
-    { path: '/dashboard/marketing', label: 'Marketing', icon: Megaphone },
-    { path: '/dashboard/gallery', label: 'Galería', icon: Image },
-    { path: '/dashboard/roles', label: 'Roles', icon: UserCog },
+    { path: '/dashboard/category-services', label: 'Categoría de Servicios', icon: Layers, resource: 'category_services' },
+    { path: '/dashboard/category-products', label: 'Categorías de Productos', icon: Layers, resource: 'category_products' },
+    { path: '/dashboard/products', label: 'Productos', icon: Store, resource: 'products' },
+    { path: '/dashboard/promotions', label: 'Promociones', icon: Tag, resource: 'promotions' },
+    { path: '/dashboard/marketing', label: 'Marketing', icon: Megaphone, resource: 'marketing' },
+    { path: '/dashboard/gallery', label: 'Galería', icon: Image, resource: 'gallery' },
+    { path: '/dashboard/roles', label: 'Roles', icon: UserCog, resource: 'roles' },
   ];
+
+  const visibleMainMenuItems = mainMenuItems.filter((item) => canReadResource(item.resource));
+  const visibleGeneralMenuItems = generalMenuItems.filter((item) => canReadResource(item.resource));
 
   return (
     <aside className="sidebar">
@@ -58,7 +62,7 @@ function Sidebar() {
 
       <nav className="sidebar-nav">
         <div className="sidebar-nav-section">
-          {mainMenuItems.map((item) => (
+          {visibleMainMenuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -80,7 +84,7 @@ function Sidebar() {
         </div>
 
         <div className="sidebar-nav-section">
-          {generalMenuItems.map((item) => (
+          {visibleGeneralMenuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -95,16 +99,6 @@ function Sidebar() {
               )}
             </NavLink>
           ))}
-
-          <NavLink
-            to="/dashboard/settings"
-            className={({ isActive }) => 
-              isActive ? 'sidebar-nav-item sidebar-nav-item-active' : 'sidebar-nav-item'
-            }
-          >
-            <Settings size={20} className="sidebar-nav-icon" />
-            <span className="sidebar-nav-text">Configuración</span>
-          </NavLink>
         </div>
       </nav>
 

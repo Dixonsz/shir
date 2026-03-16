@@ -4,9 +4,12 @@ import Badge from '../../../components/common/Badge';
 import { Plus, ClipboardCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAppointmentStatusConfig } from '../utils/appointmentStatus';
+import { usePermissions } from '../../auth/hooks';
 
 function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate }) {
   const navigate = useNavigate();
+  const { canWriteResource } = usePermissions();
+  const canWrite = canWriteResource('appointments');
   const formatDateTime = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -90,10 +93,12 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
     <div>
       <div style={styles.header}>
         <h1 style={styles.title}>Citas</h1>
-        <Button onClick={onCreate}>
-          <Plus size={20} />
-          Nueva Cita
-        </Button>
+        {canWrite ? (
+          <Button onClick={onCreate}>
+            <Plus size={20} />
+            Nueva Cita
+          </Button>
+        ) : null}
       </div>
 
       {loading ? (
@@ -102,9 +107,9 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
         <Table
           columns={columns}
           data={appointments}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          customActions={(row) => (
+          onEdit={canWrite ? onEdit : undefined}
+          onDelete={canWrite ? onDelete : undefined}
+          customActions={canWrite ? (row) => (
             <Button
               variant="success"
               size="sm"
@@ -113,7 +118,7 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
             >
               <ClipboardCheck size={16} />
             </Button>
-          )}
+          ) : undefined}
         />
       )}
     </div>

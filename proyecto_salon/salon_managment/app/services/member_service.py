@@ -1,10 +1,43 @@
 from app.models.member import Member
+from app.models.rol import Rol
 from app import bcrypt
 from app.repositories.member_repository import MemberRepository
 
 from app.utils.cloudinary_service import delete_image, upload_image
 
 class MemberService:
+
+    @staticmethod
+    def _parse_role_ids(data):
+        role_ids = []
+
+        if isinstance(data.get('rol_ids'), list):
+            for role_id in data.get('rol_ids'):
+                try:
+                    parsed = int(role_id)
+                except (TypeError, ValueError):
+                    continue
+                if parsed not in role_ids:
+                    role_ids.append(parsed)
+
+        if data.get('rol_id'):
+            try:
+                primary_role_id = int(data.get('rol_id'))
+                if primary_role_id not in role_ids:
+                    role_ids.insert(0, primary_role_id)
+            except (TypeError, ValueError):
+                pass
+
+        return role_ids
+
+    @staticmethod
+    def _resolve_roles(role_ids):
+        if not role_ids:
+            return []
+
+        found_roles = Rol.query.filter(Rol.id.in_(role_ids), Rol.is_active.is_(True)).all()
+        roles_by_id = {role.id: role for role in found_roles}
+        return [roles_by_id[role_id] for role_id in role_ids if role_id in roles_by_id]
 
     @staticmethod
     def create_member(data):
@@ -37,7 +70,16 @@ class MemberService:
             if specialty == '':
                 specialty = None
             
-            rol_id = int(data['rol_id']) if data.get('rol_id') else None
+            requested_role_ids = MemberService._parse_role_ids(data)
+            resolved_roles = MemberService._resolve_roles(requested_role_ids)
+
+            if not resolved_roles:
+                return {
+                    "success": False,
+                    "error": "Debe seleccionar al menos un rol valido para el miembro."
+                }
+
+            primary_role = resolved_roles[0]
             
             member = Member(
                 first_name=data['first_name'], 
@@ -48,8 +90,10 @@ class MemberService:
                 membership_start_date=membership_start_date,
                 membership_end_date=membership_end_date,
                 specialty=specialty,
-                rol_id=rol_id
+                rol_id=primary_role.id
             )
+
+            member.secondary_roles = resolved_roles
             
             created = MemberRepository.create(member)
             
@@ -116,8 +160,17 @@ class MemberService:
         
         member.membership_start_date = data.get('membership_start_date', member.membership_start_date)
         
-        if 'rol_id' in data and data['rol_id']:
-            member.rol_id = int(data['rol_id'])
+        requested_role_ids = MemberService._parse_role_ids(data)
+        if requested_role_ids:
+            resolved_roles = MemberService._resolve_roles(requested_role_ids)
+            if not resolved_roles:
+                return {
+                    "success": False,
+                    "error": "Debe seleccionar al menos un rol valido para el miembro."
+                }
+
+            member.rol_id = resolved_roles[0].id
+            member.secondary_roles = resolved_roles
         
         member.is_active = data.get('is_active', member.is_active)
 

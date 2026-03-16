@@ -97,22 +97,28 @@ function AppointmentDetails({ appointment, clients, members, onEdit, onDelete, o
         )}
       </div>
 
-      <div style={styles.actions}>
-        <button
-          style={{ ...styles.button, ...styles.editButton }}
-          onClick={onEdit}
-        >
-          <Edit size={18} />
-          Editar
-        </button>
-        <button
-          style={{ ...styles.button, ...styles.deleteButton }}
-          onClick={onDelete}
-        >
-          <Trash2 size={18} />
-          Eliminar
-        </button>
-      </div>
+      {(onEdit || onDelete) ? (
+        <div style={styles.actions}>
+          {onEdit ? (
+            <button
+              style={{ ...styles.button, ...styles.editButton }}
+              onClick={onEdit}
+            >
+              <Edit size={18} />
+              Editar
+            </button>
+          ) : null}
+          {onDelete ? (
+            <button
+              style={{ ...styles.button, ...styles.deleteButton }}
+              onClick={onDelete}
+            >
+              <Trash2 size={18} />
+              Eliminar
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

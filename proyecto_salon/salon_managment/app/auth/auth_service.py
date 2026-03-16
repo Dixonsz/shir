@@ -20,10 +20,15 @@ class AuthService:
                 "error": "Contraseña incorrecta."
             }
         
+        role_names = member.role_names if hasattr(member, 'role_names') else [member.rol.name]
+        primary_role = role_names[0] if role_names else (member.rol.name if member.rol else None)
+
         access_token = create_access_token(
-            identity=member.id,
+            # Flask-JWT-Extended/PyJWT validan 'sub' como string en verificacion.
+            identity=str(member.id),
             additional_claims={
-                "role": member.rol.name,
+                "role": primary_role,
+                "roles": role_names,
                 "email": member.email
                 
             }

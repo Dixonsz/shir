@@ -15,6 +15,14 @@ from datetime import datetime
 class AppointmentService:
 
     @staticmethod
+    def _normalize_notes(notes_value):
+        if notes_value is None:
+            return None
+
+        notes = str(notes_value).strip()
+        return notes if notes else None
+
+    @staticmethod
     def _get_reserved_quantity_for_product(appointment_id, product_id):
         required_products = AppointmentService._get_required_products_by_appointment(appointment_id)
         return int(required_products.get(product_id, 0))
@@ -100,6 +108,7 @@ class AppointmentService:
             member_id=member_id,
             scheduled_date=scheduled_date,
             status=data.get('status', 'scheduled'),
+            notes=AppointmentService._normalize_notes(data.get('notes')),
             is_active=data.get('is_active', True)
         )
 
@@ -214,6 +223,8 @@ class AppointmentService:
                 appointment.scheduled_date = datetime.strptime(data['scheduled_date'], '%Y-%m-%dT%H:%M')
         
         appointment.status = next_status
+        if 'notes' in data:
+            appointment.notes = AppointmentService._normalize_notes(data.get('notes'))
         appointment.is_active = data.get('is_active', appointment.is_active)
 
         updated = AppointmentRepository.update(appointment)

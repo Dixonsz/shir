@@ -1,9 +1,12 @@
 import Table from '../../../components/common/Table';
 import EntityListView from '../../../components/layout/EntityListView';
 import { getCategoryServiceColumns } from '../logic/CategoryServiceList.logic.jsx';
+import { usePermissions } from '../../auth/hooks';
 import '../CategoryServiceList.css';
 
 function CategoryServiceList({ categories, loading, error, onCreate, onEdit, onDelete }) {
+  const { canWriteResource } = usePermissions();
+  const canWrite = canWriteResource('category_services');
   const columns = getCategoryServiceColumns();
 
   return (
@@ -11,15 +14,15 @@ function CategoryServiceList({ categories, loading, error, onCreate, onEdit, onD
       title="Categorías de Servicios"
       description="Gestión de categorías para el catálogo de servicios"
       actionLabel="Nueva Categoría"
-      onCreate={onCreate}
+      onCreate={canWrite ? onCreate : undefined}
       loading={loading}
       error={error}
     >
         <Table
           columns={columns}
           data={categories}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          onEdit={canWrite ? onEdit : undefined}
+          onDelete={canWrite ? onDelete : undefined}
         />
     </EntityListView>
   );

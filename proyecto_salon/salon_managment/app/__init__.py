@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 
+from app.auth.access_control import register_access_control
 from app.core.cloudinary import configure_cloudinary
 from app.core.extensions import bcrypt, db, jwt, migrate
 from config import config
@@ -32,6 +33,7 @@ def create_app(config_name=None):
     )
     
     jwt.init_app(app)
+    register_access_control(app)
 
     with app.app_context():
         # Import package so SQLAlchemy registers models metadata.

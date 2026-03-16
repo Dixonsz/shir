@@ -49,6 +49,20 @@ CREATE TABLE IF NOT EXISTS members (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
+-- TABLA: member_roles
+-- Descripción: Relación N:M entre miembros y roles para permisos múltiples
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS member_roles (
+    member_id INT NOT NULL,
+    role_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (member_id, role_id),
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_member_roles_role_id (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
 -- TABLA: clients
 -- Descripción: Clientes del sistema
 -- Información básica de clientes que reciben servicios
@@ -152,6 +166,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     member_id INT NOT NULL,
     scheduled_date DATETIME NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'scheduled',
+    notes TEXT DEFAULT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

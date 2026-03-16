@@ -24,10 +24,30 @@ class Member(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     rol = db.relationship('Rol', backref=db.backref('members', lazy=True))
+    secondary_roles = db.relationship(
+        'Rol',
+        secondary='member_roles',
+        lazy='joined',
+    )
 
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+
+    @property
+    def roles(self):
+        unique = {}
+        if self.rol is not None:
+            unique[self.rol.id] = self.rol
+
+        for role in self.secondary_roles or []:
+            unique[role.id] = role
+
+        return list(unique.values())
+
+    @property
+    def role_names(self):
+        return [role.name for role in self.roles]
     
     @property
     def is_membership_active(self):
@@ -57,6 +77,9 @@ class Member(db.Model):
             "photo_url": self.photo_url,
             "photo_public_id": self.photo_public_id,
             "rol_id": self.rol_id,
+            "rol_name": self.rol.name if self.rol else None,
+            "role_ids": [role.id for role in self.roles],
+            "role_names": self.role_names,
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None

@@ -1,6 +1,7 @@
 # Models package
 from app.models.client import Client
 from app.models.member import Member
+from app.models.member_role import MemberRole
 from app.models.rol import Rol
 from app.models.category_service import CategoryService
 from app.models.category_product import CategoryProduct
@@ -19,6 +20,7 @@ from app.models.gallery import Gallery
 __all__ = [
     'Client',
     'Member',
+    'MemberRole',
     'Rol',
     'CategoryService',
     'CategoryProduct',

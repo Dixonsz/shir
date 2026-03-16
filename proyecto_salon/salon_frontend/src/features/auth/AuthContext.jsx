@@ -10,10 +10,21 @@ export const AuthContext = createContext(null);
 
 function buildAuthUser(token, profile = null) {
   const decoded = decodeToken(token) || {};
+  const tokenRoles = Array.isArray(decoded?.roles)
+    ? decoded.roles
+    : decoded?.role
+      ? [decoded.role]
+      : [];
+
+  const profileRoles = Array.isArray(profile?.role_names)
+    ? profile.role_names
+    : tokenRoles;
+
   const tokenUser = {
     id: decoded?.sub ? Number(decoded.sub) : null,
     email: decoded?.email || null,
     role: decoded?.role || null,
+    roles: profileRoles,
   };
 
   return {

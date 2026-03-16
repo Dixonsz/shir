@@ -13,6 +13,7 @@ class Appointment(db.Model):
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
     scheduled_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String(50), nullable=False, default='scheduled')
+    notes = db.Column(db.Text, nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
@@ -59,6 +60,7 @@ class Appointment(db.Model):
             "member_id": self.member_id,
             "scheduled_date": self.scheduled_date.isoformat() if self.scheduled_date else None,
             "status": self.status,
+            "notes": self.notes,
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None

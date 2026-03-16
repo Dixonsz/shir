@@ -1,6 +1,7 @@
 import Table from '../../../components/common/Table';
 import EntityListView from '../../../components/layout/EntityListView';
 import { CheckCircle2, XCircle } from 'lucide-react';
+import { usePermissions } from '../../auth/hooks';
 
 function RolesView({
   roles,
@@ -10,6 +11,8 @@ function RolesView({
   onEdit,
   onDelete,
 }) {
+  const { canWriteResource } = usePermissions();
+  const canWrite = canWriteResource('roles');
 
   const columns = [
     { key: 'id', label: 'ID' },
@@ -35,15 +38,15 @@ function RolesView({
       title="Roles"
       description="Gestión de roles del sistema"
       actionLabel="Nuevo Rol"
-      onCreate={onCreate}
+      onCreate={canWrite ? onCreate : undefined}
       loading={loading}
       error={error}
     >
         <Table
           columns={columns}
           data={roles}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          onEdit={canWrite ? onEdit : undefined}
+          onDelete={canWrite ? onDelete : undefined}
         />
     </EntityListView>
   );

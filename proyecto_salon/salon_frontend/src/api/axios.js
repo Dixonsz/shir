@@ -35,12 +35,17 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const message = getApiErrorMessage(error);
+    const currentPath = window.location.pathname;
+    const hasSessionToken = !!getToken();
 
     error.userMessage = message;
 
     if (status === 401) {
       clearToken();
-      if (window.location.pathname !== '/login') {
+      const isPrivateArea = currentPath.startsWith('/dashboard');
+
+      // En landing y otras rutas publicas no forzamos login ante 401.
+      if ((hasSessionToken || isPrivateArea) && currentPath !== '/login') {
         window.location.href = '/login';
       }
     }

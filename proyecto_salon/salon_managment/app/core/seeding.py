@@ -8,27 +8,83 @@ from app.models.member import Member
 from app.models.rol import Rol
 
 
+DEFAULT_SYSTEM_ROLES = (
+    {
+        'name': 'Administrador',
+        'description': 'Acceso total al sistema y administracion de usuarios y roles',
+    },
+    {
+        'name': 'Gerente',
+        'description': 'Gestion operativa del salon con permisos administrativos limitados',
+    },
+    {
+        'name': 'Recepcionista',
+        'description': 'Gestion de clientes y citas en mostrador',
+    },
+    {
+        'name': 'Estilista',
+        'description': 'Consulta de agenda y gestion de servicios en atencion',
+    },
+    {
+        'name': 'Marketing',
+        'description': 'Gestion de promociones, campanas y galeria',
+    },
+)
+
+
 def seed_default_member():
-    """Crea rol y miembro por defecto si no existen."""
+    """Crea roles recomendados y miembro por defecto si no existen."""
     if not current_app.config.get('ENABLE_DEFAULT_MEMBER_SEED', True):
         return
 
     try:
-        role_name = current_app.config.get('DEFAULT_ROLE_NAME', 'Administrador')
-        role_description = current_app.config.get(
-            'DEFAULT_ROLE_DESCRIPTION',
-            'Rol creado automaticamente para el seed inicial',
-        )
+        configured_roles = current_app.config.get('DEFAULT_SYSTEM_ROLES', DEFAULT_SYSTEM_ROLES)
+        if not configured_roles:
+            configured_roles = DEFAULT_SYSTEM_ROLES
 
-        role = Rol.query.filter_by(name=role_name).first()
-        if role is None:
-            role = Rol(
-                name=role_name,
-                description=role_description,
-                is_active=True,
+        roles_by_name = {}
+        for role_data in configured_roles:
+            role_name = role_data.get('name')
+            if not role_name:
+                continue
+
+            role_description = role_data.get(
+                'description',
+                'Rol creado automaticamente para el seed inicial',
             )
-            db.session.add(role)
-            db.session.flush()
+
+            role = Rol.query.filter_by(name=role_name).first()
+            if role is None:
+                role = Rol(
+                    name=role_name,
+                    description=role_description,
+                    is_active=True,
+                )
+                db.session.add(role)
+                db.session.flush()
+            elif not role.is_active:
+                role.is_active = True
+
+            roles_by_name[role_name] = role
+
+        default_role_name = current_app.config.get('DEFAULT_ROLE_NAME', 'Administrador')
+        role = roles_by_name.get(default_role_name)
+
+        if role is None:
+            role = Rol.query.filter_by(name=default_role_name).first()
+            if role is None:
+                role = Rol(
+                    name=default_role_name,
+                    description=current_app.config.get(
+                        'DEFAULT_ROLE_DESCRIPTION',
+                        'Rol creado automaticamente para el seed inicial',
+                    ),
+                    is_active=True,
+                )
+                db.session.add(role)
+                db.session.flush()
+
+            roles_by_name[default_role_name] = role
 
         member_email = current_app.config.get('DEFAULT_MEMBER_EMAIL', 'admin@salon.local')
         member = Member.query.filter_by(email=member_email).first()
@@ -62,8 +118,7 @@ def seed_default_member():
             member.is_active = True
             updated = True
 
-        if updated:
-            db.session.commit()
+        db.session.commit()
     except SQLAlchemyError as exc:
         db.session.rollback()
         current_app.logger.warning('No se pudo ejecutar el seed de miembro por defecto: %s', exc)

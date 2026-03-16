@@ -24,6 +24,95 @@ function normalizeText(value) {
   return String(value).toLowerCase();
 }
 
+function stripDiacritics(text) {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function normalizeSearchableText(value) {
+  return stripDiacritics(normalizeText(value))
+    .replace(/[^a-z0-9\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function tokenize(text) {
+  if (!text) return [];
+  return text.split(' ').filter(Boolean);
+}
+
+function getEditDistanceWithinLimit(source, target, limit) {
+  const sourceLength = source.length;
+  const targetLength = target.length;
+
+  if (Math.abs(sourceLength - targetLength) > limit) {
+    return limit + 1;
+  }
+
+  let previous = Array(targetLength + 1)
+    .fill(0)
+    .map((_, index) => index);
+
+  for (let i = 1; i <= sourceLength; i += 1) {
+    const current = [i];
+    let rowMin = current[0];
+
+    for (let j = 1; j <= targetLength; j += 1) {
+      const substitutionCost = source[i - 1] === target[j - 1] ? 0 : 1;
+      const value = Math.min(
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + substitutionCost
+      );
+
+      current.push(value);
+      if (value < rowMin) rowMin = value;
+    }
+
+    if (rowMin > limit) {
+      return limit + 1;
+    }
+
+    previous = current;
+  }
+
+  return previous[targetLength];
+}
+
+function isApproximateTokenMatch(queryToken, rowToken) {
+  if (!queryToken || !rowToken) return false;
+
+  if (rowToken.includes(queryToken) || queryToken.includes(rowToken)) {
+    return true;
+  }
+
+  const maxLength = Math.max(queryToken.length, rowToken.length);
+  const allowedDistance = maxLength >= 7 ? 2 : 1;
+  const distance = getEditDistanceWithinLimit(queryToken, rowToken, allowedDistance);
+  return distance <= allowedDistance;
+}
+
+function matchesApproximateQuery(rowText, query) {
+  if (!query) return true;
+  if (!rowText) return false;
+
+  if (rowText.includes(query)) {
+    return true;
+  }
+
+  const rowTokens = tokenize(rowText);
+  const queryTokens = tokenize(query);
+
+  if (queryTokens.length === 0) {
+    return true;
+  }
+
+  return queryTokens.every((queryToken) =>
+    rowTokens.some((rowToken) => isApproximateTokenMatch(queryToken, rowToken))
+  );
+}
+
 function Table({
   columns = [],
   data = [],
@@ -61,13 +150,14 @@ function Table({
       return rows;
     }
 
-    const query = (searchQuery || (showInlineFilters ? search : '')).trim().toLowerCase();
+    const query = normalizeSearchableText(searchQuery || (showInlineFilters ? search : ''));
     if (query) {
       rows = rows.filter((row) => {
         const rawText = columnsArray
           .map((column) => normalizeText(row[column.key]))
           .join(' ');
-        return rawText.includes(query);
+        const searchableRowText = normalizeSearchableText(rawText);
+        return matchesApproximateQuery(searchableRowText, query);
       });
     }
 

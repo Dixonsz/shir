@@ -2,8 +2,11 @@ import Card from '../../../components/common/Card';
 import Button from '../../../components/common/Button';
 import Table from '../../../components/common/Table';
 import { Plus, CheckCircle2, XCircle } from 'lucide-react';
+import { usePermissions } from '../../auth/hooks';
 
 function MarketingList({ campaigns, loading, onEdit, onDelete, onCreate }) {
+  const { canWriteResource } = usePermissions();
+  const canWrite = canWriteResource('marketing');
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -93,18 +96,20 @@ function MarketingList({ campaigns, loading, onEdit, onDelete, onCreate }) {
     <div>
       <div style={styles.header}>
         <h1 style={styles.title}>Campañas de Marketing</h1>
-        <Button onClick={onCreate} variant="primary">
-          <Plus size={20} />
-          Nueva Campaña
-        </Button>
+        {canWrite ? (
+          <Button onClick={onCreate} variant="primary">
+            <Plus size={20} />
+            Nueva Campaña
+          </Button>
+        ) : null}
       </div>
 
       <Card>
         <Table
           columns={columns}
           data={campaigns}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          onEdit={canWrite ? onEdit : undefined}
+          onDelete={canWrite ? onDelete : undefined}
         />
       </Card>
     </div>

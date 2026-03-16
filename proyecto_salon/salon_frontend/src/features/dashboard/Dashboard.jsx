@@ -5,10 +5,13 @@ import CalendarView from '../appointments/components/CalendarView';
 import AppointmentDetails from './AppointmentDetails';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { usePermissions } from '../auth/hooks';
 import './Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { canWriteResource } = usePermissions();
+  const canWriteAppointments = canWriteResource('appointments');
   const { appointments, clients, members, loading, error, deleteAppointment } = useAppointments();
   const { confirm } = useConfirm();
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -91,9 +94,11 @@ function Dashboard() {
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>Dashboard | Gestión de Citas</h1>
-        <button className="btn btn-primary" onClick={handleCreateNew}>
-          + Nueva Cita
-        </button>
+        {canWriteAppointments ? (
+          <button className="btn btn-primary" onClick={handleCreateNew}>
+            + Nueva Cita
+          </button>
+        ) : null}
       </div>
 
       <div className="dashboard-content">
@@ -121,8 +126,8 @@ function Dashboard() {
                   appointment={selectedAppointment}
                   clients={clients}
                   members={members}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
+                  onEdit={canWriteAppointments ? handleEdit : undefined}
+                  onDelete={canWriteAppointments ? handleDelete : undefined}
                   onClose={handleCloseDetails}
                 />
               </div>
