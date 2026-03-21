@@ -60,9 +60,19 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        setError('Por favor selecciona una imagen valida (JPG, PNG, GIF, WEBP)');
+      const validTypes = [
+        'image/jpeg', 'image/jpg', 'image/pjpeg',
+        'image/png', 'image/gif', 'image/webp',
+        'image/svg+xml', 'image/svg', 'image/x-svg+xml', 'application/svg+xml',
+      ];
+      const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+      const extension = file.name?.split('.').pop()?.toLowerCase() || '';
+      const mimeType = (file.type || '').toLowerCase();
+      const hasValidMime = mimeType && validTypes.includes(mimeType);
+      const hasValidExtension = validExtensions.includes(extension);
+
+      if (!hasValidMime && !hasValidExtension) {
+        setError('Por favor selecciona una imagen valida (JPG, PNG, GIF, WEBP, SVG)');
         return;
       }
       
@@ -192,7 +202,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
             <input
               type="file"
               id="image"
-              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml,.svg"
               onChange={handleImageChange}
               className="marketing-form-file-input"
             />
@@ -201,7 +211,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
               <span>Seleccionar imagen</span>
             </label>
             <p className="marketing-form-help-text">
-              JPG, PNG, GIF o WEBP. Maximo 5MB
+              JPG, PNG, GIF, WEBP o SVG. Maximo 5MB
             </p>
           </div>
         )}

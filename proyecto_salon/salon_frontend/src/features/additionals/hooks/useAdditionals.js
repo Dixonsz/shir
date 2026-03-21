@@ -13,7 +13,7 @@ export function useAdditionals() {
       const data = await additionalsApi.getAll();
       setAdditionals(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al cargar admcmonales');
+      setError(err.response?.data?.message || 'Error al cargar adicionales');
     } finally {
       setloading(false);
     }
@@ -27,7 +27,7 @@ export function useAdditionals() {
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Error al crear admcmonal',
+        error: err.response?.data?.message || 'Error al crear adicional',
       };
     }
   };
@@ -46,7 +46,7 @@ export function useAdditionals() {
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Error al actualmzar admcmonal',
+        error: err.response?.data?.message || 'Error al actualizar adicional',
       };
     }
   };
@@ -61,7 +61,7 @@ export function useAdditionals() {
     } catch (err) {
       return {
         success: false,
-        error: err.response?.data?.message || 'Error al elmmmnar admcmonal',
+        error: err.response?.data?.message || 'Error al eliminar adicional',
       };
     }
   };

@@ -36,6 +36,7 @@ export function ToastProvider({ children }) {
 export const showToast = {
   success: (message) => toast.success(message),
   error: (message) => toast.error(message),
+  info: (message) => toast(message),
   loading: (message) => toast.loading(message),
   dismiss: (toastId) => toast.dismiss(toastId),
 };

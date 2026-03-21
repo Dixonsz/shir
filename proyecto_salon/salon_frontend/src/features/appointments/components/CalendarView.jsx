@@ -3,6 +3,7 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { APPOINTMENT_STATUS_CONFIG, getAppointmentStatusConfig } from '../utils/appointmentStatus';
+import { getCalendarSettings, isDateBlocked, isDateTimeBlocked } from '../../../core/calendar/calendarSettings';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../CalendarView.css';
 
@@ -36,6 +37,33 @@ const eventStyleGetter = (event) => {
   };
 };
 
+const blockedDayStyleGetter = (date, settings) => {
+  if (!isDateBlocked(date, settings)) {
+    return {};
+  }
+
+  return {
+    style: {
+      backgroundColor: 'rgba(239, 68, 68, 0.12)',
+      opacity: 0.75,
+    },
+  };
+};
+
+const blockedSlotStyleGetter = (date, settings) => {
+  if (!isDateTimeBlocked(date, settings)) {
+    return {};
+  }
+
+  return {
+    style: {
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      opacity: 0.7,
+      cursor: 'not-allowed',
+    },
+  };
+};
+
 const messages = {
   allDay: 'Todo el día',
   previous: 'Anterior',
@@ -55,6 +83,25 @@ const messages = {
 function CalendarView({ appointments, clients, members, onSelectEvent, onSelectSlot }) {
   const [view, setView] = useState('month');
   const [date, setDate] = useState(new Date());
+  const calendarSettings = getCalendarSettings();
+
+  const parseTime = (time, fallbackHour, fallbackMinute) => {
+    if (!time || typeof time !== 'string') {
+      return { hour: fallbackHour, minute: fallbackMinute };
+    }
+
+    const [hour, minute] = time.split(':').map(Number);
+    if (Number.isNaN(hour) || Number.isNaN(minute)) {
+      return { hour: fallbackHour, minute: fallbackMinute };
+    }
+
+    return { hour, minute };
+  };
+
+  const startTime = parseTime(calendarSettings.businessHours?.start, 9, 0);
+  const endTime = parseTime(calendarSettings.businessHours?.end, 18, 30);
+  const minTime = new Date(1970, 0, 1, startTime.hour, startTime.minute, 0);
+  const maxTime = new Date(1970, 0, 1, endTime.hour, endTime.minute, 0);
 
   const events = useMemo(() => {
     return appointments.map((appointment) => {
@@ -123,12 +170,14 @@ function CalendarView({ appointments, clients, members, onSelectEvent, onSelectS
         onSelectSlot={handleSelectSlot}
         selectable
         eventPropGetter={eventStyleGetter}
+        dayPropGetter={(dateValue) => blockedDayStyleGetter(dateValue, calendarSettings)}
+        slotPropGetter={(dateValue) => blockedSlotStyleGetter(dateValue, calendarSettings)}
         views={['month', 'week', 'day']}
         step={30}
         showMultiDayTimes
         defaultDate={new Date()}
-        min={new Date(1970, 0, 1, 9, 0, 0)}
-        max={new Date(1970, 0, 1, 18, 30, 0)}
+        min={minTime}
+        max={maxTime}
         tooltipAccessor={(event) => {
           return `${event.title} - ${event.memberName}\nEstado: ${getAppointmentStatusConfig(event.status).label}`;
         }}

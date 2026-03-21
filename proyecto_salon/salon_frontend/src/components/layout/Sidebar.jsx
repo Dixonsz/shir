@@ -20,7 +20,7 @@ import './Sidebar.css';
 
 function Sidebar() {
   const { user, logout } = useAuth();
-  const { canReadResource } = usePermissions();
+  const { canReadResource, canWriteResource } = usePermissions();
 
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim();
   const displayName = fullName || user?.name || user?.email || 'Usuario';
@@ -43,10 +43,19 @@ function Sidebar() {
     { path: '/dashboard/marketing', label: 'Marketing', icon: Megaphone, resource: 'marketing' },
     { path: '/dashboard/gallery', label: 'Galería', icon: Image, resource: 'gallery' },
     { path: '/dashboard/roles', label: 'Roles', icon: UserCog, resource: 'roles' },
+    { path: '/dashboard/settings', label: 'Configuracion', icon: Settings, resource: 'settings', requiresWrite: true },
   ];
 
-  const visibleMainMenuItems = mainMenuItems.filter((item) => canReadResource(item.resource));
-  const visibleGeneralMenuItems = generalMenuItems.filter((item) => canReadResource(item.resource));
+  const hasMenuAccess = (item) => {
+    if (item.requiresWrite) {
+      return canWriteResource(item.resource);
+    }
+
+    return canReadResource(item.resource);
+  };
+
+  const visibleMainMenuItems = mainMenuItems.filter(hasMenuAccess);
+  const visibleGeneralMenuItems = generalMenuItems.filter(hasMenuAccess);
 
   return (
     <aside className="sidebar">

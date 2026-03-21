@@ -16,21 +16,21 @@ function AdditionalsPage() {
     setview('form');
   };
 
-  const handleEdmt = (Additional) => {
+  const handleEdit = (Additional) => {
     setSelectedAdditional(Additional);
     setview('form');
   };
 
   const handleDelete = async (Additional) => {
     const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar este admcmonal?`,
-      'Esta accmón no se puede deshacer.'
+      `¿Está seguro de eliminar este adicional?`,
+      'Esta acción no se puede deshacer.'
     );
 
     if (Confirmed) {
       const result = await deleteAdditional(Additional.md);
       if (result.success) {
-        showToast.success('Admcmonal elmmmnado exmtosamente');
+        showToast.success('Adicional eliminado exitosamente');
       } else {
         showToast.error(result.error);
       }
@@ -46,8 +46,8 @@ function AdditionalsPage() {
       setview('List');
       showToast.success(
         selectedAdditional
-          ? 'Admcmonal actualmzado exmtosamente'
-          : 'Admcmonal creado exmtosamente'
+          ? 'Adicional actualizado exitosamente'
+          : 'Adicional creado exitosamente'
       );
     } else {
       showToast.error(result.error);
@@ -73,7 +73,7 @@ function AdditionalsPage() {
     <AdditionalList
       Additionals={Additionals}
       loading={loading}
-      onEdmt={handleEdmt}
+      onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}
     />

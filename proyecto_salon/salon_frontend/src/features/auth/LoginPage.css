@@ -62,11 +62,15 @@
 
 .login-form {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.9rem;
+}
+
+.login-field-group {
+  display: grid;
+  gap: 0.45rem;
 }
 
 .login-label {
-  margin-top: 0.45rem;
   font-weight: 600;
   font-size: 0.9rem;
   color: #1f2937;
@@ -89,14 +93,81 @@
   transform: translateY(-1px);
 }
 
+.login-toggle-password {
+  justify-self: end;
+  margin-top: 0.05rem;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 0.42rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-toggle-password:hover {
+  border-color: rgba(238, 43, 140, 0.6);
+  color: #be185d;
+  background: rgba(255, 255, 255, 1);
+}
+
+.login-toggle-password:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(238, 43, 140, 0.15);
+}
+
+.login-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: -0.1rem;
+}
+
+.login-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #334155;
+  font-size: 0.83rem;
+  font-weight: 500;
+}
+
+.login-remember input {
+  accent-color: #ee2b8c;
+}
+
+.login-forgot-link {
+  border: none;
+  background: transparent;
+  color: #be185d;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-forgot-link:hover {
+  text-decoration: underline;
+}
+
+.login-forgot-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(238, 43, 140, 0.15);
+  border-radius: 6px;
+}
+
 .login-error {
-  margin-top: 0.5rem;
+  margin: 0;
   color: #dc2626;
   font-size: 0.88rem;
 }
 
 .login-button {
-  margin-top: 0.9rem;
+  margin-top: 0.25rem;
   border: none;
   border-radius: 12px;
   background: linear-gradient(90deg, #ee2b8c, #d11f76);

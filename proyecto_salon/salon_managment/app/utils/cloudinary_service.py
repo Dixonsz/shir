@@ -2,7 +2,8 @@ import os
 import importlib
 from typing import Optional
 
-DEFAULT_ALLOWED_FORMATS = ["jpg", "jpeg", "png", "gif", "webp"]
+DEFAULT_ALLOWED_FORMATS = ["jpg", "jpeg", "png", "gif", "webp", "svg"]
+SVG_MIME_TYPES = {"image/svg+xml", "image/svg", "image/x-svg+xml", "application/svg+xml"}
 
 
 def is_cloudinary_enabled() -> bool:
@@ -19,17 +20,31 @@ def upload_image(file, folder: str, transformation=None, allowed_formats=None):
 
     try:
         cloudinary_uploader = importlib.import_module("cloudinary.uploader")
+        filename = getattr(file, "filename", "") or ""
+        extension = filename.rsplit(".", 1)[1].lower() if "." in filename else ""
+        raw_mime = (getattr(file, "mimetype", None) or getattr(file, "content_type", "") or "").lower()
+        mime_type = raw_mime.split(";", 1)[0].strip()
+        is_svg = extension == "svg" or mime_type in SVG_MIME_TYPES
 
-        data = cloudinary_uploader.upload(
-            file,
-            folder=folder,
-            allowed_formats=allowed_formats or DEFAULT_ALLOWED_FORMATS,
-            transformation=transformation
-            or [
+        effective_transformation = None
+        if not is_svg:
+            effective_transformation = transformation or [
                 {"width": 1200, "height": 1200, "crop": "limit"},
                 {"quality": "auto"},
-            ],
-        )
+            ]
+
+        upload_options = {
+            "folder": folder,
+            "transformation": effective_transformation,
+        }
+
+        # Cloudinary puede detectar algunos SVG como formato no estandar (p.ej. xml)
+        # y rechazarlo cuando se envía allowed_formats. Para SVG usamos validación local
+        # (extension/MIME) y evitamos ese filtro remoto estricto.
+        if not is_svg:
+            upload_options["allowed_formats"] = allowed_formats or DEFAULT_ALLOWED_FORMATS
+
+        data = cloudinary_uploader.upload(file, **upload_options)
         return {
             "success": True,
             "url": data.get("secure_url"),

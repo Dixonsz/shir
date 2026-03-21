@@ -51,6 +51,26 @@ class Service(db.Model):
         }
         
         if include_promotions:
+            promotion_items = []
+            for service_promotion in self.service_promotions or []:
+                promotion = service_promotion.promotion
+                if not promotion or not promotion.is_active:
+                    continue
+
+                promotion_items.append({
+                    "id": promotion.id,
+                    "name": promotion.name,
+                    "description": promotion.description,
+                    "discount_type": promotion.discount_type,
+                    "discount_value": promotion.discount_value,
+                    "start_date": promotion.start_date.isoformat() if promotion.start_date else None,
+                    "end_date": promotion.end_date.isoformat() if promotion.end_date else None,
+                    "is_active": promotion.is_active,
+                    "is_valid": promotion.is_valid,
+                })
+
+            data["promotions"] = promotion_items
+
             active_promotions = self.get_active_promotions()
             if active_promotions:
                 best_promotion = None

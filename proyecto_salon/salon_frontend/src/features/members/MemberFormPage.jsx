@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMembers } from './hooks';
+import Button from '../../components/common/Button';
 import Input from '../../components/forms/Input';
 import Textarea from '../../components/forms/Textarea';
 import FormButtons from '../../components/forms/FormButtons';
@@ -11,11 +12,14 @@ function MemberFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { members, roles, createMember, updateMember } = useMembers();
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     email: '',
+    password: '',
+    confirm_password: '',
     phone_number: '',
     membership_start_date: '',
     membership_end_date: '',
@@ -40,6 +44,8 @@ function MemberFormPage() {
         first_name: member.first_name || '',
         last_name: member.last_name || '',
         email: member.email || member.emaml || '',
+        password: '',
+        confirm_password: '',
         phone_number: member.phone_number || '',
         membership_start_date: (member.membership_start_date || member.membershmp_start_date || '').split('T')[0],
         membership_end_date: (member.membership_end_date || member.membershmp_end_date || '').split('T')[0],
@@ -84,6 +90,21 @@ function MemberFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!isEditing && !formData.password.trim()) {
+      showToast.error('La contraseña es obligatoria al crear un miembro.');
+      return;
+    }
+
+    if (formData.password && formData.password.length < 6) {
+      showToast.error('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (formData.password !== formData.confirm_password) {
+      showToast.error('La confirmación de contraseña no coincide.');
+      return;
+    }
+
     if (!Array.isArray(formData.rol_ids) || formData.rol_ids.length === 0) {
       showToast.error('Debes seleccionar al menos un rol.');
       return;
@@ -99,6 +120,11 @@ function MemberFormPage() {
         ? formData.rol_ids.map((value) => Number(value)).filter((value) => !Number.isNaN(value))
         : [],
     };
+
+    if (!payload.password) {
+      delete payload.password;
+    }
+    delete payload.confirm_password;
 
     const memberId = Number(id);
     const result = isEditing
@@ -152,6 +178,40 @@ function MemberFormPage() {
           required
           placeholder="correo@ejemplo.com"
         />
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <Input
+            name="password"
+            label={isEditing ? 'Nueva contraseña' : 'Contraseña'}
+            type= {showPassword ? 'text' : 'password'}
+            value={formData.password}
+            onChange={handleChange}
+            required={!isEditing}
+            placeholder={isEditing ? 'Opcional para cambiar la actual' : 'Ingresa una contraseña'}
+            autoComplete="new-password"
+          />
+
+          <Input
+            name="confirm_password"
+            label={isEditing ? 'Confirmar nueva contraseña' : 'Confirmar contraseña'}
+            type= {showPassword ? 'text' : 'password'}
+            value={formData.confirm_password}
+            onChange={handleChange}
+            required={!isEditing}
+            placeholder="Repite la contraseña"
+            autoComplete="new-password"
+          />
+        </div>
+        <div style={styles.passwordToggleWrapper}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="small"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? 'Ocultar' : 'Mostrar'} contraseña
+          </Button>
+        </div>
 
         <Input
           name="phone_number"
@@ -267,6 +327,12 @@ const styles = {
     marginBottom: 0,
     color: '#94a3b8',
     fontSize: '0.82rem',
+  },
+  passwordToggleWrapper: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginTop: '-0.5rem',
+    marginBottom: '1rem',
   },
 };
 

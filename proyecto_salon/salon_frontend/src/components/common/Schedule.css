@@ -1,15 +1,17 @@
 .schedule-section {
-    padding: 3rem 1.5rem;
+    padding: 1rem 1.5rem 2.4rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .schedule-container {
-    background: rgba(238, 43, 140, 0.05);
-    border-radius: 1rem;
+    background: linear-gradient(150deg, #ffffff 0%, #fff5fa 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
     padding: 2.5rem;
     max-width: 800px;
     margin: 0 auto;
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
 }
 
 .schedule-title {
@@ -24,7 +26,7 @@
 
 .schedule-icon {
     font-size: 1.75rem;
-    color: var(--primary);
+    color: #be185d;
 }
 
 .schedule-list {
@@ -38,7 +40,7 @@
     justify-content: space-between;
     align-items: center;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(238, 43, 140, 0.1);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.22);
 }
 
 .schedule-item:last-child {

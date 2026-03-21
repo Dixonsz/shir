@@ -11,8 +11,37 @@ from app.repositories.member_repository import MemberRepository
 from app.repositories.service_repository import ServiceRepository
 from app.repositories.product_repository import ProductRepository
 from datetime import datetime
+import unicodedata
 
 class AppointmentService:
+
+    @staticmethod
+    def _normalize_role_name(role_name):
+        if role_name is None:
+            return ''
+
+        normalized = unicodedata.normalize('NFD', str(role_name))
+        normalized = ''.join(ch for ch in normalized if unicodedata.category(ch) != 'Mn')
+        normalized = normalized.strip().lower()
+
+        if normalized == 'employee':
+            return 'estilista'
+
+        return normalized
+
+    @staticmethod
+    def _member_has_stylist_role(member):
+        if not member:
+            return False
+
+        role_names = getattr(member, 'role_names', None) or []
+        if not role_names and getattr(member, 'rol', None):
+            role_names = [member.rol.name]
+
+        return any(
+            AppointmentService._normalize_role_name(role_name) == 'estilista'
+            for role_name in role_names
+        )
 
     @staticmethod
     def _normalize_notes(notes_value):
@@ -90,10 +119,17 @@ class AppointmentService:
                 "error": "Cliente no encontrado."
             }
         
-        if not MemberRepository.get_by_id(member_id):
+        member = MemberRepository.get_by_id(member_id)
+        if not member:
             return {
                 "success": False,
                 "error": "Miembro no encontrado."
+            }
+
+        if not AppointmentService._member_has_stylist_role(member):
+            return {
+                "success": False,
+                "error": "Solo se pueden asignar miembros con rol estilista a una cita."
             }
 
         scheduled_date = None
@@ -214,6 +250,19 @@ class AppointmentService:
             appointment.client_id = int(data['client_id'])
         
         if 'member_id' in data and data['member_id']:
+            member = MemberRepository.get_by_id(int(data['member_id']))
+            if not member:
+                return {
+                    "success": False,
+                    "error": "Miembro no encontrado."
+                }
+
+            if not AppointmentService._member_has_stylist_role(member):
+                return {
+                    "success": False,
+                    "error": "Solo se pueden asignar miembros con rol estilista a una cita."
+                }
+
             appointment.member_id = int(data['member_id'])
         
         if data.get('scheduled_date'):

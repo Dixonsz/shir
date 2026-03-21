@@ -76,6 +76,41 @@
   accent-color: #ee2b8c;
 }
 
+.promotion-form-services-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.promotion-form-services-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.promotion-service-chip {
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  background: rgba(15, 23, 42, 0.45);
+  color: #cbd5e1;
+  border-radius: 9999px;
+  padding: 0.42rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.84rem;
+  transition: all 0.2s ease;
+}
+
+.promotion-service-chip-active {
+  border-color: rgba(238, 43, 140, 0.5);
+  background: rgba(238, 43, 140, 0.15);
+  color: #fbcfe8;
+}
+
+.promotion-form-helper-text {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
 @media (max-width: 760px) {
   .promotion-form-row {
     grid-template-columns: 1fr;

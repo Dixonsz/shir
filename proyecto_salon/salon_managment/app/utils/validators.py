@@ -7,8 +7,13 @@ from werkzeug.datastructures import FileStorage
 class GalleryValidator:
     """Validador para items de galería"""
     
-    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
-    ALLOWED_MIME_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
+    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'}
+    ALLOWED_MIME_TYPES = {
+        'image/jpeg', 'image/jpg', 'image/pjpeg',
+        'image/png', 'image/gif', 'image/webp',
+        'image/svg+xml', 'image/svg', 'image/x-svg+xml', 'application/svg+xml'
+    }
+    SVG_MIME_ALIASES = {'image/svg', 'image/x-svg+xml', 'application/svg+xml'}
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB en bytes
     MAX_TITLE_LENGTH = 100
     MAX_DESCRIPTION_LENGTH = 255
@@ -34,9 +39,17 @@ class GalleryValidator:
         if extension not in GalleryValidator.ALLOWED_EXTENSIONS:
             return False, f"Extensión no permitida. Permitidas: {', '.join(GalleryValidator.ALLOWED_EXTENSIONS)}"
         
-        # Validar tipo MIME
-        if file.mimetype not in GalleryValidator.ALLOWED_MIME_TYPES:
-            return False, f"Tipo de archivo no permitido. Debe ser una imagen válida"
+        # Normalizar MIME porque algunos navegadores/envíos incluyen charset o valores alternativos
+        raw_mime = (getattr(file, 'mimetype', None) or getattr(file, 'content_type', '') or '').strip().lower()
+        mime_type = raw_mime.split(';', 1)[0]
+
+        # Validar tipo MIME: aceptar MIME vacío cuando la extensión es válida
+        # para evitar falsos negativos con ciertos navegadores en archivos SVG.
+        if mime_type:
+            is_allowed_mime = mime_type in GalleryValidator.ALLOWED_MIME_TYPES
+            is_svg_alias = extension == 'svg' and mime_type in GalleryValidator.SVG_MIME_ALIASES
+            if not is_allowed_mime and not is_svg_alias:
+                return False, "Tipo de archivo no permitido. Debe ser una imagen válida"
         
         # Validar tamaño
         file.seek(0, 2)  # Mover al final

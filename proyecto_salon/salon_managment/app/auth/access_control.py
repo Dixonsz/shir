@@ -14,6 +14,8 @@ PUBLIC_ENDPOINT_RULES = (
     ('GET', re.compile(r'^/health$')),
     ('GET', re.compile(r'^/api/members$')),
     ('GET', re.compile(r'^/api/services(?:/\d+)?$')),
+    ('GET', re.compile(r'^/api/gallery(?:/\d+)?$')),
+    ('GET', re.compile(r'^/api/marketing/active$')),
     ('GET', re.compile(r'^/api/appointments$')),
     ('POST', re.compile(r'^/api/appointments$')),
     ('GET', re.compile(r'^/api/clients/number_id/[^/]+$')),

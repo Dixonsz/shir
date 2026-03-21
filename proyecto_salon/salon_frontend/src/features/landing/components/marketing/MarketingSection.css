@@ -1,15 +1,15 @@
 .marketing-section {
-  padding: 4rem 1.5rem;
+  padding: 3.2rem 1.5rem;
 }
 
 .marketing-shell {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
 .marketing-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.25rem;
 }
 
 .marketing-kicker {
@@ -40,21 +40,21 @@
 
 .marketing-card {
   background: #fff;
-  border: 1px solid rgba(238, 43, 140, 0.12);
-  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 10px 26px rgba(34, 16, 25, 0.08);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .marketing-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 34px rgba(34, 16, 25, 0.12);
+  box-shadow: 0 22px 38px rgba(15, 23, 42, 0.12);
 }
 
 .marketing-media {
   width: 100%;
-  height: 220px;
+  height: 230px;
   object-fit: cover;
   display: block;
 }
@@ -70,7 +70,7 @@
 }
 
 .marketing-content {
-  padding: 1rem 1rem 1.25rem;
+  padding: 1.15rem 1.1rem 1.3rem;
 }
 
 .marketing-content h3 {
@@ -89,8 +89,8 @@
   margin-top: 0.9rem;
   display: inline-block;
   font-size: 0.85rem;
-  color: var(--primary);
-  background: rgba(238, 43, 140, 0.08);
+  color: #be185d;
+  background: rgba(236, 72, 153, 0.12);
   border-radius: 999px;
   padding: 0.35rem 0.65rem;
   font-weight: 600;

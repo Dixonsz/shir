@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
@@ -9,6 +9,30 @@ import { clientsApi } from '../clients/api';
 import { servicesApi } from '../services/api';
 import { productsApi } from '../products/api';
 import { showToast } from '../../providers/ToastProvider';
+import { getBlockingReason, getCalendarSettings, isDateTimeBlocked } from '../../core/calendar/calendarSettings';
+
+function normalizeRole(value) {
+  if (!value) return '';
+
+  const normalized = String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (normalized === 'employee') return 'estilista';
+  return normalized;
+}
+
+function memberHasStylistRole(member) {
+  const roleNames = Array.isArray(member?.role_names)
+    ? member.role_names
+    : member?.rol_name
+      ? [member.rol_name]
+      : [];
+
+  return roleNames.some((roleName) => normalizeRole(roleName) === 'estilista');
+}
 
 function AppointmentFormV2({ appointment, clients, members, appointments, onSubmit, onCancel, onClientCreated, initialDate }) {
   const formatDateForInput = (dateString) => {
@@ -24,6 +48,36 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
   const formatCurrency = (amount) => {
     return `₡${parseFloat(amount || 0).toFixed(2)}`;
+  };
+
+  const calculatePromotionPrice = (basePrice, promotion) => {
+    const value = Number(promotion?.discount_value || 0);
+    if (promotion?.discount_type === 'porcentual') {
+      return Math.max(0, basePrice - (basePrice * (value / 100)));
+    }
+    if (promotion?.discount_type === 'fijo') {
+      return Math.max(0, basePrice - value);
+    }
+    return basePrice;
+  };
+
+  const isPromotionValidForDate = (promotion, scheduledDateValue) => {
+    if (!promotion || !scheduledDateValue) return false;
+
+    const scheduleDate = new Date(scheduledDateValue);
+    const startDate = promotion?.start_date ? new Date(promotion.start_date) : null;
+    const endDate = promotion?.end_date ? new Date(promotion.end_date) : null;
+
+    if (!startDate || !endDate) return false;
+    if (Number.isNaN(scheduleDate.getTime()) || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      return false;
+    }
+
+    const scheduleOnly = new Date(scheduleDate.getFullYear(), scheduleDate.getMonth(), scheduleDate.getDate());
+    const startOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+    return scheduleOnly >= startOnly && scheduleOnly <= endOnly;
   };
 
   const [formData, setFormData] = useState({
@@ -44,6 +98,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   const [appointmentAdditionals, setAppointmentAdditionals] = useState([]);
 
   const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [selectedPromotionId, setSelectedPromotionId] = useState('');
   const [selectedServicePrice, setSelectedServicePrice] = useState('');
   
   const [productSelectors, setProductSelectors] = useState({});
@@ -55,6 +110,34 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
     email: '',
     phone_number: '',
   });
+  const calendarSettings = getCalendarSettings();
+  const stylistMembers = useMemo(() => {
+    const source = Array.isArray(members) ? members : [];
+    const filtered = source.filter((member) => member.is_active && memberHasStylistRole(member));
+
+    if (!formData.member_id) {
+      return filtered;
+    }
+
+    const selectedId = parseInt(formData.member_id, 10);
+    const selectedMember = source.find((member) => member.id === selectedId);
+
+    if (selectedMember && !filtered.some((member) => member.id === selectedMember.id)) {
+      return [...filtered, selectedMember];
+    }
+
+    return filtered;
+  }, [members, formData.member_id]);
+
+  const selectedService = useMemo(
+    () => availableServices.find((service) => service.id === parseInt(selectedServiceId, 10)),
+    [availableServices, selectedServiceId]
+  );
+
+  const validPromotionsForSelectedService = useMemo(() => {
+    const promotions = Array.isArray(selectedService?.promotions) ? selectedService.promotions : [];
+    return promotions.filter((promotion) => isPromotionValidForDate(promotion, formData.scheduled_date));
+  }, [selectedService, formData.scheduled_date]);
 
   useEffect(() => {
     loadAvailableData();
@@ -80,7 +163,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   const loadAvailableData = async () => {
     try {
       const [services, products] = await Promise.all([
-        servicesApi.getAll(false),
+        servicesApi.getAll(true),
         productsApi.getAll()
       ]);
       setAvailableServices(services);
@@ -133,17 +216,33 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
     }
 
     const service = availableServices.find(s => s.id === parseInt(selectedServiceId));
-    const price = selectedServicePrice || service?.price || 0;
+    const selectedPromotion = validPromotionsForSelectedService.find(
+      (promotion) => promotion.id === parseInt(selectedPromotionId, 10)
+    );
+
+    if (selectedPromotionId && !selectedPromotion) {
+      showToast.error('La promocion seleccionada no es valida para la fecha de la cita.');
+      return;
+    }
+
+    const basePrice = Number(service?.price || 0);
+    const defaultPrice = selectedPromotion
+      ? calculatePromotionPrice(basePrice, selectedPromotion)
+      : basePrice;
+    const price = selectedServicePrice || defaultPrice;
 
     const newService = {
       tempId: Date.now(),
       service_id: parseInt(selectedServiceId),
       service_name: service?.name || '',
       price_applied: price,
+      promotion_id: selectedPromotion?.id || null,
+      promotion_name: selectedPromotion?.name || null,
     };
 
     setAppointmentServices([...appointmentServices, newService]);
     setSelectedServiceId('');
+    setSelectedPromotionId('');
     setSelectedServicePrice('');
     showToast.success('Servicio agregado');
   };
@@ -164,12 +263,6 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
     });
   };
 
-  const getServicePrice = (serviceId) => {
-    const service = availableServices.find(s => s.id === parseInt(serviceId));
-    return service?.price || 0;
-  };
-
-  
   const handleAddProduct = (serviceTempId) => {
     const selector = productSelectors[serviceTempId];
     if (!selector || !selector.product_id) {
@@ -274,18 +367,16 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const selectedMember = (members || []).find((member) => member.id === parseInt(formData.member_id, 10));
+    if (!memberHasStylistRole(selectedMember)) {
+      showToast.error('Solo puedes asignar especialistas con rol estilista.');
+      return;
+    }
     
     if (formData.scheduled_date) {
-      const selectedDate = new Date(formData.scheduled_date);
-      const hours = selectedDate.getHours();
-      const minutes = selectedDate.getMinutes();
-      const timeInMinutes = hours * 60 + minutes;
-      
-      const minTime = 9 * 60;
-      const maxTime = 18 * 60 + 30;
-      
-      if (timeInMinutes < minTime || timeInMinutes > maxTime) {
-        showToast.error('La hora de la cita debe estar entre las 9:00 AM y las 6:30 PM');
+      if (isDateTimeBlocked(formData.scheduled_date, calendarSettings)) {
+        showToast.error(getBlockingReason(formData.scheduled_date, calendarSettings));
         return;
       }
       
@@ -417,7 +508,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
             </div>
 
             <div style={styles.selectContainer}>
-              <label style={styles.label}>Miembro *</label>
+              <label style={styles.label}>Especialista *</label>
               <select
                 name="member_id"
                 value={formData.member_id}
@@ -425,10 +516,10 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                 required
                 style={styles.select}
               >
-                <option value="">Seleccione un miembro</option>
-                {members && members.map((member) => (
+                <option value="">Seleccione un especialista</option>
+                {stylistMembers.map((member) => (
                   <option key={member.id} value={member.id}>
-                    {member.first_name} {member.last_name}
+                    {member.full_name || `${member.first_name} ${member.last_name}`}
                   </option>
                 ))}
               </select>
@@ -485,7 +576,10 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
             <div style={styles.addRow}>
               <select
                 value={selectedServiceId}
-                onChange={(e) => setSelectedServiceId(e.target.value)}
+                onChange={(e) => {
+                  setSelectedServiceId(e.target.value);
+                  setSelectedPromotionId('');
+                }}
                 style={{ ...styles.select, flex: 2 }}
               >
                 <option value="">Seleccione un servicio</option>
@@ -496,13 +590,34 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                 ))}
               </select>
 
+              <select
+                value={selectedPromotionId}
+                onChange={(e) => setSelectedPromotionId(e.target.value)}
+                style={{ ...styles.select, flex: 1.5 }}
+                disabled={!selectedServiceId || !formData.scheduled_date}
+              >
+                <option value="">Sin promocion</option>
+                {validPromotionsForSelectedService.map((promotion) => (
+                  <option key={promotion.id} value={promotion.id}>
+                    {promotion.name} ({promotion.discount_type === 'porcentual' ? `${promotion.discount_value}%` : `-₡${promotion.discount_value}`})
+                  </option>
+                ))}
+              </select>
+
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={selectedServicePrice}
                 onChange={(e) => setSelectedServicePrice(e.target.value)}
-                placeholder={selectedServiceId ? `$${getServicePrice(selectedServiceId)}` : 'Precio'}
+                placeholder={selectedServiceId
+                  ? `$${selectedPromotionId
+                    ? calculatePromotionPrice(
+                      Number(selectedService?.price || 0),
+                      validPromotionsForSelectedService.find((promotion) => promotion.id === parseInt(selectedPromotionId, 10))
+                    )
+                    : Number(selectedService?.price || 0)}`
+                  : 'Precio'}
                 style={{ ...styles.input, flex: 1 }}
               />
 
@@ -532,7 +647,10 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                     <div style={styles.serviceHeader}>
                       <div style={styles.serviceInfo}>
                         <span style={styles.serviceNumber}>#{index + 1}</span>
-                        <span style={styles.serviceName}>{service.service_name}</span>
+                        <span style={styles.serviceName}>
+                          {service.service_name}
+                          {service.promotion_name ? ` (Promo: ${service.promotion_name})` : ''}
+                        </span>
                       </div>
                       <div style={styles.serviceActions}>
                         <input
@@ -758,7 +876,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
             placeholder="Nombre del cliente"
           />
           <Input
-            label="Correo Electronico"
+            label="Correo Electrónico"
             name="email"
             type="email"
             value={newClient.email}
@@ -767,7 +885,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
             placeholder="correo@ejemplo.com"
           />
           <Input
-            label="Telefono"
+            label="Teléfono"
             name="phone_number"
             value={newClient.phone_number}
             onChange={(e) => setNewClient((prev) => ({ ...prev, phone_number: e.target.value }))}

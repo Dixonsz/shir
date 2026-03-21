@@ -41,7 +41,9 @@ function AppointmentServiceView() {
   };
   
   const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [selectedPromotionId, setSelectedPromotionId] = useState('');
   const [selectedServicePrice, setSelectedServicePrice] = useState('');
+  const [servicePromotionSelectors, setServicePromotionSelectors] = useState({});
   
   const [productSelectors, setProductSelectors] = useState({});
   
@@ -56,7 +58,7 @@ function AppointmentServiceView() {
       setLoading(true);
       const [summaryData, services, products] = await Promise.all([
         appointmentsApi.getSummary(id),
-        servicesApi.getAll(false),
+        servicesApi.getAll(true),
         productsApi.getAll()
       ]);
 
@@ -91,15 +93,31 @@ function AppointmentServiceView() {
     }
     
     try {
+      const service = availableServices.find((item) => item.id === parseInt(selectedServiceId, 10));
+      const selectedPromotion = getValidPromotionsByService(service).find(
+        (promotion) => promotion.id === parseInt(selectedPromotionId, 10)
+      );
+
+      if (selectedPromotionId && !selectedPromotion) {
+        showToast.error('La promocion seleccionada no es valida para esta fecha.');
+        return;
+      }
+
+      const basePrice = Number(service?.price || 0);
+      const computedPrice = selectedPromotion
+        ? calculatePromotionPrice(basePrice, selectedPromotion)
+        : basePrice;
+
       const serviceData = {
         service_id: parseInt(selectedServiceId),
-        price_applied: selectedServicePrice ? parseFloat(selectedServicePrice) : undefined
+        price_applied: selectedServicePrice ? parseFloat(selectedServicePrice) : computedPrice
       };
       
       await appointmentsApi.addService(id, serviceData);
       showToast.success('Servicio agregado correctamente');
       
       setSelectedServiceId('');
+      setSelectedPromotionId('');
       setSelectedServicePrice('');
       loadData();
     } catch (error) {
@@ -118,6 +136,86 @@ function AppointmentServiceView() {
     } catch (error) {
       console.error('Error actualizando precio:', error);
       showToast.error('Error al actualizar precio');
+    }
+  };
+
+  const calculatePromotionPrice = (basePrice, promotion) => {
+    const value = Number(promotion?.discount_value || 0);
+    if (promotion?.discount_type === 'porcentual') {
+      return Math.max(0, basePrice - (basePrice * (value / 100)));
+    }
+    if (promotion?.discount_type === 'fijo') {
+      return Math.max(0, basePrice - value);
+    }
+    return basePrice;
+  };
+
+  const isPromotionValidForAppointmentDate = (promotion) => {
+    if (!promotion || !summary?.scheduled_date) return false;
+
+    const appointmentDate = new Date(summary.scheduled_date);
+    const startDate = promotion.start_date ? new Date(promotion.start_date) : null;
+    const endDate = promotion.end_date ? new Date(promotion.end_date) : null;
+
+    if (!startDate || !endDate) return false;
+    if (Number.isNaN(appointmentDate.getTime()) || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      return false;
+    }
+
+    const appointmentOnly = new Date(
+      appointmentDate.getFullYear(),
+      appointmentDate.getMonth(),
+      appointmentDate.getDate()
+    );
+    const startOnly = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate()
+    );
+    const endOnly = new Date(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate()
+    );
+
+    return appointmentOnly >= startOnly && appointmentOnly <= endOnly;
+  };
+
+  const getValidPromotionsByService = (service) => {
+    const promotions = Array.isArray(service?.promotions) ? service.promotions : [];
+    return promotions.filter((promotion) => isPromotionValidForAppointmentDate(promotion));
+  };
+
+  const handleApplyPromotionToService = async (appointmentService) => {
+    const selectedPromotionValue = servicePromotionSelectors[appointmentService.id] || '';
+    if (!selectedPromotionValue) {
+      showToast.error('Selecciona una promocion para aplicar.');
+      return;
+    }
+
+    const sourceService = availableServices.find((item) => item.id === appointmentService.service_id);
+    const promotion = getValidPromotionsByService(sourceService).find(
+      (item) => item.id === parseInt(selectedPromotionValue, 10)
+    );
+
+    if (!promotion) {
+      showToast.error('La promocion seleccionada no es valida para esta fecha.');
+      return;
+    }
+
+    const basePrice = Number(sourceService?.price || appointmentService.price_applied || 0);
+    const newPrice = calculatePromotionPrice(basePrice, promotion);
+
+    try {
+      await appointmentsApi.updateService(id, appointmentService.id, {
+        price_applied: newPrice,
+      });
+      showToast.success('Promocion aplicada al servicio.');
+      setServicePromotionSelectors((prev) => ({ ...prev, [appointmentService.id]: '' }));
+      loadData();
+    } catch (error) {
+      console.error('Error aplicando promocion:', error);
+      showToast.error(error.response?.data?.message || 'Error al aplicar promocion');
     }
   };
   
@@ -321,6 +419,10 @@ function AppointmentServiceView() {
     const service = availableServices.find(s => s.id === parseInt(serviceId));
     return service?.price || 0;
   };
+
+  const getSelectedService = () => {
+    return availableServices.find((service) => service.id === parseInt(selectedServiceId, 10));
+  };
   
   if (loading) {
     return (
@@ -442,7 +544,10 @@ function AppointmentServiceView() {
                 <div style={styles.addRow}>
                   <select
                     value={selectedServiceId}
-                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedServiceId(e.target.value);
+                      setSelectedPromotionId('');
+                    }}
                     style={{ ...styles.select, flex: 2 }}
                   >
                     <option value="">Seleccione un servicio</option>
@@ -453,13 +558,38 @@ function AppointmentServiceView() {
                     ))}
                   </select>
 
+                  <select
+                    value={selectedPromotionId}
+                    onChange={(e) => setSelectedPromotionId(e.target.value)}
+                    style={{ ...styles.select, flex: 1.5 }}
+                    disabled={!selectedServiceId}
+                  >
+                    <option value="">Sin promocion</option>
+                    {getValidPromotionsByService(getSelectedService()).map((promotion) => (
+                      <option key={promotion.id} value={promotion.id}>
+                        {promotion.name} ({promotion.discount_type === 'porcentual' ? `${promotion.discount_value}%` : `-₡${promotion.discount_value}`})
+                      </option>
+                    ))}
+                  </select>
+
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     value={selectedServicePrice}
                     onChange={(e) => setSelectedServicePrice(e.target.value)}
-                    placeholder={selectedServiceId ? `${formatCurrency(getServicePrice(selectedServiceId))}` : 'Precio'}
+                    placeholder={selectedServiceId
+                      ? `${formatCurrency(
+                        selectedPromotionId
+                          ? calculatePromotionPrice(
+                            getServicePrice(selectedServiceId),
+                            getValidPromotionsByService(getSelectedService()).find(
+                              (promotion) => promotion.id === parseInt(selectedPromotionId, 10)
+                            )
+                          )
+                          : getServicePrice(selectedServiceId)
+                      )}`
+                      : 'Precio'}
                     style={{ ...styles.input, flex: 1 }}
                   />
 
@@ -509,6 +639,43 @@ function AppointmentServiceView() {
                           </Button>
                         </div>
                       </div>
+
+                      {!isCompleted && (() => {
+                        const sourceService = availableServices.find((item) => item.id === service.service_id);
+                        const validPromotions = getValidPromotionsByService(sourceService);
+                        if (validPromotions.length === 0) {
+                          return null;
+                        }
+
+                        return (
+                          <div style={styles.promotionRow}>
+                            <select
+                              value={servicePromotionSelectors[service.id] || ''}
+                              onChange={(e) => setServicePromotionSelectors((prev) => ({
+                                ...prev,
+                                [service.id]: e.target.value,
+                              }))}
+                              style={{ ...styles.selectSmall, flex: 2.5 }}
+                            >
+                              <option value="">Aplicar promocion...</option>
+                              {validPromotions.map((promotion) => (
+                                <option key={promotion.id} value={promotion.id}>
+                                  {promotion.name} ({promotion.discount_type === 'porcentual' ? `${promotion.discount_value}%` : `-₡${promotion.discount_value}`})
+                                </option>
+                              ))}
+                            </select>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleApplyPromotionToService(service)}
+                              disabled={!servicePromotionSelectors[service.id]}
+                            >
+                              Aplicar
+                            </Button>
+                          </div>
+                        );
+                      })()}
 
                       {/* Productos del servicio */}
                       <div style={styles.productsSection}>
@@ -1000,6 +1167,12 @@ const styles = {
     gap: '4px',
   },
   productAddRow: {
+    display: 'flex',
+    gap: '0.5rem',
+    alignItems: 'center',
+    marginBottom: '0.75rem',
+  },
+  promotionRow: {
     display: 'flex',
     gap: '0.5rem',
     alignItems: 'center',

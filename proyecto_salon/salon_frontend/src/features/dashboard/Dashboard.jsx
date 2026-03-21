@@ -6,6 +6,7 @@ import AppointmentDetails from './AppointmentDetails';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 import { usePermissions } from '../auth/hooks';
+import { getBlockingReason, getCalendarSettings, isDateTimeBlocked, isOutsideBusinessHours } from '../../core/calendar/calendarSettings';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -16,6 +17,7 @@ function Dashboard() {
   const { confirm } = useConfirm();
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const calendarSettings = getCalendarSettings();
 
   const handleSelectEvent = (appointment) => {
     setSelectedAppointment(appointment);
@@ -23,9 +25,30 @@ function Dashboard() {
   };
 
   const handleSelectSlot = (slotInfo) => {
+    const baseDate = new Date(slotInfo.start);
+    let normalizedDate = new Date(baseDate);
+
+    if (isOutsideBusinessHours(baseDate, calendarSettings)) {
+      const [startHour, startMinute] = String(calendarSettings.businessHours?.start || '09:00')
+        .split(':')
+        .map(Number);
+
+      normalizedDate.setHours(
+        Number.isNaN(startHour) ? 9 : startHour,
+        Number.isNaN(startMinute) ? 0 : startMinute,
+        0,
+        0
+      );
+    }
+
+    if (isDateTimeBlocked(normalizedDate, calendarSettings)) {
+      showToast.info(getBlockingReason(normalizedDate, calendarSettings));
+      return;
+    }
+
     navigate('/dashboard/appointments', {
       state: {
-        initialDate: slotInfo.start,
+        initialDate: normalizedDate,
         fromCalendar: true,
       },
     });

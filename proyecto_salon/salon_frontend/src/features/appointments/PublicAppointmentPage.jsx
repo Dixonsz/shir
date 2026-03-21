@@ -5,6 +5,7 @@ import { servicesApi } from '../services/api';
 import { membersApi } from '../members/api';
 import { clientsApi } from '../clients/api';
 import { showToast } from '../../providers/ToastProvider';
+import { getBlockingReason, getCalendarSettings, isDateTimeBlocked } from '../../core/calendar/calendarSettings';
 import './PublicAppointmentPage.css';
 
 function initialFormState() {
@@ -83,6 +84,7 @@ export default function PublicAppointmentPage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const calendarSettings = getCalendarSettings();
 
   useEffect(() => {
     const loadPageData = async () => {
@@ -127,6 +129,12 @@ export default function PublicAppointmentPage() {
     [appointments, formData.member_id, formData.scheduled_date]
   );
 
+  const blockedReason = useMemo(() => {
+    if (!formData.scheduled_date) return '';
+    if (!isDateTimeBlocked(formData.scheduled_date, calendarSettings)) return '';
+    return getBlockingReason(formData.scheduled_date, calendarSettings);
+  }, [formData.scheduled_date, calendarSettings]);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -141,20 +149,10 @@ export default function PublicAppointmentPage() {
     }));
   };
 
-  const validateBusinessHours = () => {
-    const selectedDate = new Date(formData.scheduled_date);
-    const hours = selectedDate.getHours();
-    const minutes = selectedDate.getMinutes();
-    const totalMinutes = hours * 60 + minutes;
-    const minTime = 9 * 60;
-    const maxTime = 18 * 60 + 30;
-    return totalMinutes >= minTime && totalMinutes <= maxTime;
-  };
-
   const handleLookupClient = async () => {
     const numberId = formData.number_id.trim();
     if (!numberId) {
-      showToast.error('Ingresa una cedula para verificar.');
+      showToast.error('Ingresa una cédula para verificar.');
       return;
     }
 
@@ -185,7 +183,7 @@ export default function PublicAppointmentPage() {
       }
 
       setClientLookupStatus('idle');
-      showToast.error('No se pudo verificar la cedula.');
+      showToast.error('No se pudo verificar la cédula.');
     }
   };
 
@@ -221,8 +219,8 @@ export default function PublicAppointmentPage() {
       }
     }
 
-    if (!validateBusinessHours()) {
-      showToast.error('La cita debe estar entre 9:00 AM y 6:30 PM.');
+    if (blockedReason) {
+      showToast.error(blockedReason);
       return;
     }
 
@@ -272,9 +270,12 @@ export default function PublicAppointmentPage() {
         <header className="public-appointment-header">
           <p className="public-appointment-kicker">Reserva en linea</p>
           <h1>Agenda tu cita</h1>
+          <p className="public-appointment-description">
+            Elige tu servicio, especialista y horario en pocos pasos.
+          </p>
           
           <Link to="/" className="public-appointment-back-link">
-            Regresar
+            Volver al inicio
           </Link>
         </header>
 
@@ -304,13 +305,13 @@ export default function PublicAppointmentPage() {
 
               {clientLookupStatus === 'found' ? (
                 <p className="public-appointment-lookup-found">
-                  Cliente existente detectado. Se usaran sus datos registrados.
+                  Cliente encontrado. Se usaran sus datos registrados.
                 </p>
               ) : null}
 
               {clientLookupStatus === 'new' ? (
                 <p className="public-appointment-lookup-new">
-                  Cliente nuevo. Completa nombre, correo y telefono para registrarlo.
+                  Cliente no encontrado. Se creara un nuevo registro al confirmar la cita.
                 </p>
               ) : null}
             </div>
@@ -328,7 +329,7 @@ export default function PublicAppointmentPage() {
             </label>
 
             <label>
-              Correo electronico
+              Correo electrónico
               <input
                 type="email"
                 name="email"
@@ -340,7 +341,7 @@ export default function PublicAppointmentPage() {
             </label>
 
             <label>
-              Telefono
+              Teléfono
               <input
                 type="tel"
                 name="phone_number"
@@ -396,6 +397,13 @@ export default function PublicAppointmentPage() {
                 onChange={handleChange}
                 required
               />
+              {blockedReason ? (
+                <p className="public-appointment-warning">{blockedReason}</p>
+              ) : (
+                <p className="public-appointment-lookup-found">
+                  Horario disponible: {calendarSettings.businessHours.start} - {calendarSettings.businessHours.end}
+                </p>
+              )}
             </label>
           </div>
 
@@ -420,7 +428,7 @@ export default function PublicAppointmentPage() {
                 El horario seleccionado no esta disponible para ese especialista.
               </p>
             ) : null}
-            <button type="submit" disabled={saving || loading || Boolean(conflict)}>
+            <button type="submit" disabled={saving || loading || Boolean(conflict) || Boolean(blockedReason)}>
               {saving ? 'Reservando...' : 'Confirmar reserva'}
             </button>
           </aside>

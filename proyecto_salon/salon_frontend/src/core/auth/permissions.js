@@ -25,7 +25,7 @@ const WRITE_ROLES_BY_RESOURCE = {
   category_services: new Set(['administrador', 'gerente']),
   additionals: new Set(['administrador', 'gerente']),
   dashboard: new Set(['administrador', 'gerente', 'recepcionista', 'estilista', 'marketing']),
-  settings: new Set(['administrador', 'gerente', 'recepcionista', 'estilista', 'marketing']),
+  settings: new Set(['administrador', 'gerente']),
 };
 
 export function normalizeRole(roleName) {
@@ -50,6 +50,10 @@ export function canReadResource(roleValues, resource) {
 
   if (resource === 'roles') {
     return roles.includes('administrador');
+  }
+
+  if (resource === 'settings') {
+    return roles.some((role) => WRITE_ROLES_BY_RESOURCE.settings.has(role));
   }
 
   return true;

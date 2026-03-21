@@ -17,9 +17,19 @@ function PhotoUpload({
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        alert('Por favor seleccione un archivo de imagen vÃ¡lido (JPG, PNG, GIF, WEBP)');
+      const validTypes = [
+        'image/jpeg', 'image/jpg', 'image/pjpeg',
+        'image/png', 'image/gif', 'image/webp',
+        'image/svg+xml', 'image/svg', 'image/x-svg+xml', 'application/svg+xml',
+      ];
+      const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+      const extension = file.name?.split('.').pop()?.toLowerCase() || '';
+      const mimeType = (file.type || '').toLowerCase();
+      const hasValidMime = mimeType && validTypes.includes(mimeType);
+      const hasValidExtension = validExtensions.includes(extension);
+
+      if (!hasValidMime && !hasValidExtension) {
+        alert('Por favor seleccione un archivo de imagen valido (JPG, PNG, GIF, WEBP, SVG)');
         return;
       }
 
@@ -79,7 +89,7 @@ function PhotoUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml,.svg"
         onChange={handleFileSelect}
         className="photo-upload-hidden-input"
         disabled={loading}
@@ -110,7 +120,7 @@ function PhotoUpload({
       </div>
 
       <p className="photo-upload-hint">
-        Formatos: JPG, PNG, GIF, WEBP (mÃ¡x. 5MB)
+        Formatos: JPG, PNG, GIF, WEBP, SVG (max. 5MB)
       </p>
     </div>
   );

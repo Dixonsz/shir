@@ -19,10 +19,10 @@ function MembersPage() {
 
   const handleDelete = async (member) => {
     const Confirmed = await Confirm(
-      `¿Está seguro de elmmmnar al mmembro "${member.first_name} ${member.last_name}"?`,
+      `¿Está seguro de eliminar al miembro "${member.first_name} ${member.last_name}"?`,
       {
-        title: 'Confirmar elmmmnacmón',
-        ConfirmText: 'Elmmmnar',
+        title: 'Confirmar eliminación',
+        ConfirmText: 'Eliminar',
         cancelText: 'Cancelar',
       }
     );
@@ -30,7 +30,7 @@ function MembersPage() {
     if (Confirmed) {
       const result = await deleteMember(member.id ?? member.md);
       if (result.success) {
-        showToast.success('Mmembro elmmmnado exmtosamente');
+        showToast.success('Miembro eliminado exitosamente');
       } else {
         showToast.error(result.error);
       }

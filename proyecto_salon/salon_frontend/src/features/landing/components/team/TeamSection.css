@@ -1,14 +1,17 @@
 .team-section {
-    padding: 4rem 1.5rem;
-    max-width: 1200px;
+    padding: 3.6rem 1.5rem;
+    max-width: 1240px;
     margin: 0 auto;
-    background: var(--background-light);
+    background: rgba(255, 255, 255, 0.84);
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 26px;
+    box-shadow: 0 20px 44px rgba(15, 23, 42, 0.07);
 }
 
 .team-section h2 {
-    text-align: left;
+    text-align: center;
     font-size: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 0.6rem;
     color: var(--text-dark);
     font-weight: 700;
 }
@@ -17,8 +20,8 @@
     text-align: center;
     font-size: 1.1rem;
     color: var(--text-gray);
-    margin-bottom: 2rem;
-    font-style: italic;
+    margin-bottom: 1.2rem;
+    font-style: normal;
 }
 
 .team-info {
@@ -44,26 +47,26 @@
     gap: 1rem;
     margin-top: 3rem;
     padding-top: 2rem;
-    border-top: 1px solid rgba(238, 43, 140, 0.1);
+    border-top: 1px solid rgba(148, 163, 184, 0.22);
 }
 
 .pagination-btn {
-    padding: 0.75rem 1.5rem;
-    background: var(--primary);
+    padding: 0.7rem 1.3rem;
+    background: linear-gradient(135deg, #ee2b8c 0%, #db2777 100%);
     color: white;
     border: none;
-    border-radius: 9999px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(238, 43, 140, 0.3);
+    box-shadow: 0 10px 20px rgba(238, 43, 140, 0.28);
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: #d92580;
+    background: linear-gradient(135deg, #e11d72 0%, #be185d 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(238, 43, 140, 0.4);
+    box-shadow: 0 14px 24px rgba(238, 43, 140, 0.34);
 }
 
 .pagination-btn:disabled {
@@ -81,10 +84,10 @@
 .pagination-number {
     width: 45px;
     height: 45px;
-    border: 2px solid rgba(238, 43, 140, 0.2);
-    background: white;
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    background: rgba(255, 255, 255, 0.9);
     color: var(--text-dark);
-    border-radius: 0.5rem;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
@@ -92,14 +95,14 @@
 }
 
 .pagination-number:hover {
-    border-color: var(--primary);
-    background: rgba(238, 43, 140, 0.05);
+    border-color: rgba(190, 24, 93, 0.38);
+    background: rgba(236, 72, 153, 0.1);
 }
 
 .pagination-number.active {
-    background: var(--primary);
+    background: #ee2b8c;
     color: white;
-    border-color: var(--primary);
+    border-color: #ee2b8c;
 }
 
 /* Loading and error states */
@@ -124,7 +127,8 @@
 
 @media (max-width: 768px) {
     .team-section {
-        padding: 3rem 1rem;
+        padding: 2.8rem 1rem;
+        border-radius: 20px;
     }
 
     .team-grid {

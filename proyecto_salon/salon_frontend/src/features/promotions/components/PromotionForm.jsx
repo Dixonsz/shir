@@ -1,12 +1,30 @@
+import { useEffect, useState } from 'react';
 import Input from '../../../components/forms/Input';
 import Textarea from '../../../components/forms/Textarea';
 import FormButtons from '../../../components/forms/FormButtons';
 import EntityFormView from '../../../components/layout/EntityFormView';
+import { servicesApi } from '../../services/api';
+import { showToast } from '../../../providers/ToastProvider';
 import { usePromotionForm } from '../logic/PromotionForm.logic';
 import '../PromotionForm.css';
 
 function PromotionForm({ promotion, onSubmit, onCancel }) {
-  const { formData, handleChange, prepareSubmitData } = usePromotionForm(promotion);
+  const { formData, handleChange, prepareSubmitData, toggleService } = usePromotionForm(promotion);
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const data = await servicesApi.getAll(false);
+        setServices(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error loading services in promotion form:', error);
+        showToast.error('No fue posible cargar los servicios para la promocion.');
+      }
+    };
+
+    loadServices();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -95,6 +113,28 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
               />
               <span>Activo</span>
             </label>
+          </div>
+
+          <div className="promotion-form-services-container">
+            <label className="promotion-form-label">Servicios Asociados</label>
+            <div className="promotion-form-services-grid">
+              {services.map((service) => {
+                const isSelected = formData.service_ids.includes(service.id);
+                return (
+                  <button
+                    key={service.id}
+                    type="button"
+                    className={`promotion-service-chip ${isSelected ? 'promotion-service-chip-active' : ''}`}
+                    onClick={() => toggleService(service.id)}
+                  >
+                    {service.name}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="promotion-form-helper-text">
+              Selecciona uno o varios servicios para que esta promocion se pueda aplicar.
+            </p>
           </div>
 
           <FormButtons

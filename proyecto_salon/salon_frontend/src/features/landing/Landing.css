@@ -1,20 +1,103 @@
 .landing-page {
+    --landing-surface: #ffffff;
+    --landing-soft: #fff6fb;
+    --landing-soft-2: #f8fbff;
+    --landing-stroke: rgba(148, 163, 184, 0.26);
+    --landing-shadow: 0 22px 55px rgba(15, 23, 42, 0.09);
     min-height: 100vh;
-    background-color: var(--background-light);
-    padding-top: 80px; /* Espacio para header fijo */
+    background:
+        radial-gradient(circle at 8% -5%, rgba(238, 43, 140, 0.18), transparent 42%),
+        radial-gradient(circle at 96% 18%, rgba(56, 189, 248, 0.12), transparent 38%),
+        linear-gradient(180deg, #fff9fc 0%, #f8fafc 48%, #ffffff 100%);
+    padding-top: 96px;
+    position: relative;
+    overflow: clip;
+}
+
+.landing-page::before,
+.landing-page::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.landing-page::before {
+    width: 360px;
+    height: 360px;
+    top: 12%;
+    left: -140px;
+    background: rgba(238, 43, 140, 0.12);
+    filter: blur(22px);
+}
+
+.landing-page::after {
+    width: 320px;
+    height: 320px;
+    bottom: 8%;
+    right: -120px;
+    background: rgba(56, 189, 248, 0.14);
+    filter: blur(24px);
 }
 
 .main-content {
     width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+.main-content > * {
+    animation: landingReveal 0.65s ease both;
+}
+
+.main-content > *:nth-child(2) {
+    animation-delay: 0.08s;
+}
+
+.main-content > *:nth-child(3) {
+    animation-delay: 0.14s;
+}
+
+.main-content > *:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.main-content > *:nth-child(5) {
+    animation-delay: 0.26s;
 }
 
 .location-schedule-wrapper {
-    background: rgba(238, 43, 140, 0.03);
-    padding: 3rem 0;
+    margin: 2rem auto 0;
+    max-width: 1240px;
+    border: 1px solid var(--landing-stroke);
+    border-radius: 28px;
+    background:
+        linear-gradient(140deg, rgba(255, 255, 255, 0.94), rgba(255, 248, 252, 0.84));
+    box-shadow: var(--landing-shadow);
+    padding: 1.25rem 0 2.25rem;
+}
+
+@keyframes landingReveal {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (max-width: 768px) {
     .landing-page {
-        padding-top: 70px;
+        padding-top: 82px;
+    }
+
+    .location-schedule-wrapper {
+        margin-top: 1rem;
+        border-radius: 20px;
+        padding-top: 0.9rem;
     }
 }

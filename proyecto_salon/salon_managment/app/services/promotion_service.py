@@ -1,8 +1,55 @@
 from app.models.promotion import Promotion
+from app.models.service import Service
+from app.models.service_promotion import ServicePromotion
 from app.repositories.promotion_repository import PromotionRepository
+from app import db
 from datetime import datetime
 
 class PromotionService:
+
+    @staticmethod
+    def _parse_service_ids(data):
+        raw_ids = data.get('service_ids')
+        if not isinstance(raw_ids, list):
+            return []
+
+        parsed_ids = []
+        for service_id in raw_ids:
+            try:
+                value = int(service_id)
+            except (TypeError, ValueError):
+                continue
+
+            if value not in parsed_ids:
+                parsed_ids.append(value)
+
+        return parsed_ids
+
+    @staticmethod
+    def _sync_promotion_services(promotion, service_ids):
+        db.session.query(ServicePromotion).filter_by(promotion_id=promotion.id).delete()
+
+        if not service_ids:
+            db.session.commit()
+            return
+
+        valid_service_ids = {
+            service.id
+            for service in Service.query.filter(Service.id.in_(service_ids), Service.is_active.is_(True)).all()
+        }
+
+        for service_id in service_ids:
+            if service_id not in valid_service_ids:
+                continue
+
+            db.session.add(
+                ServicePromotion(
+                    service_id=service_id,
+                    promotion_id=promotion.id,
+                )
+            )
+
+        db.session.commit()
 
     @staticmethod
     def create_promotion(data):
@@ -40,6 +87,7 @@ class PromotionService:
         )
 
         created = PromotionRepository.create(promotion)
+        PromotionService._sync_promotion_services(created, PromotionService._parse_service_ids(data))
 
         return {
             "success": True,
@@ -97,6 +145,9 @@ class PromotionService:
         promotion.is_active = data.get('is_active', promotion.is_active)
 
         updated = PromotionRepository.update(promotion)
+        if 'service_ids' in data:
+            PromotionService._sync_promotion_services(updated, PromotionService._parse_service_ids(data))
+
         return {
             "success": True,
             "data": updated.to_dict()

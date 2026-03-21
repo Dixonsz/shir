@@ -16,6 +16,7 @@ const ClientsPage = lazy(() => import('../../features/clients/ClientsPage'));
 const MarketingPage = lazy(() => import('../../features/marketing/MarketingPage'));
 const MarketingFormPage = lazy(() => import('../../features/marketing/MarketingFormPage'));
 const GalleryPage = lazy(() => import('../../features/gallery/GalleryPage'));
+const SettingsPage = lazy(() => import('../../features/settings/SettingsPage'));
 
 export const dashboardRoutes = [
   { index: true, element: <Dashboard />, resource: 'dashboard' },
@@ -37,5 +38,6 @@ export const dashboardRoutes = [
   { path: 'marketing/new', element: <MarketingFormPage />, resource: 'marketing', requiresWrite: true },
   { path: 'marketing/edit/:id', element: <MarketingFormPage />, resource: 'marketing', requiresWrite: true },
   { path: 'gallery', element: <GalleryPage />, resource: 'gallery' },
+  { path: 'settings', element: <SettingsPage />, resource: 'settings', requiresWrite: true },
 ];
 

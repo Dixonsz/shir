@@ -39,7 +39,7 @@ export default function TeamSection() {
         window.scrollTo({ top: document.querySelector('.team-section').offsetTop - 100, behavior: 'smooth' });
     };
 
-    const goToPrevmousPage = () => {
+    const goToPreviousPage = () => {
         setCurrentPage((prev) => Math.max(prev - 1, 1));
         window.scrollTo({ top: document.querySelector('.team-section').offsetTop - 100, behavior: 'smooth' });
     };

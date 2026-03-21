@@ -1,15 +1,27 @@
 import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { servicesApi } from '../../../services/api';
 import ServiceCard from './ServiceCard';
 import './ServicesSection.css';
 
-const ITEMS_PER_PAGE = 9;
+function getCardsPerView(width) {
+    if (width <= 768) {
+        return 1;
+    }
+
+    if (width <= 1100) {
+        return 2;
+    }
+
+    return 3;
+}
 
 export default function ServicesSection() {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [cardsPerView, setCardsPerView] = useState(() => getCardsPerView(window.innerWidth));
 
     useEffect(() => {
         const fetchServices = async () => {
@@ -28,90 +40,119 @@ export default function ServicesSection() {
         fetchServices();
     }, []);
 
-    const totalPages = Math.ceil(services.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const currentServices = services.slice(startIndex, endIndex);
+    useEffect(() => {
+        const handleResize = () => {
+            setCardsPerView(getCardsPerView(window.innerWidth));
+        };
 
-    const goToNextPage = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const totalSlides = Math.ceil(services.length / cardsPerView);
+    const startIndex = currentSlide * cardsPerView;
+    const visibleServices = services.slice(startIndex, startIndex + cardsPerView);
+
+    useEffect(() => {
+        if (currentSlide > 0 && currentSlide >= totalSlides) {
+            setCurrentSlide(Math.max(totalSlides - 1, 0));
+        }
+    }, [currentSlide, totalSlides]);
+
+    const goToNextSlide = () => {
+        setCurrentSlide((prev) => (prev + 1) % totalSlides);
     };
 
-    const goToPreviousPage = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const goToPage = (page) => {
-        setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    const goToPreviousSlide = () => {
+        setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
     };
 
     if (loading) {
-        return <div className="services-section"><p>Cargando servicios...</p></div>;
+        return (
+            <section className="services-section" id="servicios">
+                <div className="services-shell">
+                    <p className="services-feedback">Cargando servicios...</p>
+                </div>
+            </section>
+        );
     }
 
     if (error) {
-        return <div className="services-section"><p>{error}</p></div>;
+        return (
+            <section className="services-section" id="servicios">
+                <div className="services-shell">
+                    <p className="services-feedback">{error}</p>
+                </div>
+            </section>
+        );
     }
 
     if (services.length === 0) {
         return (
-            <div className="services-section">
-                <h2>Servicios</h2>
-                <p>No hay servicios disponibles en este momento.</p>
-            </div>
+            <section className="services-section" id="servicios">
+                <div className="services-shell">
+                    <header className="services-header">
+                        <p className="services-kicker">SERVICIOS DESTACADOS</p>
+                        <h2>Servicios</h2>
+                    </header>
+                    <p className="services-feedback">No hay servicios disponibles en este momento.</p>
+                </div>
+            </section>
         );
     }
 
     return (
-        <section className="services-section">
-            <h2>Servicios</h2>
-            <div className="services-info">
-                <p>Mostrando {startIndex + 1} - {Math.min(endIndex, services.length)} de {services.length} servicios</p>
-            </div>
-            <div className="services-grid">
-                {currentServices.map((service) => (
-                    <ServiceCard key={service.id} service={service} />
-                ))}
-            </div>
-            
-            {totalPages > 1 && (
-                <div className="pagination">
-                    <button 
-                        className="pagination-btn" 
-                        onClick={goToPreviousPage}
-                        disabled={currentPage === 1}
-                        aria-label="Pagina anterior"
-                    >
-                        ❮ Anterior
-                    </button>
-                    
-                    <div className="pagination-numbers">
-                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                            <button
-                                key={page}
-                                className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-                                onClick={() => goToPage(page)}
-                                aria-label={`Ir a pagina ${page}`}
-                                aria-current={currentPage === page ? 'page' : undefined}
-                            >
-                                {page}
-                            </button>
+        <section className="services-section" id="servicios">
+            <div className="services-shell">
+                <header className="services-header">
+                    <p className="services-kicker">SERVICIOS DESTACADOS</p>
+                    <h2>Promociones y Servicios</h2>
+                    <p>Explora nuestros servicios en un vistazo rapido y descubre cuales tienen beneficios especiales hoy.</p>
+                </header>
+
+                <div className="services-carousel">
+                    {totalSlides > 1 && (
+                        <button
+                            className="services-nav services-nav-prev"
+                            onClick={goToPreviousSlide}
+                            aria-label="Servicio anterior"
+                        >
+                            <ChevronLeft size={22} />
+                        </button>
+                    )}
+
+                    <div className="services-grid" role="list" aria-label="Servicios del salon">
+                        {visibleServices.map((service) => (
+                            <ServiceCard key={service.id} service={service} />
                         ))}
                     </div>
 
-                    <button 
-                        className="pagination-btn" 
-                        onClick={goToNextPage}
-                        disabled={currentPage === totalPages}
-                        aria-label="Pagina siguiente"
-                    >
-                        Siguiente ❯
-                    </button>
+                    {totalSlides > 1 && (
+                        <button
+                            className="services-nav services-nav-next"
+                            onClick={goToNextSlide}
+                            aria-label="Servicio siguiente"
+                        >
+                            <ChevronRight size={22} />
+                        </button>
+                    )}
                 </div>
-            )}
+
+                {totalSlides > 1 && (
+                    <div className="services-dots" role="tablist" aria-label="Navegacion de servicios">
+                        {Array.from({ length: totalSlides }, (_, index) => (
+                            <button
+                                key={index}
+                                type="button"
+                                className={`services-dot ${currentSlide === index ? 'is-active' : ''}`}
+                                onClick={() => setCurrentSlide(index)}
+                                aria-label={`Ver grupo ${index + 1}`}
+                                aria-selected={currentSlide === index}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
         </section>
     );
 }

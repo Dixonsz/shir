@@ -46,6 +46,16 @@ class Promotion(db.Model):
         return original_price
 
     def to_dict(self):
+        linked_services = []
+        for service_promotion in self.service_promotions or []:
+            service = service_promotion.service
+            if not service or not service.is_active:
+                continue
+            linked_services.append({
+                "id": service.id,
+                "name": service.name,
+            })
+
         return {
             "id": self.id,
             "name": self.name,
@@ -56,6 +66,8 @@ class Promotion(db.Model):
             "end_date": self.end_date.isoformat() if self.end_date else None,
             "is_active": self.is_active,
             "is_valid": self.is_valid,
+            "service_ids": [service["id"] for service in linked_services],
+            "services": linked_services,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }

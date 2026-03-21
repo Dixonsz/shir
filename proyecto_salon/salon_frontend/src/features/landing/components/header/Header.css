@@ -4,15 +4,16 @@
     left: 0;
     right: 0;
     z-index: 1000;
-    background: rgba(248, 246, 247, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(238, 43, 140, 0.1);
-    height: 80px;
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+    height: 84px;
+    box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06);
 }
 
 .header-container {
-    max-width: 1200px;
+    max-width: 1240px;
     margin: 0 auto;
     padding: 0 1.5rem;
     height: 100%;
@@ -30,47 +31,47 @@
 .logo-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #ee2b8c 0%, #c21975 100%);
-    border-radius: 50%;
+    background: linear-gradient(135deg, #ee2b8c 0%, #f43f91 45%, #fb7185 100%);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 1.25rem;
-    box-shadow: 0 4px 10px rgba(238, 43, 140, 0.3);
+    box-shadow: 0 10px 25px rgba(238, 43, 140, 0.32);
 }
 
 .logo-text {
-    font-size: 1.25rem;
+    font-size: 1.18rem;
     font-weight: 800;
-    letter-spacing: 0.5px;
-    color: var(--text-dark);
+    letter-spacing: 0.06em;
+    color: #0f172a;
     text-transform: uppercase;
 }
 
 .header-login-btn {
-    padding: 0.75rem 1.75rem;
-    background: var(--primary);
+    padding: 0.7rem 1.5rem;
+    background: linear-gradient(135deg, #ee2b8c 0%, #db2777 100%);
     color: white;
     border: none;
-    border-radius: 9999px;
+    border-radius: 12px;
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(238, 43, 140, 0.3);
+    box-shadow: 0 12px 24px rgba(238, 43, 140, 0.3);
 }
 
 .header-login-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(238, 43, 140, 0.4);
-    background: #d92580;
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 15px 28px rgba(238, 43, 140, 0.36);
+    background: linear-gradient(135deg, #e11d72 0%, #be185d 100%);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .landing-header {
-        height: 70px;
+        height: 72px;
     }
     
     .logo-icon {
@@ -84,8 +85,9 @@
     }
     
     .header-login-btn {
-        padding: 0.6rem 1.5rem;
+        padding: 0.56rem 1.2rem;
         font-size: 0.9rem;
+        border-radius: 10px;
     }
 }
 
