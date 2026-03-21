@@ -166,6 +166,12 @@
   font-size: 0.88rem;
 }
 
+.login-captcha-wrap {
+  margin-top: 0.25rem;
+  width: 100%;
+  overflow-x: auto;
+}
+
 .login-button {
   margin-top: 0.25rem;
   border: none;

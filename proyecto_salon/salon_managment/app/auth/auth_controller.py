@@ -5,7 +5,9 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
+    data = request.json or {}
+    forwarded_for = request.headers.get('X-Forwarded-For', '')
+    data['remoteIp'] = forwarded_for.split(',')[0].strip() or request.remote_addr
     result = AuthService.login(data)
 
     if not result["success"]:

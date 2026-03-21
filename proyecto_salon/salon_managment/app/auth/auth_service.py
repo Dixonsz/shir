@@ -1,11 +1,23 @@
 from app import bcrypt
 from flask_jwt_extended import create_access_token
 from app.repositories.member_repository import MemberRepository
+from app.auth.recaptcha_service import verify_recaptcha
 
 class AuthService:
 
     @staticmethod
     def login(data):
+        data = data or {}
+
+        captcha_token = data.get('captchaToken')
+        remote_ip = data.get('remoteIp')
+        captcha_valid, captcha_error = verify_recaptcha(captcha_token, remote_ip=remote_ip)
+        if not captcha_valid:
+            return {
+                "success": False,
+                "error": captcha_error
+            }
+
         member = MemberRepository.get_by_email(data.get('email'))
         
         if not member:

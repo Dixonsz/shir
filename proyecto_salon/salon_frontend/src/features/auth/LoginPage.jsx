@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { useAuth } from './hooks';
 import { showToast } from '../../providers/ToastProvider';
 import './LoginPage.css';
@@ -15,8 +16,12 @@ function canUsePasswordCredentials() {
 
 function LoginPage() {
   const { login, isAuthenticated } = useAuth();
+  const recaptchaRef = useRef(null);
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+  const isRecaptchaEnabled = Boolean(recaptchaSiteKey);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -88,9 +93,23 @@ function LoginPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+
+    if (!isRecaptchaEnabled) {
+      setError('No se puede iniciar sesion: reCAPTCHA no esta configurado.');
+      return;
+    }
+
+    if (!captchaToken) {
+      setError('Debes completar el reCAPTCHA para continuar.');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const result = await login(formData);
+    const result = await login({
+      ...formData,
+      captchaToken,
+    });
     if (result.success) {
       if (rememberMe) {
         localStorage.setItem(REMEMBER_EMAIL_KEY, formData.email.trim());
@@ -112,6 +131,8 @@ function LoginPage() {
       }
     } else {
       setError(result.error);
+      recaptchaRef.current?.reset();
+      setCaptchaToken('');
     }
 
     setIsSubmitting(false);
@@ -187,7 +208,26 @@ function LoginPage() {
 
           {error ? <p className="login-error">{error}</p> : null}
 
-          <button type="submit" className="login-button" disabled={isSubmitting}>
+          {isRecaptchaEnabled ? (
+            <div className="login-captcha-wrap">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={recaptchaSiteKey}
+                onChange={(token) => setCaptchaToken(token || '')}
+                onExpired={() => setCaptchaToken('')}
+              />
+            </div>
+          ) : (
+            <p className="login-error">
+              Falta configurar VITE_RECAPTCHA_SITE_KEY para habilitar el inicio de sesion.
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="login-button"
+            disabled={isSubmitting || !captchaToken || !isRecaptchaEnabled}
+          >
             {isSubmitting ? 'Ingresando...' : 'Entrar'}
           </button>
         </form>

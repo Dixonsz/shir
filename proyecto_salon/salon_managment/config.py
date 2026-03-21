@@ -5,6 +5,13 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+    RECAPTCHA_ENABLED = os.getenv('RECAPTCHA_ENABLED', 'false').lower() == 'true'
+    RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY', '')
+    RECAPTCHA_VERIFY_URL = os.getenv('RECAPTCHA_VERIFY_URL', 'https://www.google.com/recaptcha/api/siteverify')
+    RECAPTCHA_MIN_SCORE = float(os.getenv('RECAPTCHA_MIN_SCORE', 0.5))
+    RECAPTCHA_EXPECTED_ACTION = os.getenv('RECAPTCHA_EXPECTED_ACTION', 'login')
+    RECAPTCHA_VALIDATE_ACTION = os.getenv('RECAPTCHA_VALIDATE_ACTION', 'false').lower() == 'true'
     
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', SECRET_KEY)
     JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))  
