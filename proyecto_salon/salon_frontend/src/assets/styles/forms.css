@@ -145,6 +145,7 @@
 .input-group {
   display: flex;
   gap: var(--spacing-sm);
+  flex-wrap: wrap;
 }
 
 .input-group .form-input {
@@ -206,6 +207,30 @@
 @media (max-width: 768px) {
   .form-container {
     padding: var(--spacing-md);
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea,
+  .form-file-input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group-prepend,
+  .input-group-append {
+    width: 100%;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+  }
+
+  .input-group .form-input:not(:first-child),
+  .input-group .form-input:not(:last-child) {
+    border-radius: var(--border-radius-sm);
   }
 
   .form-row {

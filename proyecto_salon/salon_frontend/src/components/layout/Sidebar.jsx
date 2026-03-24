@@ -13,14 +13,17 @@ import {
   Megaphone,
   Settings,
   LogOut,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useAuth, usePermissions } from '../../features/auth/hooks';
 import './Sidebar.css';
 
-function Sidebar() {
+function Sidebar({ isOpen = false, onClose }) {
   const { user, logout } = useAuth();
   const { canReadResource, canWriteResource } = usePermissions();
+  const location = useLocation();
 
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim();
   const displayName = fullName || user?.name || user?.email || 'Usuario';
@@ -57,8 +60,23 @@ function Sidebar() {
   const visibleMainMenuItems = mainMenuItems.filter(hasMenuAccess);
   const visibleGeneralMenuItems = generalMenuItems.filter(hasMenuAccess);
 
+  const handleItemClick = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+      <button
+        type="button"
+        className="sidebar-mobile-close"
+        aria-label="Cerrar menu lateral"
+        onClick={onClose}
+      >
+        <X size={18} />
+      </button>
+
       <div className="sidebar-logo-container">
         <div className="sidebar-logo-icon">
           <Sparkles size={24} color="#fff" />
@@ -75,13 +93,14 @@ function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={handleItemClick}
               className={({ isActive }) => 
                 isActive ? 'sidebar-nav-item sidebar-nav-item-active' : 'sidebar-nav-item'
               }
             >
               <item.icon size={20} className="sidebar-nav-icon" />
               <span className="sidebar-nav-text">{item.label}</span>
-              {window.location.pathname === item.path && (
+              {location.pathname === item.path && (
                 <div className="sidebar-active-indicator"></div>
               )}
             </NavLink>
@@ -97,13 +116,14 @@ function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={handleItemClick}
               className={({ isActive }) => 
                 isActive ? 'sidebar-nav-item sidebar-nav-item-active' : 'sidebar-nav-item'
               }
             >
               <item.icon size={20} className="sidebar-nav-icon" />
               <span className="sidebar-nav-text">{item.label}</span>
-              {window.location.pathname === item.path && (
+              {location.pathname === item.path && (
                 <div className="sidebar-active-indicator"></div>
               )}
             </NavLink>

@@ -110,6 +110,10 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
     email: '',
     phone_number: '',
   });
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 760;
+  });
   const calendarSettings = getCalendarSettings();
   const stylistMembers = useMemo(() => {
     const source = Array.isArray(members) ? members : [];
@@ -141,6 +145,14 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
   useEffect(() => {
     loadAvailableData();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => setIsMobile(window.innerWidth <= 760);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -462,25 +474,25 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
   return (
     <div>
-      <div style={styles.header}>
+      <div style={{ ...styles.header, ...(isMobile ? styles.headerMobile : null) }}>
         <Button onClick={onCancel} variant="secondary">
           <ArrowLeft size={20} />
           Volver
         </Button>
-        <h1 style={styles.title}>
+        <h1 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : null) }}>
           {appointment ? 'Editar Cita' : 'Nueva Cita'}
         </h1>
-        <div style={{ width: '100px' }}></div>
+        <div style={isMobile ? { display: 'none' } : { width: '100px' }}></div>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card style={{ marginBottom: '1.5rem' }}>
           <h2 style={styles.sectionTitle}>Información de la Cita</h2>
           
-          <div style={styles.row}>
+          <div style={{ ...styles.row, ...(isMobile ? styles.rowMobile : null) }}>
             <div style={styles.selectContainer}>
               <label style={styles.label}>Cliente *</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', ...(isMobile ? styles.compactRowMobile : null) }}>
                 <select
                   name="client_id"
                   value={formData.client_id}
@@ -526,7 +538,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
             </div>
           </div>
 
-          <div style={styles.row}>
+          <div style={{ ...styles.row, ...(isMobile ? styles.rowMobile : null) }}>
             <Input
               label="Fecha y Hora de la Cita"
               name="scheduled_date"
@@ -573,7 +585,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
           <h2 style={styles.sectionTitle}>Servicios *</h2>
 
           <div style={styles.addSection}>
-            <div style={styles.addRow}>
+            <div style={{ ...styles.addRow, ...(isMobile ? styles.addRowMobile : null) }}>
               <select
                 value={selectedServiceId}
                 onChange={(e) => {
@@ -644,7 +656,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
                 return (
                   <div key={service.tempId} style={styles.serviceCard}>
-                    <div style={styles.serviceHeader}>
+                    <div style={{ ...styles.serviceHeader, ...(isMobile ? styles.serviceHeaderMobile : null) }}>
                       <div style={styles.serviceInfo}>
                         <span style={styles.serviceNumber}>#{index + 1}</span>
                         <span style={styles.serviceName}>
@@ -652,7 +664,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                           {service.promotion_name ? ` (Promo: ${service.promotion_name})` : ''}
                         </span>
                       </div>
-                      <div style={styles.serviceActions}>
+                      <div style={{ ...styles.serviceActions, ...(isMobile ? styles.serviceActionsMobile : null) }}>
                         <input
                           type="number"
                           step="0.01"
@@ -681,7 +693,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                         </label>
                       </div>
 
-                      <div style={styles.productAddRow}>
+                      <div style={{ ...styles.productAddRow, ...(isMobile ? styles.productAddRowMobile : null) }}>
                         <select
                           value={selector.product_id}
                           onChange={(e) => updateProductSelector(service.tempId, 'product_id', e.target.value)}
@@ -718,9 +730,9 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                       {serviceProducts.length > 0 && (
                         <div style={styles.productsList}>
                           {serviceProducts.map((product) => (
-                            <div key={product.tempId} style={styles.productItem}>
+                            <div key={product.tempId} style={{ ...styles.productItem, ...(isMobile ? styles.productItemMobile : null) }}>
                               <span style={styles.productName}>{product.product_name}</span>
-                              <div style={styles.productDetails}>
+                              <div style={{ ...styles.productDetails, ...(isMobile ? styles.productDetailsMobile : null) }}>
                                 <input
                                   type="number"
                                   min="1"
@@ -771,7 +783,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
           ) : (
             <div style={styles.itemsList}>
               {appointmentAdditionals.map((additional, index) => (
-                <div key={additional.tempId} style={styles.additionalRow}>
+                <div key={additional.tempId} style={{ ...styles.additionalRow, ...(isMobile ? styles.additionalRowMobile : null) }}>
                   <span style={styles.additionalNumber}>#{index + 1}</span>
                   
                   <input
@@ -811,21 +823,21 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
         <Card style={{ marginBottom: '1.5rem' }}>
           <h2 style={styles.sectionTitle}>Resumen</h2>
           
-          <div style={styles.summaryRow}>
+          <div style={{ ...styles.summaryRow, ...(isMobile ? styles.summaryRowMobile : null) }}>
             <span>Servicios:</span>
             <span style={styles.summaryValue}>
               {formatCurrency(appointmentServices.reduce((sum, s) => sum + (parseFloat(s.price_applied) || 0), 0))}
             </span>
           </div>
           
-          <div style={styles.summaryRow}>
+          <div style={{ ...styles.summaryRow, ...(isMobile ? styles.summaryRowMobile : null) }}>
             <span>Productos:</span>
             <span style={styles.summaryValue}>
               {formatCurrency(appointmentProducts.reduce((sum, p) => sum + (parseFloat(p.price) * parseInt(p.quantity_product)), 0))}
             </span>
           </div>
           
-          <div style={styles.summaryRow}>
+          <div style={{ ...styles.summaryRow, ...(isMobile ? styles.summaryRowMobile : null) }}>
             <span>Adicionales:</span>
             <span style={styles.summaryValue}>
               {formatCurrency(appointmentAdditionals.filter(a => a.concept && a.price).reduce((sum, a) => sum + parseFloat(a.price), 0))}
@@ -834,11 +846,11 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
           
           <div style={styles.divider}></div>
           
-          <div style={styles.totalRow}>
-            <span style={styles.totalLabel}>
+          <div style={{ ...styles.totalRow, ...(isMobile ? styles.totalRowMobile : null) }}>
+            <span style={{ ...styles.totalLabel, ...(isMobile ? styles.totalLabelMobile : null) }}>
               TOTAL:
             </span>
-            <span style={styles.totalValue}>
+            <span style={{ ...styles.totalValue, ...(isMobile ? styles.totalValueMobile : null) }}>
               {formatCurrency(total)}
             </span>
           </div>
@@ -917,11 +929,20 @@ const styles = {
     alignItems: 'center',
     marginBottom: '2rem',
   },
+  headerMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '0.75rem',
+    marginBottom: '1.2rem',
+  },
   title: {
     fontSize: '2rem',
     fontWeight: 'bold',
     color: '#e2e8f0',
     margin: 0,
+  },
+  titleMobile: {
+    fontSize: '1.45rem',
   },
   sectionTitle: {
     fontSize: '1.25rem',
@@ -942,6 +963,13 @@ const styles = {
     gridTemplateColumns: '1fr 1fr',
     gap: '1rem',
     marginBottom: '1rem',
+  },
+  rowMobile: {
+    gridTemplateColumns: '1fr',
+    gap: '0.75rem',
+  },
+  compactRowMobile: {
+    flexWrap: 'wrap',
   },
   selectContainer: {
     display: 'flex',
@@ -1048,6 +1076,10 @@ const styles = {
     gap: '0.75rem',
     alignItems: 'center',
   },
+  addRowMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
   emptyState: {
     padding: '2rem',
     textAlign: 'center',
@@ -1075,6 +1107,11 @@ const styles = {
     paddingBottom: '0.75rem',
     borderBottom: '1px solid rgba(71, 85, 105, 0.4)',
   },
+  serviceHeaderMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '0.6rem',
+  },
   serviceInfo: {
     display: 'flex',
     alignItems: 'center',
@@ -1098,6 +1135,9 @@ const styles = {
     gap: '0.5rem',
     alignItems: 'center',
   },
+  serviceActionsMobile: {
+    justifyContent: 'space-between',
+  },
   productsSection: {
     marginTop: '0.75rem',
     padding: '0.75rem',
@@ -1112,6 +1152,10 @@ const styles = {
     gap: '0.5rem',
     alignItems: 'center',
     marginBottom: '0.75rem',
+  },
+  productAddRowMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
   },
   productsList: {
     display: 'flex',
@@ -1130,6 +1174,11 @@ const styles = {
     borderRadius: '4px',
     border: '1px solid rgba(71, 85, 105, 0.45)',
   },
+  productItemMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '0.5rem',
+  },
   productName: {
     fontSize: '0.9rem',
     color: '#e2e8f0',
@@ -1139,6 +1188,9 @@ const styles = {
     display: 'flex',
     gap: '0.5rem',
     alignItems: 'center',
+  },
+  productDetailsMobile: {
+    justifyContent: 'space-between',
   },
   productTotal: {
     fontSize: '0.9rem',
@@ -1155,6 +1207,9 @@ const styles = {
     backgroundColor: 'rgba(15, 23, 42, 0.6)',
     borderRadius: '6px',
     border: '1px solid rgba(71, 85, 105, 0.4)',
+  },
+  additionalRowMobile: {
+    flexWrap: 'wrap',
   },
   additionalNumber: {
     fontSize: '0.85rem',
@@ -1175,6 +1230,9 @@ const styles = {
     fontSize: '1rem',
     color: '#cbd5e1',
   },
+  summaryRowMobile: {
+    fontSize: '0.92rem',
+  },
   summaryValue: {
     fontWeight: '700',
     color: '#e2e8f0',
@@ -1192,6 +1250,11 @@ const styles = {
     background: 'linear-gradient(135deg, #ee2b8c 0%, #be185d 100%)',
     borderRadius: '8px',
   },
+  totalRowMobile: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: '0.4rem',
+  },
   totalLabel: {
     fontSize: '1.25rem',
     fontWeight: '700',
@@ -1200,10 +1263,16 @@ const styles = {
     alignItems: 'center',
     gap: '0.5rem',
   },
+  totalLabelMobile: {
+    fontSize: '1.05rem',
+  },
   totalValue: {
     fontSize: '1.75rem',
     fontWeight: '700',
     color: '#ffffff',
+  },
+  totalValueMobile: {
+    fontSize: '1.45rem',
   },
   modalForm: {
     display: 'flex',

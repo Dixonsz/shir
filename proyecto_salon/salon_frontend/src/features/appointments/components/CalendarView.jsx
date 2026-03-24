@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -81,9 +81,31 @@ const messages = {
 };
 
 function CalendarView({ appointments, clients, members, onSelectEvent, onSelectSlot }) {
-  const [view, setView] = useState('month');
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 760;
+  });
+  const [view, setView] = useState(() => (typeof window !== 'undefined' && window.innerWidth <= 760 ? 'day' : 'month'));
   const [date, setDate] = useState(new Date());
   const calendarSettings = getCalendarSettings();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 760;
+      setIsMobile(mobile);
+      setView((currentView) => {
+        if (!mobile) {
+          return currentView === 'agenda' ? 'month' : currentView;
+        }
+        return ['day', 'agenda'].includes(currentView) ? currentView : 'day';
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const parseTime = (time, fallbackHour, fallbackMinute) => {
     if (!time || typeof time !== 'string') {
@@ -141,6 +163,8 @@ function CalendarView({ appointments, clients, members, onSelectEvent, onSelectS
     setView(newView);
   };
 
+  const availableViews = isMobile ? ['day', 'agenda'] : ['month', 'week', 'day'];
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
@@ -172,8 +196,8 @@ function CalendarView({ appointments, clients, members, onSelectEvent, onSelectS
         eventPropGetter={eventStyleGetter}
         dayPropGetter={(dateValue) => blockedDayStyleGetter(dateValue, calendarSettings)}
         slotPropGetter={(dateValue) => blockedSlotStyleGetter(dateValue, calendarSettings)}
-        views={['month', 'week', 'day']}
-        step={30}
+        views={availableViews}
+        step={isMobile ? 15 : 30}
         showMultiDayTimes
         defaultDate={new Date()}
         min={minTime}

@@ -38,3 +38,9 @@
   cursor: pointer;
   accent-color: #ee2b8c;
 }
+
+@media (max-width: 760px) {
+  .category-service-form-title {
+    font-size: 1.5rem;
+  }
+}

@@ -40,6 +40,21 @@ body {
     min-height: 100vh;
 }
 
+img,
+svg,
+video,
+canvas,
+iframe {
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
 .dashboard-container {
     background-color: var(--dashboard-bg);
     min-height: 100vh;
@@ -238,5 +253,57 @@ input[type="radio"]:checked {
     .btn {
         padding: 0.75rem 1.5rem;
         font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 760px) {
+    .additional-list-header,
+    .category-product-list-header,
+    .category-service-list-header,
+    .client-list-header,
+    .gallery-list-header,
+    .marketing-list-header,
+    .member-list-header,
+    .product-list-header,
+    .promotion-list-header,
+    .roles-view-header,
+    .service-list-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+    }
+
+    .additional-list-title,
+    .category-product-list-title,
+    .category-service-list-title,
+    .client-list-title,
+    .gallery-list-title,
+    .marketing-list-title,
+    .member-list-title,
+    .product-list-title,
+    .promotion-list-title,
+    .roles-view-title,
+    .service-list-title {
+        font-size: 1.5rem;
+    }
+
+    .dashboard-content {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .additional-list-title,
+    .category-product-list-title,
+    .category-service-list-title,
+    .client-list-title,
+    .gallery-list-title,
+    .marketing-list-title,
+    .member-list-title,
+    .product-list-title,
+    .promotion-list-title,
+    .roles-view-title,
+    .service-list-title {
+        font-size: 1.3rem;
     }
 }

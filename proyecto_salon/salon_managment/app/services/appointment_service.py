@@ -10,7 +10,9 @@ from app.repositories.client_repository import ClientRepository
 from app.repositories.member_repository import MemberRepository
 from app.repositories.service_repository import ServiceRepository
 from app.repositories.product_repository import ProductRepository
+from app.services.whatsapp_service import WhatsAppService
 from datetime import datetime
+from flask import current_app
 import unicodedata
 
 class AppointmentService:
@@ -112,8 +114,9 @@ class AppointmentService:
     def create_appointment(data):
         client_id = int(data['client_id']) if data.get('client_id') else None
         member_id = int(data['member_id']) if data.get('member_id') else None
-        
-        if not ClientRepository.get_by_id(client_id):
+
+        client = ClientRepository.get_by_id(client_id)
+        if not client:
             return {
                 "success": False,
                 "error": "Cliente no encontrado."
@@ -153,14 +156,22 @@ class AppointmentService:
         services_data = data.get('services', [])
         products_data = data.get('products', [])
         additionals_data = data.get('additionals', [])
-        
+        confirmation_phone = (
+            data.get('confirmation_phone')
+            or data.get('confirmation_phone_number')
+            or data.get('whatsapp_phone')
+        )
+
         appointment_services_created = []
-        
+        service_names = []
+
         for service_data in services_data:
             service_id = int(service_data.get('service_id'))
             service = ServiceRepository.get_by_id(service_id)
             if not service:
                 continue
+
+            service_names.append(service.name)
             
             price_applied = service_data.get('price_applied', service.price)
             
@@ -201,6 +212,39 @@ class AppointmentService:
                     price=price
                 )
                 AdditionalRepository.create(additional)
+
+        try:
+            current_app.logger.info(
+                'Disparando notificaciones WhatsApp para cita %s (cliente=%s, miembro=%s).',
+                created.id,
+                client.id,
+                member.id,
+            )
+            notification_result = WhatsAppService.send_appointment_notifications(
+                appointment=created,
+                client=client,
+                member=member,
+                service_names=service_names,
+                confirmation_phone=confirmation_phone,
+            )
+            current_app.logger.info(
+                'Resultado notificaciones WhatsApp cita %s: %s',
+                created.id,
+                notification_result,
+            )
+            if not notification_result.get('success', False):
+                current_app.logger.warning(
+                    'No se pudieron enviar notificaciones WhatsApp para la cita %s: %s',
+                    created.id,
+                    notification_result.get('error', 'error desconocido'),
+                )
+        except Exception as exc:
+            # No bloquear la creacion de la cita por fallos de servicios externos.
+            current_app.logger.exception(
+                'Error no controlado enviando WhatsApp para la cita %s: %s',
+                created.id,
+                str(exc),
+            )
 
         return {
             "success": True,

@@ -6,3 +6,15 @@
   padding-top: 1.5rem;
   border-top: 1px solid rgba(71, 85, 105, 0.3);
 }
+
+@media (max-width: 760px) {
+  .form-buttons-container {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .form-buttons-container .button {
+    width: 100%;
+  }
+}

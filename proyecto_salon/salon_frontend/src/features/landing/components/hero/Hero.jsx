@@ -16,7 +16,7 @@ export default function Hero() {
                     />
                     <div className="hero-overlay"></div>
                     <div className="hero-content">
-                        <span className="hero-kicker">Imagen, estilo y precision</span>
+                        <span className="hero-kicker">Imagen, estilo y precisión</span>
                         <h1 className="hero-title">
                             Diseña tu mejor versión en
                             <span className="hero-brand"> Shir Salón</span>

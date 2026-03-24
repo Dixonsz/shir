@@ -123,3 +123,26 @@
   color: #64748b;
   margin: 0;
 }
+
+@media (max-width: 760px) {
+  .gallery-form-title {
+    font-size: 1.5rem;
+  }
+
+  .gallery-form-image-upload {
+    padding: 1.25rem;
+  }
+
+  .gallery-form-upload-label {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .gallery-form-remove-button {
+    top: 0.65rem;
+    right: 0.65rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}

@@ -302,14 +302,14 @@ function Table({
               filteredData.map((row, index) => (
                 <tr key={row.id || index}>
                   {columnsArray.map((column) => (
-                    <td key={column.key}>
+                    <td key={column.key} data-label={column.label}>
                       {column.render
                         ? column.render(row[column.key], row)
                         : row[column.key]}
                     </td>
                   ))}
                   {(onEdit || onDelete || customActions) && (
-                    <td>
+                    <td data-label="Acciones" className="table-actions-cell">
                       <div className="table-actions">
                         {customActions && customActions(row)}
                         {onEdit && (

@@ -96,21 +96,31 @@
   .rbc-toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
   }
 
   .rbc-toolbar button {
     width: 100%;
     margin: 2px 0;
+    font-size: 0.8rem;
+    min-height: 38px;
   }
 
   .rbc-btn-group {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+    gap: 0.35rem;
+  }
+
+  .rbc-btn-group button + button {
+    margin-left: 0;
   }
 
   .rbc-toolbar-label {
     order: -1;
     margin-bottom: 10px;
     font-size: 1.125rem;
+    text-align: center;
   }
 
   .rbc-event {
@@ -124,6 +134,39 @@
 
   .rbc-date-cell > a {
     font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .calendar-container {
+    padding: 0.55rem;
+  }
+
+  .rbc-time-view {
+    min-width: 700px;
+  }
+
+  .rbc-time-content,
+  .rbc-time-header-content {
+    min-width: 0;
+  }
+
+  .rbc-time-gutter,
+  .rbc-time-header-gutter {
+    width: 54px;
+    min-width: 54px;
+    max-width: 54px;
+    font-size: 0.72rem;
+  }
+
+  .rbc-current-time-indicator {
+    height: 2px;
+  }
+
+  .rbc-event {
+    font-size: 0.68rem;
+    line-height: 1.2;
+    padding: 1px 2px;
   }
 }
 

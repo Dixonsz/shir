@@ -112,12 +112,14 @@ class ClientService:
         client = ClientRepository.get_by_number_id(number_id)
         if not client:
             return {
-                "success": False,
-                "error": f"Cliente con número de identificación {number_id} no encontrado."
+                "success": True,
+                "data": None,
+                "found": False
             }
         return {
             "success": True,
-            "data": client.to_dict()
+            "data": client.to_dict(),
+            "found": True
         }
     
     @staticmethod

@@ -158,18 +158,21 @@ export default function PublicAppointmentPage() {
 
     setClientLookupStatus('loading');
     try {
-      const existingClient = await clientsApi.getByNumberId(numberId);
-      setResolvedClientId(existingClient.id);
-      setClientLookupStatus('found');
-      setFormData((prev) => ({
-        ...prev,
-        name: existingClient.name || '',
-        email: existingClient.email || '',
-        phone_number: existingClient.phone_number || '',
-      }));
-      showToast.success('Cliente encontrado. Datos cargados.');
-    } catch (error) {
-      if (error?.response?.status === 404) {
+      const lookupResult = await clientsApi.getByNumberId(numberId);
+      const existingClient = lookupResult?.data || null;
+      const found = typeof lookupResult?.found === 'boolean' ? lookupResult.found : Boolean(existingClient);
+
+      if (found && existingClient) {
+        setResolvedClientId(existingClient.id);
+        setClientLookupStatus('found');
+        setFormData((prev) => ({
+          ...prev,
+          name: existingClient.name || '',
+          email: existingClient.email || '',
+          phone_number: existingClient.phone_number || '',
+        }));
+        showToast.success('Cliente encontrado. Datos cargados.');
+      } else {
         setResolvedClientId(null);
         setClientLookupStatus('new');
         setFormData((prev) => ({
@@ -179,9 +182,8 @@ export default function PublicAppointmentPage() {
           phone_number: '',
         }));
         showToast.info('No existe ese cliente. Completa los datos para registrarlo.');
-        return;
       }
-
+    } catch (error) {
       setClientLookupStatus('idle');
       showToast.error('No se pudo verificar la cédula.');
     }
@@ -192,14 +194,30 @@ export default function PublicAppointmentPage() {
       return resolvedClientId;
     }
 
-    const createdClient = await clientsApi.create({
-      number_id: formData.number_id.trim(),
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      phone_number: formData.phone_number.trim(),
-    });
+    try {
+      const createdClient = await clientsApi.create({
+        number_id: formData.number_id.trim(),
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone_number: formData.phone_number.trim(),
+      });
 
-    return createdClient.id;
+      return createdClient.id;
+    } catch (error) {
+      if (error?.response?.status === 409) {
+        const lookupResult = await clientsApi.getByNumberId(formData.number_id.trim());
+        const existingClient = lookupResult?.data || null;
+        const found = typeof lookupResult?.found === 'boolean' ? lookupResult.found : Boolean(existingClient);
+
+        if (found && existingClient?.id) {
+          setResolvedClientId(existingClient.id);
+          setClientLookupStatus('found');
+          return existingClient.id;
+        }
+      }
+
+      throw error;
+    }
   };
 
   const handleSubmit = async (event) => {

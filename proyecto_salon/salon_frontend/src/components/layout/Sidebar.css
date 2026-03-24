@@ -12,6 +12,10 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.sidebar-mobile-close {
+  display: none;
+}
+
 .sidebar-logo-container {
   padding: 2.5rem 2rem;
   display: flex;
@@ -207,4 +211,42 @@
 .sidebar-logout-button:hover {
   color: #ee2b8c;
   background-color: rgba(238, 43, 140, 0.1);
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: min(82vw, 320px);
+    transform: translateX(-100%);
+    z-index: 50;
+    box-shadow: 0 22px 40px rgba(2, 6, 23, 0.48);
+  }
+
+  .sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-mobile-close {
+    display: flex;
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 9px;
+    background-color: rgba(15, 23, 42, 0.45);
+    color: #cbd5e1;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .sidebar-logo-container {
+    padding: 2.4rem 1.3rem 1.3rem;
+    padding-right: 3rem;
+  }
+
+  .sidebar-user-footer {
+    padding: 1rem;
+  }
 }

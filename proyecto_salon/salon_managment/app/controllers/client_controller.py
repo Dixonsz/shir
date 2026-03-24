@@ -81,16 +81,11 @@ def delete_client(client_id):
 @client_bp.route('/clients/number_id/<string:number_id>', methods=['GET'])
 def get_client_by_number_id(number_id):
     result = ClientService.get_client_by_number_id(number_id)
-    
-    if not result["success"]:
-        return jsonify(
-            success=False,
-            message=result["error"]
-        ), 404
-    
+
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result.get("data"),
+        found=result.get("found", bool(result.get("data")))
     ), 200
 
 @client_bp.route('/clients/<int:client_id>/photo', methods=['POST'])

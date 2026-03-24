@@ -1,0 +1,50 @@
+.page-layout {
+  min-height: 100vh;
+  display: flex;
+  background-color: #0f172a;
+}
+
+.page-layout-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
+  margin-left: 288px;
+}
+
+.page-layout-main {
+  flex: 1;
+  padding: 2.5rem;
+  background-color: #0f172a;
+  overflow: auto;
+  color: #e2e8f0;
+}
+
+.page-layout-overlay {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .page-layout-content {
+    margin-left: 0;
+  }
+
+  .page-layout-main {
+    padding: 1.5rem;
+  }
+
+  .page-layout-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    border: none;
+    background-color: rgba(2, 6, 23, 0.56);
+    z-index: 45;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-layout-main {
+    padding: 1rem;
+  }
+}

@@ -60,6 +60,7 @@
 
 .table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
   font-size: 0.875rem;
 }
@@ -135,5 +136,99 @@
   .table-filter-date,
   .table-filter-clear {
     width: 100%;
+  }
+
+  .table {
+    min-width: 0;
+    font-size: 0.8125rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.8rem 1rem;
+    white-space: normal;
+  }
+
+  .table-actions {
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-container {
+    overflow: visible;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  .table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0 0.7rem;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    border: 1px solid rgba(71, 85, 105, 0.35);
+    border-radius: 14px;
+    background-color: #1e293b;
+    margin-bottom: 0.2rem;
+  }
+
+  .table td {
+    border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+    padding: 0.65rem 0.8rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.85rem;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .table td:last-child {
+    border-bottom: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    color: #94a3b8;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    text-align: left;
+    flex: 0 0 42%;
+  }
+
+  .table-actions-cell {
+    align-items: center;
+  }
+
+  .table-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    width: auto;
+  }
+
+  .table-empty-cell {
+    text-align: center;
+    justify-content: center;
+    padding: 1.25rem 1rem;
+  }
+
+  .table-empty-cell::before {
+    content: none;
   }
 }

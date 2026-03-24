@@ -13,7 +13,7 @@ export default function Footer() {
                 </div>
                 
                 <p className="footer-description">
-                    Si­guenos para mas inspiracion diaria sobre belleza y cuidado personal.
+                    Si­guenos para más inspiracion diaria sobre belleza y cuidado personal.
                 </p>
                 
                 <div className="footer-social">

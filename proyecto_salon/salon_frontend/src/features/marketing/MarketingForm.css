@@ -112,3 +112,30 @@
   color: #64748b;
   margin: 0;
 }
+
+@media (max-width: 760px) {
+  .marketing-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .marketing-form-title {
+    font-size: 1.25rem;
+  }
+
+  .marketing-form-image-upload {
+    padding: 1.25rem;
+  }
+
+  .marketing-form-upload-label {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .marketing-form-remove-button {
+    top: 0.65rem;
+    right: 0.65rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}

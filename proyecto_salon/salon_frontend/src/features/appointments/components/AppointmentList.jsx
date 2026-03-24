@@ -3,13 +3,26 @@ import Button from '../../../components/common/Button';
 import Badge from '../../../components/common/Badge';
 import { Plus, ClipboardCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { getAppointmentStatusConfig } from '../utils/appointmentStatus';
 import { usePermissions } from '../../auth/hooks';
 
 function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate }) {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 760;
+  });
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('appointments');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => setIsMobile(window.innerWidth <= 760);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const formatDateTime = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -91,10 +104,10 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
 
   return (
     <div>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Citas</h1>
+      <div style={{ ...styles.header, ...(isMobile ? styles.headerMobile : null) }}>
+        <h1 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : null) }}>Citas</h1>
         {canWrite ? (
-          <Button onClick={onCreate}>
+          <Button onClick={onCreate} fullWidth={isMobile}>
             <Plus size={20} />
             Nueva Cita
           </Button>
@@ -132,11 +145,20 @@ const styles = {
     alignItems: 'center',
     marginBottom: '2rem',
   },
+  headerMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '0.75rem',
+    marginBottom: '1.2rem',
+  },
   title: {
     fontSize: '2rem',
     fontWeight: '700',
     color: '#e2e8f0',
     margin: 0,
+  },
+  titleMobile: {
+    fontSize: '1.45rem',
   },
 };
 

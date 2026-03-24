@@ -14,7 +14,7 @@ export const clientsApi = {
 
   getByNumberId: async (numberId) => {
     const response = await apiClient.get(`/clients/number_id/${numberId}`);
-    return extractData(response);
+    return response?.data ?? {};
   },
 
   create: async (clientData) => {

@@ -75,3 +75,13 @@
   flex-direction: column;
   gap: 1rem;
 }
+
+@media (max-width: 760px) {
+  .service-form-title {
+    font-size: 1.5rem;
+  }
+
+  .service-form-row {
+    grid-template-columns: 1fr;
+  }
+}
