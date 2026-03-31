@@ -1,15 +1,13 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { APPOINTMENT_STATUS_CONFIG, getAppointmentStatusConfig } from '../utils/appointmentStatus';
 import { getCalendarSettings, isDateBlocked, isDateTimeBlocked } from '../../../core/calendar/calendarSettings';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import '../CalendarView.css';
+import '../CalendarLedger.css';
 
-const locales = {
-  'es': es,
-};
+const locales = { es };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -19,50 +17,34 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const eventStyleGetter = (event) => {
-  const backgroundColor = getAppointmentStatusConfig(event.status).color;
+const eventStyleGetter = (event) => ({
+  style: {
+    backgroundColor: getAppointmentStatusConfig(event.status).color,
+    borderRadius: '4px',
+    opacity: 0.9,
+    color: 'white',
+    border: 'none',
+    fontSize: '0.75rem',
+    fontWeight: '500',
+    padding: '3px 6px',
+  },
+});
 
-  return {
-    style: {
-      backgroundColor,
-      borderRadius: '4px',
-      opacity: 0.9,
-      color: 'white',
-      border: 'none',
-      display: 'block',
-      fontSize: '0.75rem',
-      fontWeight: '500',
-      padding: '3px 6px',
-    },
-  };
-};
+const blockedDayStyleGetter = (date, settings) =>
+  isDateBlocked(date, settings)
+    ? { style: { backgroundColor: 'rgba(239, 68, 68, 0.12)', opacity: 0.75 } }
+    : {};
 
-const blockedDayStyleGetter = (date, settings) => {
-  if (!isDateBlocked(date, settings)) {
-    return {};
-  }
-
-  return {
-    style: {
-      backgroundColor: 'rgba(239, 68, 68, 0.12)',
-      opacity: 0.75,
-    },
-  };
-};
-
-const blockedSlotStyleGetter = (date, settings) => {
-  if (!isDateTimeBlocked(date, settings)) {
-    return {};
-  }
-
-  return {
-    style: {
-      backgroundColor: 'rgba(239, 68, 68, 0.1)',
-      opacity: 0.7,
-      cursor: 'not-allowed',
-    },
-  };
-};
+const blockedSlotStyleGetter = (date, settings) =>
+  isDateTimeBlocked(date, settings)
+    ? {
+        style: {
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          opacity: 0.7,
+          cursor: 'not-allowed',
+        },
+      }
+    : {};
 
 const messages = {
   allDay: 'Todo el día',
@@ -81,144 +63,176 @@ const messages = {
 };
 
 function CalendarView({ appointments, clients, members, onSelectEvent, onSelectSlot }) {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth <= 760;
-  });
-  const [view, setView] = useState(() => (typeof window !== 'undefined' && window.innerWidth <= 760 ? 'day' : 'month'));
+  const [view, setView] = useState('month');
   const [date, setDate] = useState(new Date());
+  const [statusFilter, setStatusFilter] = useState('all');
   const calendarSettings = getCalendarSettings();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleResize = () => {
-      const mobile = window.innerWidth <= 760;
-      setIsMobile(mobile);
-      setView((currentView) => {
-        if (!mobile) {
-          return currentView === 'agenda' ? 'month' : currentView;
-        }
-        return ['day', 'agenda'].includes(currentView) ? currentView : 'day';
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const parseTime = (time, fallbackHour, fallbackMinute) => {
-    if (!time || typeof time !== 'string') {
-      return { hour: fallbackHour, minute: fallbackMinute };
-    }
-
+  const parseTime = (time, h, m) => {
+    if (!time) return { hour: h, minute: m };
     const [hour, minute] = time.split(':').map(Number);
-    if (Number.isNaN(hour) || Number.isNaN(minute)) {
-      return { hour: fallbackHour, minute: fallbackMinute };
-    }
-
-    return { hour, minute };
+    return Number.isNaN(hour) ? { hour: h, minute: m } : { hour, minute };
   };
 
   const startTime = parseTime(calendarSettings.businessHours?.start, 9, 0);
   const endTime = parseTime(calendarSettings.businessHours?.end, 18, 30);
-  const minTime = new Date(1970, 0, 1, startTime.hour, startTime.minute, 0);
-  const maxTime = new Date(1970, 0, 1, endTime.hour, endTime.minute, 0);
+
+  const minTime = new Date(1970, 0, 1, startTime.hour, startTime.minute);
+  const maxTime = new Date(1970, 0, 1, endTime.hour, endTime.minute);
 
   const events = useMemo(() => {
-    return appointments.map((appointment) => {
-      const client = clients.find((c) => c.id === appointment.client_id);
-      const member = members.find((m) => m.id === appointment.member_id);
-      const scheduledDate = new Date(appointment.scheduled_date);
+    return appointments
+      .filter(a => statusFilter === 'all' || a.status === statusFilter)
+      .map(a => {
+        const client = clients.find(c => c.id === a.client_id);
+        const member = members.find(m => m.id === a.member_id);
+        const d = new Date(a.scheduled_date);
 
-      return {
-        id: appointment.id,
-        title: client ? `${client.name}` : 'Cliente desconocido',
-        start: scheduledDate,
-        end: new Date(scheduledDate.getTime() + 60 * 60 * 1000), 
-        resource: appointment,
-        status: appointment.status,
-        memberName: member ? `${member.first_name} ${member.last_name}` : 'Sin asignar',
-      };
-    });
-  }, [appointments, clients, members]);
-
-  const handleSelectEvent = (event) => {
-    if (onSelectEvent) {
-      onSelectEvent(event.resource);
-    }
-  };
-
-  const handleSelectSlot = (slotInfo) => {
-    if (onSelectSlot) {
-      onSelectSlot(slotInfo);
-    }
-  };
-
-  const handleNavigate = (newDate) => {
-    setDate(newDate);
-  };
-
-  const handleViewChange = (newView) => {
-    setView(newView);
-  };
-
-  const availableViews = isMobile ? ['day', 'agenda'] : ['month', 'week', 'day'];
+        return {
+          id: a.id,
+          title: client ? client.name : 'Cliente desconocido',
+          start: d,
+          end: new Date(d.getTime() + 60 * 60 * 1000),
+          resource: a,
+          status: a.status,
+          memberName: member
+            ? `${member.first_name} ${member.last_name}`
+            : 'Sin asignar',
+        };
+      });
+  }, [appointments, clients, members, statusFilter]);
 
   return (
-    <div className="calendar-container">
-      <div className="calendar-header">
-        <div className="calendar-legend">
-          {Object.entries(APPOINTMENT_STATUS_CONFIG).map(([status, config]) => (
-            <div className="legend-item" key={status}>
-              <span className="legend-color" style={{ backgroundColor: config.color }}></span>
-              <span>{config.label}</span>
-            </div>
-          ))}
+    <div className="calendar-ledger-container">
+      {/* Header */}
+      <div className="calendar-ledger-header">
+        <span className="calendar-ledger-label">Agenda</span>
+
+        <div className="calendar-ledger-title-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
+          {/* Botones de navegación de mes */}
+          <div className="calendar-ledger-nav-btns">
+            <button
+              className="calendar-ledger-nav-btn"
+              type="button"
+              aria-label="Mes anterior"
+              onClick={() => {
+                if (view === 'month') {
+                  const prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+                  setDate(prevMonth);
+                } else if (view === 'week') {
+                  const prevWeek = new Date(date);
+                  prevWeek.setDate(date.getDate() - 7);
+                  setDate(prevWeek);
+                } else if (view === 'day') {
+                  const prevDay = new Date(date);
+                  prevDay.setDate(date.getDate() - 1);
+                  setDate(prevDay);
+                }
+              }}
+            >
+              &#8592;
+            </button>
+          </div>
+          <h2 className="calendar-ledger-title" style={{ flex: 1, textAlign: 'center' }}>
+            {view === 'month'
+              ? date.toLocaleString('es-ES', { month: 'long', year: 'numeric' })
+              : view === 'week'
+              ? `Semana del ${date.toLocaleDateString('es-ES')}`
+              : date.toLocaleDateString('es-ES')}
+          </h2>
+          <div className="calendar-ledger-nav-btns">
+            <button
+              className="calendar-ledger-nav-btn"
+              type="button"
+              aria-label="Mes siguiente"
+              onClick={() => {
+                if (view === 'month') {
+                  const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+                  setDate(nextMonth);
+                } else if (view === 'week') {
+                  const nextWeek = new Date(date);
+                  nextWeek.setDate(date.getDate() + 7);
+                  setDate(nextWeek);
+                } else if (view === 'day') {
+                  const nextDay = new Date(date);
+                  nextDay.setDate(date.getDate() + 1);
+                  setDate(nextDay);
+                }
+              }}
+            >
+              &#8594;
+            </button>
+          </div>
+
+          {/* FILTRO */}
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="calendar-ledger-status-filter"
+          >
+            <option value="all">Todos</option>
+            {Object.entries(APPOINTMENT_STATUS_CONFIG).map(([s, c]) => (
+              <option key={s} value={s}>{c.label}</option>
+            ))}
+          </select>
+
+          {/* BOTONES DE VISTA UNIFICADOS */}
+          <div className="calendar-ledger-view-btns">
+            <button
+              onClick={() => setView('month')}
+              className={`calendar-ledger-view-btn${view === 'month' ? ' active' : ''}`}
+              type="button"
+            >
+              Mes
+            </button>
+            <button
+              onClick={() => setView('week')}
+              className={`calendar-ledger-view-btn${view === 'week' ? ' active' : ''}`}
+              type="button"
+            >
+              Semana
+            </button>
+            <button
+              onClick={() => {
+                setView('day');
+                setDate(new Date());
+              }}
+              className={`calendar-ledger-view-btn${view === 'day' ? ' active' : ''}`}
+              type="button"
+            >
+              Hoy
+            </button>
+          </div>
         </div>
       </div>
-      
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: '100%', flex: 1 }}
-        messages={messages}
-        culture="es"
-        view={view}
-        onView={handleViewChange}
-        date={date}
-        onNavigate={handleNavigate}
-        onSelectEvent={handleSelectEvent}
-        onSelectSlot={handleSelectSlot}
-        selectable
-        eventPropGetter={eventStyleGetter}
-        dayPropGetter={(dateValue) => blockedDayStyleGetter(dateValue, calendarSettings)}
-        slotPropGetter={(dateValue) => blockedSlotStyleGetter(dateValue, calendarSettings)}
-        views={availableViews}
-        step={isMobile ? 15 : 30}
-        showMultiDayTimes
-        defaultDate={new Date()}
-        min={minTime}
-        max={maxTime}
-        tooltipAccessor={(event) => {
-          return `${event.title} - ${event.memberName}\nEstado: ${getAppointmentStatusConfig(event.status).label}`;
-        }}
-      />
+
+      {/* Calendar */}
+      <div style={{ height: '600px', marginTop: '1rem' }}>
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          messages={messages}
+          culture="es"
+          view={view}
+          onView={setView}
+          date={date}
+          onNavigate={setDate}
+          selectable
+          onSelectSlot={onSelectSlot}
+          eventPropGetter={eventStyleGetter}
+          dayPropGetter={(d) => blockedDayStyleGetter(d, calendarSettings)}
+          slotPropGetter={(d) => blockedSlotStyleGetter(d, calendarSettings)}
+          views={['month', 'week', 'day']}
+          min={minTime}
+          max={maxTime}
+          toolbar={false}
+          style={{ height: '100%' }}
+        />
+      </div>
     </div>
   );
 }
 
 export default CalendarView;
-
-
-
-
-
-
-
-
-
-
-

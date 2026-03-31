@@ -766,9 +766,9 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
         <Card style={{ marginBottom: '1.5rem' }}>
           <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>
+           <h2 style={styles.sectionTitle}>
               <Sparkles size={20} style={{ marginRight: '8px' }} />
-              Adicionales (Opcional)
+              Adicionales
             </h2>
             <Button type="button" onClick={addAdditional} size="sm" variant="secondary">
               <Plus size={16} />

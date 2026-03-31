@@ -14,8 +14,25 @@ class ClientRepository:
         return Client.query.filter_by(id=client_id, is_active=True).first()
     
     @staticmethod
-    def get_all():
-        return Client.query.filter_by(is_active=True).all()
+    def get_all(page=1, page_size=10, order='desc', order_by='id'):
+        query = Client.query.filter_by(is_active=True)
+        # Ordenamiento dinámico
+        if order_by == 'id':
+            column = Client.id
+        else:
+            column = getattr(Client, order_by, Client.id)
+        if order == 'desc':
+            query = query.order_by(column.desc())
+        else:
+            query = query.order_by(column.asc())
+        pagination = query.paginate(page=page, per_page=page_size, error_out=False)
+        return {
+            "items": pagination.items,
+            "total": pagination.total,
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "page_size": pagination.per_page
+        }
     
     @staticmethod
     def update(client):
