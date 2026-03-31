@@ -95,8 +95,13 @@ def get_gallery_item(gallery_id):
     ), 200
 
 @gallery_bp.route('/gallery', methods=['GET'])
-def get_all_gallery():
-    result = GalleryService.get_all_gallery()
+def get_all_gallery(): 
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+
+    result = GalleryService.get_all_gallery(page, page_size, order, order_by)
     
     if not result["success"]:
         return jsonify(
@@ -106,7 +111,11 @@ def get_all_gallery():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data =result["data"],
+        total=result["total"],
+        page=result["page"],
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @gallery_bp.route('/gallery/admin', methods=['GET'])

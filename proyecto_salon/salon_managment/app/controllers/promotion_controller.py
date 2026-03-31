@@ -35,7 +35,11 @@ def get_promotion(promotion_id):
 
 @promotion_bp.route('/promotions', methods=['GET'])
 def get_all_promotions():
-    result = PromotionService.get_all_promotions()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+    result = PromotionService.get_all_promotions(page, page_size, order, order_by)
     
     if not result["success"]:
         return jsonify(
@@ -45,7 +49,11 @@ def get_all_promotions():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @promotion_bp.route('/promotions/<int:promotion_id>', methods=['PUT'])

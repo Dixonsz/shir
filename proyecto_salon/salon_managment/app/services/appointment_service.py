@@ -265,11 +265,15 @@ class AppointmentService:
         }
     
     @staticmethod
-    def get_all_appointments(include_services=False, include_total=False):
-        appointments = AppointmentRepository.get_all()
+    def get_all_appointments(include_services=False, include_total=False, page=1, page_size=10, order='desc', order_by='id'):
+        result = AppointmentRepository.get_all(page=page, page_size=page_size, order=order, order_by=order_by)
         return {
             "success": True,
-            "data": [appointment.to_dict(include_services=include_services, include_total=include_total) for appointment in appointments] if appointments else []
+            "data": [appointment.to_dict(include_services=include_services, include_total=include_total) for appointment in result["items"]] if result["items"] else [],
+            "total": result["total"],
+            "page": result["page"],
+            "pages": result["pages"],
+            "page_size": result["page_size"]
         }
     
     @staticmethod

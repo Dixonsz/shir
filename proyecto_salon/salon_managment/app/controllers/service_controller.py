@@ -38,8 +38,12 @@ def get_service(service_id):
 @service_bp.route('/services', methods=['GET'])
 def get_all_services():
     include_promotions = request.args.get('include_promotions', 'false').lower() == 'true'
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
     
-    result = ServiceService.get_all_services(include_promotions=include_promotions)
+    result = ServiceService.get_all_services(include_promotions=include_promotions, page=page, page_size=page_size, order=order, order_by=order_by)
     
     if not result["success"]:
         return jsonify(
@@ -49,7 +53,11 @@ def get_all_services():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],    
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @service_bp.route('/services/<int:service_id>', methods=['PUT'])

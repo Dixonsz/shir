@@ -37,11 +37,15 @@ class CategoryProductService:
         }
     
     @staticmethod
-    def get_all_category_products():
-        category_products = CategoryProductRepository.get_all()
+    def get_all_category_products(page=1, page_size=10, order='desc', order_by='id'):
+        result = CategoryProductRepository.get_all(page=page, page_size=page_size, order=order, order_by=order_by)
         return {
             "success": True,
-            "data": [category_product.to_dict() for category_product in category_products] if category_products else []
+            "data": [category_product.to_dict() for category_product in result["items"]] if result["items"] else [],
+            "total": result["total"],
+            "page": result["page"],
+            "pages": result["pages"],
+            "page_size": result["page_size"]
         }
     
     @staticmethod

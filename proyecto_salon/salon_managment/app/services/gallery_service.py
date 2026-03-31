@@ -136,11 +136,15 @@ class GalleryService:
         }
     
     @staticmethod
-    def get_all_gallery():
-        gallery_items = GalleryRepository.get_all_active()
+    def get_all_gallery(page=1, page_size=10, order='desc', order_by='id'):
+        result = GalleryRepository.get_all_active(page=page, page_size=page_size, order=order, order_by=order_by)
         return {
             "success": True,
-            "data": [item.to_dict() for item in gallery_items] if gallery_items else []
+            "data": [item.to_dict() for item in result["items"]] if result["items"] else [],
+            "total": result["total"],
+            "page": result["page"],
+            "pages": result["pages"],
+            "page_size": result["page_size"]
         }
     
     @staticmethod

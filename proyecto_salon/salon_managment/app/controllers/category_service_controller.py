@@ -35,7 +35,11 @@ def get_category_service(category_service_id):
 
 @category_service_bp.route('/category-services', methods=['GET'])
 def get_all_category_services():
-    result = CategoryServiceService.get_all_category_services()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+    result = CategoryServiceService.get_all_category_services(page=page, page_size=page_size, order=order, order_by=order_by)
     
     if not result["success"]:
         return jsonify(
@@ -45,7 +49,11 @@ def get_all_category_services():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],    
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @category_service_bp.route('/category-services/<int:category_service_id>', methods=['PUT'])

@@ -89,7 +89,11 @@ def get_marketing(marketing_id):
 
 @marketing_bp.route('/marketing', methods=['GET'])
 def get_all_marketing():
-    result = MarketingService.get_all_marketing()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+    result = MarketingService.get_all_marketing(page, page_size, order, order_by)
     
     if not result["success"]:
         return jsonify(
@@ -99,7 +103,11 @@ def get_all_marketing():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @marketing_bp.route('/marketing/<int:marketing_id>', methods=['PUT'])

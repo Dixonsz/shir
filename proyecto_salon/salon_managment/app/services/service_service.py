@@ -55,11 +55,15 @@ class ServiceService:
         }
     
     @staticmethod
-    def get_all_services(include_promotions=False):
-        services = ServiceRepository.get_all()
+    def get_all_services(include_promotions=False, page=1, page_size=10, order='desc', order_by='id'):
+        result = ServiceRepository.get_all(page=page, page_size=page_size, order=order, order_by=order_by)
         return {
             "success": True,
-            "data": [service.to_dict(include_promotions=include_promotions) for service in services] if services else []
+            "data": [service.to_dict(include_promotions=include_promotions) for service in result["items"]] if result["items"] else [],
+            "total": result["total"],
+            "page": result["page"],
+            "pages": result["pages"],
+            "page_size": result["page_size"]
         }
     
     @staticmethod

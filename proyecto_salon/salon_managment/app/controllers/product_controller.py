@@ -36,7 +36,11 @@ def get_product(product_id):
 
 @product_bp.route('/products', methods=['GET'])
 def get_all_products():
-    result = ProductService.get_all_products()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+    result = ProductService.get_all_products(page, page_size, order, order_by)
     
     if not result["success"]:
         return jsonify(
@@ -46,7 +50,11 @@ def get_all_products():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @product_bp.route('/products/<int:product_id>', methods=['PUT'])

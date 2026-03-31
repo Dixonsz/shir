@@ -31,7 +31,11 @@ def get_rol(rol_id):
 
 @rol_bp.route('/roles', methods=['GET'])
 def get_all_roles():
-    result = RolService.get_all_roles()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+    result = RolService.get_all_roles(page, page_size, order, order_by)
     if not result["success"]:
         return jsonify(
             success=False,
@@ -39,7 +43,11 @@ def get_all_roles():
         ), 404
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @rol_bp.route('/roles/<int:rol_id>', methods=['PUT'])

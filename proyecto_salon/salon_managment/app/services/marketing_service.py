@@ -92,11 +92,15 @@ class MarketingService:
         }
     
     @staticmethod
-    def get_all_marketing():
-        marketing_campaigns = MarketingRepository.get_all()
+    def get_all_marketing(page =1, page_size=10, order='desc', order_by='id'):
+        result = MarketingRepository.get_all(page=page, page_size=page_size, order=order, order_by=order_by)
         return {
             "success": True,
-            "data": [marketing.to_dict() for marketing in marketing_campaigns] if marketing_campaigns else []
+            "data": [marketing.to_dict() for marketing in result["items"]] if result["items"] else [],
+            "total": result["total"],
+            "page": result["page"],
+            "pages": result["pages"],
+            "page_size": result["page_size"]
         }
     
     @staticmethod

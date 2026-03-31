@@ -37,7 +37,11 @@ def get_member(member_id):
 
 @member_bp.route('/members', methods=['GET'])
 def get_all_members():
-    result = MemberService.get_all_members()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+    result = MemberService.get_all_members(page, page_size, order, order_by)
     if not result["success"]:
         return jsonify(
             success=False,
@@ -45,7 +49,11 @@ def get_all_members():
         ), 404
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @member_bp.route('/members/<int:member_id>', methods=['PUT'])

@@ -34,11 +34,15 @@ class RolService:
         }
     
     @staticmethod
-    def get_all_roles():
-        roles = RolRepository.get_all()
+    def get_all_roles( page=1, page_size=10, order='desc', order_by='id'):
+        result = RolRepository.get_all(page=page, page_size=page_size, order=order, order_by=order_by)
         return {
             "success": True,
-            "data": [role.to_dict() for role in roles] if roles else []
+            "data": [role.to_dict() for role in result["items"]] if result["items"] else [],
+            "total": result["total"],
+            "page": result["page"],
+            "pages": result["pages"],
+            "page_size": result["page_size"]
         }
     
     @staticmethod

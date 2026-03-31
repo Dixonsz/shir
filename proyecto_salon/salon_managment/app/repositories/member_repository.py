@@ -14,9 +14,25 @@ class MemberRepository:
         return Member.query.filter_by(id=member_id, is_active=True).first()
     
     @staticmethod
-    def get_all():
-        return Member.query.filter_by(is_active=True).all()
-    
+    def get_all(page=1, page_size=10, order='desc', order_by='id'):
+        query = Member.query.filter_by(is_active=True)
+
+        if order_by == 'id':
+            query = query.order_by(Member.id.asc() if order == 'asc' else Member.id.desc())
+        elif order_by == 'name':
+            query = query.order_by(Member.name.asc() if order == 'asc' else Member.name.desc())
+
+        total = query.count()
+        items = query.paginate(page=page, per_page=page_size, error_out=False).items
+
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "pages": (total + page_size - 1) // page_size,
+            "page_size": page_size
+        }
+
     @staticmethod
     def update(member):
         db.session.commit()

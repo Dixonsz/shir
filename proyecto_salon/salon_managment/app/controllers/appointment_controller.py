@@ -42,10 +42,18 @@ def get_appointment(appointment_id):
 
 @appointment_bp.route('/appointments', methods=['GET'])
 def get_all_appointments():
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
     include_services = request.args.get('include_services', 'false').lower() == 'true'
     include_total = request.args.get('include_total', 'false').lower() == 'true'
     
     result = AppointmentService.get_all_appointments(
+        page=page,
+        page_size=page_size,
+        order=order,
+        order_by=order_by,
         include_services=include_services,
         include_total=include_total
     )
@@ -58,7 +66,11 @@ def get_all_appointments():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],
+        total=result["total"],
+        page=result["page"],
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @appointment_bp.route('/appointments/<int:appointment_id>', methods=['PUT'])

@@ -108,11 +108,15 @@ class PromotionService:
         }
     
     @staticmethod
-    def get_all_promotions():
-        promotions = PromotionRepository.get_all()
+    def get_all_promotions( page=1, page_size=10, order='desc', order_by='id'):
+        result = PromotionRepository.get_all(page=page, page_size=page_size, order=order, order_by=order_by)
         return {
             "success": True,
-            "data": [promotion.to_dict() for promotion in promotions] if promotions else []
+            "data": [promotion.to_dict() for promotion in result["items"]] if result["items"] else [],
+            "total": result["total"],
+            "page": result["page"],
+            "pages": result["pages"],
+            "page_size": result["page_size"]
         }
     
     @staticmethod

@@ -35,7 +35,11 @@ def get_category_product(category_product_id):
 
 @category_product_bp.route('/category-products', methods=['GET'])
 def get_all_category_products():
-    result = CategoryProductService.get_all_category_products()
+    page = request.args.get('page', default=1, type=int)
+    page_size = request.args.get('page_size', default=10, type=int)
+    order = request.args.get('order', default='desc', type=str)
+    order_by = request.args.get('order_by', default='id', type=str)
+    result = CategoryProductService.get_all_category_products(page=page, page_size=page_size, order=order, order_by=order_by)
     
     if not result["success"]:
         return jsonify(
@@ -45,7 +49,11 @@ def get_all_category_products():
     
     return jsonify(
         success=True,
-        data=result["data"]
+        data=result["data"],    
+        total=result["total"],
+        page=result["page"],    
+        pages=result["pages"],
+        page_size=result["page_size"]
     ), 200
 
 @category_product_bp.route('/category-products/<int:category_product_id>', methods=['PUT'])
