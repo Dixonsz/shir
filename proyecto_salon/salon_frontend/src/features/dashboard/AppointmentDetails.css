@@ -1,0 +1,183 @@
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.appointment-details-content {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem 1.1rem;
+}
+
+.appointment-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.appointment-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+.appointment-status-text {
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.appointment-section {
+  margin-bottom: 1rem;
+}
+
+.appointment-section-title {
+  margin: 0 0 0.55rem;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.appointment-info-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.appointment-info-icon {
+  color: #64748b;
+  flex-shrink: 0;
+  margin-top: 0.08rem;
+}
+
+.appointment-info-label {
+  margin: 0 0 0.2rem;
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.appointment-info-value {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.appointment-info-subvalue {
+  margin-top: 0.2rem;
+  color: #475569;
+  font-size: 0.82rem;
+}
+
+.appointment-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.appointment-total-label {
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.appointment-total-value {
+  color: #0f172a;
+  font-size: 1.22rem;
+  font-weight: 800;
+}
+
+.appointment-service-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 0.6rem 0.72rem;
+  margin-bottom: 0.45rem;
+}
+
+.appointment-service-name,
+.appointment-service-price {
+  font-size: 0.83rem;
+}
+
+.appointment-service-name {
+  color: #334155;
+}
+
+.appointment-service-price {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.appointment-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.appointment-action-button {
+  min-height: 40px;
+  border: none;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+}
+
+.appointment-action-button-edit {
+  background: linear-gradient(120deg, #2563eb, #1d4ed8);
+}
+
+.appointment-action-button-delete {
+  background: linear-gradient(120deg, #ef4444, #dc2626);
+}
+
+@media (max-width: 640px) {
+  .appointment-details-content {
+    padding: 0.85rem;
+  }
+
+  .appointment-info-row {
+    gap: 0.55rem;
+  }
+
+  .appointment-info-value {
+    font-size: 0.86rem;
+  }
+
+  .appointment-total-value {
+    font-size: 1.02rem;
+  }
+
+  .appointment-actions {
+    grid-template-columns: 1fr;
+    padding: 0.75rem 0.85rem;
+  }
+}

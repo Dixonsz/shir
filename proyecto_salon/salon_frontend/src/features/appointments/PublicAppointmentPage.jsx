@@ -5,6 +5,7 @@ import { servicesApi } from '../services/api';
 import { membersApi } from '../members/api';
 import { clientsApi } from '../clients/api';
 import { showToast } from '../../providers/ToastProvider';
+import { extractCollection } from '../../core/api/response';
 import { getBlockingReason, getCalendarSettings, isDateTimeBlocked } from '../../core/calendar/calendarSettings';
 import './PublicAppointmentPage.css';
 
@@ -96,13 +97,17 @@ export default function PublicAppointmentPage() {
           appointmentsApi.getAll(false, false),
         ]);
 
+        const normalizedMembers = extractCollection(membersData);
+        const normalizedServices = extractCollection(servicesData);
+        const normalizedAppointments = extractCollection(appointmentsData);
+
         setMembers(
-          Array.isArray(membersData)
-            ? membersData.filter((member) => member.is_active && memberHasStylistRole(member))
+          Array.isArray(normalizedMembers)
+            ? normalizedMembers.filter((member) => member.is_active && memberHasStylistRole(member))
             : []
         );
-        setServices(Array.isArray(servicesData) ? servicesData.filter((s) => s.is_active) : []);
-        setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
+        setServices(Array.isArray(normalizedServices) ? normalizedServices.filter((s) => s.is_active) : []);
+        setAppointments(Array.isArray(normalizedAppointments) ? normalizedAppointments : []);
       } catch (error) {
         console.error('Error loading appointment page:', error);
         showToast.error('No fue posible cargar la informacion de reservas.');
@@ -269,11 +274,11 @@ export default function PublicAppointmentPage() {
 
       showToast.success('Tu cita fue registrada con exito.');
       setFormData(initialFormState());
-  setResolvedClientId(null);
-  setClientLookupStatus('idle');
+      setResolvedClientId(null);
+      setClientLookupStatus('idle');
 
       const refreshedAppointments = await appointmentsApi.getAll(false, false);
-      setAppointments(Array.isArray(refreshedAppointments) ? refreshedAppointments : []);
+      setAppointments(extractCollection(refreshedAppointments));
     } catch (error) {
       console.error('Error creating public appointment:', error);
       showToast.error(error?.response?.data?.message || 'No se pudo registrar tu cita.');

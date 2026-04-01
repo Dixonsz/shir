@@ -26,6 +26,29 @@ function AppointmentsPage() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [initialDate, setInitialDate] = useState(null);
   const [fromCalendar, setFromCalendar] = useState(false);
+  const [editingLoading, setEditingLoading] = useState(false);
+
+  const getAppointmentId = (appointment) => appointment?.id ?? appointment?.md;
+
+  const loadAppointmentForEdit = useCallback(async (appointment) => {
+    const appointmentId = getAppointmentId(appointment);
+    if (!appointmentId) return appointment;
+
+    const hasDetails =
+      Array.isArray(appointment?.services) ||
+      Array.isArray(appointment?.appointment_services) ||
+      Array.isArray(appointment?.additionals);
+
+    if (hasDetails) return appointment;
+
+    try {
+      return await appointmentsApi.getById(appointmentId, true, true);
+    } catch (error) {
+      console.error('Error cargando detalle de cita:', error);
+      showToast.error('No se pudo cargar el detalle completo de la cita');
+      return appointment;
+    }
+  }, []);
 
   const fetchAppointmentsPage = useCallback(({ page, pageSize }) => {
     return appointmentsApi.getAll(false, true, { page, pageSize });
@@ -46,22 +69,28 @@ function AppointmentsPage() {
   useEffect(() => {
     if (location.state) {
       if (location.state.fromCalendar || location.state.editMode) {
-        setFromCalendar(true);
-        
-        if (location.state.appointment) {
-          setSelectedAppointment(location.state.appointment);
-        }
-        
-        if (location.state.initialDate) {
-          setInitialDate(location.state.initialDate);
-        }
-        
-        setView('form');
-        
-        window.history.replaceState({}, document.title);
+        const openFormFromState = async () => {
+          setFromCalendar(true);
+
+          if (location.state.appointment) {
+            setEditingLoading(true);
+            const detailedAppointment = await loadAppointmentForEdit(location.state.appointment);
+            setSelectedAppointment(detailedAppointment);
+            setEditingLoading(false);
+          }
+
+          if (location.state.initialDate) {
+            setInitialDate(location.state.initialDate);
+          }
+
+          setView('form');
+          window.history.replaceState({}, document.title);
+        };
+
+        openFormFromState();
       }
     }
-  }, [location.state]);
+  }, [location.state, loadAppointmentForEdit]);
 
   const handleCreate = () => {
     setSelectedAppointment(null);
@@ -69,8 +98,11 @@ function AppointmentsPage() {
     setView('form');
   };
 
-  const handleEdit = (appointment) => {
-    setSelectedAppointment(appointment);
+  const handleEdit = async (appointment) => {
+    setEditingLoading(true);
+    const detailedAppointment = await loadAppointmentForEdit(appointment);
+    setSelectedAppointment(detailedAppointment);
+    setEditingLoading(false);
     setInitialDate(null);
     setView('form');
   };
@@ -134,6 +166,10 @@ function AppointmentsPage() {
   };
 
   if (view === 'form') {
+    if (editingLoading) {
+      return <p>Cargando detalle de la cita...</p>;
+    }
+
     return (
       <AppointmentFormV2
         appointment={selectedAppointment}

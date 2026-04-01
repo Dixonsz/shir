@@ -121,8 +121,9 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [selectedPromotionId, setSelectedPromotionId] = useState('');
   const [selectedServicePrice, setSelectedServicePrice] = useState('');
-  
-  const [productSelectors, setProductSelectors] = useState({});
+  const [selectedProductServiceTempId, setSelectedProductServiceTempId] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [selectedProductQuantity, setSelectedProductQuantity] = useState(1);
 
   const [showClientModal, setShowClientModal] = useState(false);
   const [newClient, setNewClient] = useState({
@@ -185,11 +186,73 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
         status: appointment.status || 'scheduled',
         is_active: appointment.is_active ?? true,
       });
+
+      const sourceServices = Array.isArray(appointment.services)
+        ? appointment.services
+        : Array.isArray(appointment.appointment_services)
+          ? appointment.appointment_services
+          : [];
+
+      const mappedServices = sourceServices.map((service, index) => {
+        const tempId = Number(service.id) || Date.now() + index;
+        return {
+          tempId,
+          service_id: parseInt(service.service_id ?? service.id ?? service.service?.id ?? 0, 10),
+          service_name: service.service_name || service.name || service.service?.name || `Servicio ${index + 1}`,
+          price_applied: Number(service.price_applied ?? service.price ?? 0),
+          promotion_id: service.promotion_id ?? service.promotion?.id ?? null,
+          promotion_name: service.promotion_name || service.promotion?.name || null,
+        };
+      });
+
+      const mappedProducts = sourceServices.flatMap((service, serviceIndex) => {
+        const serviceTempId = Number(service.id) || Date.now() + serviceIndex;
+        const products = Array.isArray(service.products)
+          ? service.products
+          : Array.isArray(service.service_products)
+            ? service.service_products
+            : [];
+
+        return products.map((product, productIndex) => ({
+          tempId: Number(product.id) || Date.now() + serviceIndex * 100 + productIndex,
+          serviceTempId,
+          product_id: parseInt(product.product_id ?? product.id ?? product.product?.id ?? 0, 10),
+          product_name: product.product_name || product.name || product.product?.name || `Producto ${productIndex + 1}`,
+          product_price: Number(product.product_price ?? product.price ?? product.product?.price ?? 0),
+          quantity_product: parseInt(product.quantity_product ?? product.quantity ?? 1, 10) || 1,
+        }));
+      });
+
+      const sourceAdditionals = Array.isArray(appointment.additionals)
+        ? appointment.additionals
+        : Array.isArray(appointment.appointment_additionals)
+          ? appointment.appointment_additionals
+          : [];
+
+      const mappedAdditionals = sourceAdditionals.map((additional, index) => ({
+        tempId: Number(additional.id) || Date.now() + index,
+        concept: additional.concept || '',
+        price: Number(additional.price ?? 0),
+      }));
+
+      setAppointmentServices(mappedServices);
+      setAppointmentProducts(mappedProducts);
+      setAppointmentAdditionals(mappedAdditionals);
+      setSelectedProductServiceTempId('');
+      setSelectedProductId('');
+      setSelectedProductQuantity(1);
     } else if (initialDate) {
       setFormData(prev => ({
         ...prev,
         scheduled_date: formatDateForInput(initialDate)
       }));
+
+      setAppointmentServices([]);
+      setAppointmentProducts([]);
+      setAppointmentAdditionals([]);
+      setSelectedProductServiceTempId('');
+      setSelectedProductId('');
+      setSelectedProductQuantity(1);
     }
   }, [appointment, initialDate]);
 
@@ -289,45 +352,48 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   const removeService = (tempId) => {
     setAppointmentServices(prev => prev.filter(s => s.tempId !== tempId));
     setAppointmentProducts(prev => prev.filter(p => p.serviceTempId !== tempId));
-    setProductSelectors(prev => {
-      const newSelectors = { ...prev };
-      delete newSelectors[tempId];
-      return newSelectors;
-    });
+    if (String(selectedProductServiceTempId) === String(tempId)) {
+      setSelectedProductServiceTempId('');
+    }
   };
 
-  const handleAddProduct = (serviceTempId) => {
-    const selector = productSelectors[serviceTempId];
-    if (!selector || !selector.product_id) {
+  const handleAddProduct = () => {
+    if (!selectedProductServiceTempId) {
+      showToast.error('Selecciona un servicio para el producto');
+      return;
+    }
+
+    if (!selectedProductId) {
       showToast.error('Selecciona un producto');
       return;
     }
 
+    const serviceTempId = parseInt(selectedProductServiceTempId, 10);
+    const productId = parseInt(selectedProductId, 10);
+    const quantity = parseInt(selectedProductQuantity, 10) || 1;
+
     const exists = appointmentProducts.find(
-      p => p.serviceTempId === serviceTempId && p.product_id === parseInt(selector.product_id)
+      p => p.serviceTempId === serviceTempId && p.product_id === productId
     );
     if (exists) {
       showToast.error('Este producto ya fue agregado a este servicio');
       return;
     }
 
-    const product = availableProducts.find(p => p.id === parseInt(selector.product_id));
+    const product = availableProducts.find(p => p.id === productId);
 
     const newProduct = {
       tempId: Date.now(),
       serviceTempId,
-      product_id: parseInt(selector.product_id),
+      product_id: productId,
       product_name: product?.name || '',
       product_price: product?.price || 0,
-      quantity_product: parseInt(selector.quantity) || 1,
+      quantity_product: quantity,
     };
 
     setAppointmentProducts([...appointmentProducts, newProduct]);
-    
-    setProductSelectors(prev => ({
-      ...prev,
-      [serviceTempId]: { product_id: '', quantity: 1 }
-    }));
+    setSelectedProductId('');
+    setSelectedProductQuantity(1);
 
     showToast.success('Producto agregado');
   };
@@ -340,20 +406,6 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
   const removeProduct = (tempId) => {
     setAppointmentProducts(prev => prev.filter(p => p.tempId !== tempId));
-  };
-
-  const getProductsByService = (serviceTempId) => {
-    return appointmentProducts.filter(p => p.serviceTempId === serviceTempId);
-  };
-
-  const updateProductSelector = (serviceTempId, field, value) => {
-    setProductSelectors(prev => ({
-      ...prev,
-      [serviceTempId]: {
-        ...prev[serviceTempId],
-        [field]: value
-      }
-    }));
   };
 
   
@@ -672,9 +724,6 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
           ) : (
             <div style={styles.itemsList}>
               {appointmentServices.map((service, index) => {
-                const serviceProducts = getProductsByService(service.tempId);
-                const selector = productSelectors[service.tempId] || { product_id: '', quantity: 1 };
-
                 return (
                   <div key={service.tempId} style={styles.serviceCard}>
                     <div style={{ ...styles.serviceHeader, ...(isMobile ? styles.serviceHeaderMobile : null) }}>
@@ -705,82 +754,110 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                         </Button>
                       </div>
                     </div>
-
-                    <div style={styles.productsSection}>
-                      <div style={styles.productsHeader}>
-                        <label style={styles.labelSmall}>
-                          <Package size={14} />
-                          Productos (Opcional)
-                        </label>
-                      </div>
-
-                      <div style={{ ...styles.productAddRow, ...(isMobile ? styles.productAddRowMobile : null) }}>
-                        <select
-                          value={selector.product_id}
-                          onChange={(e) => updateProductSelector(service.tempId, 'product_id', e.target.value)}
-                          style={styles.selectSmall}
-                        >
-                          <option value="">Seleccione un producto</option>
-                          {availableProducts.map((product) => (
-                            <option key={product.id} value={product.id}>
-                              {product.name} - ${product.price}
-                            </option>
-                          ))}
-                        </select>
-
-                        <input
-                          type="number"
-                          min="1"
-                          value={selector.quantity}
-                          onChange={(e) => updateProductSelector(service.tempId, 'quantity', e.target.value)}
-                          style={styles.inputSmall}
-                          placeholder="Cant."
-                        />
-
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleAddProduct(service.tempId)}
-                          disabled={!selector.product_id}
-                        >
-                          <Plus size={14} />
-                        </Button>
-                      </div>
-
-                      {serviceProducts.length > 0 && (
-                        <div style={styles.productsList}>
-                          {serviceProducts.map((product) => (
-                            <div key={product.tempId} style={{ ...styles.productItem, ...(isMobile ? styles.productItemMobile : null) }}>
-                              <span style={styles.productName}>{product.product_name}</span>
-                              <div style={{ ...styles.productDetails, ...(isMobile ? styles.productDetailsMobile : null) }}>
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={product.quantity_product}
-                                  onChange={(e) => updateProductQuantity(product.tempId, e.target.value)}
-                                  style={styles.quantityInput}
-                                />
-                                <span style={styles.productTotal}>
-                                  ${(product.product_price * product.quantity_product).toFixed(2)}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="danger"
-                                  size="sm"
-                                  onClick={() => removeProduct(product.tempId)}
-                                >
-                                  <X size={14} />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
                   </div>
                 );
               })}
+            </div>
+          )}
+        </Card>
+
+        <Card style={{ marginBottom: '1.5rem' }}>
+          <h2 style={styles.sectionTitle}>Productos</h2>
+
+          {appointmentServices.length > 0 ? (
+            <>
+              <div style={styles.productsSection}>
+                <div style={{ ...styles.productAddRow, ...(isMobile ? styles.productAddRowMobile : null), marginBottom: 0 }}>
+                  <select
+                    value={selectedProductServiceTempId}
+                    onChange={(e) => setSelectedProductServiceTempId(e.target.value)}
+                    style={styles.selectSmall}
+                  >
+                    <option value="">Seleccione servicio</option>
+                    {appointmentServices.map((service, index) => (
+                      <option key={service.tempId} value={service.tempId}>
+                        #{index + 1} {service.service_name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={selectedProductId}
+                    onChange={(e) => setSelectedProductId(e.target.value)}
+                    style={styles.selectSmall}
+                  >
+                    <option value="">Seleccione un producto</option>
+                    {availableProducts.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name} - ${product.price}
+                      </option>
+                    ))}
+                  </select>
+
+                  <input
+                    type="number"
+                    min="1"
+                    value={selectedProductQuantity}
+                    onChange={(e) => setSelectedProductQuantity(e.target.value)}
+                    style={styles.inputSmall}
+                    placeholder="Cant."
+                  />
+
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleAddProduct}
+                    disabled={!selectedProductServiceTempId || !selectedProductId}
+                  >
+                    <Plus size={14} />
+                  </Button>
+                </div>
+              </div>
+
+              {appointmentProducts.length > 0 ? (
+                <div style={{ ...styles.productsList, marginTop: '1rem', paddingTop: 0, borderTop: 'none' }}>
+                  {appointmentProducts.map((product) => {
+                    const service = appointmentServices.find((s) => s.tempId === product.serviceTempId);
+                    return (
+                      <div key={product.tempId} style={{ ...styles.productItem, ...(isMobile ? styles.productItemMobile : null) }}>
+                        <div>
+                          <span style={styles.productName}>{product.product_name}</span>
+                          <p style={styles.productServiceRef}>{service?.service_name || 'Servicio no disponible'}</p>
+                        </div>
+                        <div style={{ ...styles.productDetails, ...(isMobile ? styles.productDetailsMobile : null) }}>
+                          <input
+                            type="number"
+                            min="1"
+                            value={product.quantity_product}
+                            onChange={(e) => updateProductQuantity(product.tempId, e.target.value)}
+                            style={styles.quantityInput}
+                          />
+                          <span style={styles.productTotal}>
+                            ${(product.product_price * product.quantity_product).toFixed(2)}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => removeProduct(product.tempId)}
+                          >
+                            <X size={14} />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ ...styles.emptyState, marginTop: '1rem' }}>
+                  <p>No hay productos agregados</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={styles.emptyState}>
+              <p>Agrega servicios para poder registrar productos</p>
             </div>
           )}
         </Card>
@@ -1124,9 +1201,9 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1rem',
-    paddingBottom: '0.75rem',
-    borderBottom: '1px solid rgba(71, 85, 105, 0.4)',
+    marginBottom: 0,
+    paddingBottom: 0,
+    borderBottom: 'none',
   },
   serviceHeaderMobile: {
     flexDirection: 'column',
@@ -1160,10 +1237,25 @@ const styles = {
     justifyContent: 'space-between',
   },
   productsSection: {
-    marginTop: '0.75rem',
+    marginTop: 0,
     padding: '0.75rem',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     borderRadius: '6px',
+    border: '1px solid rgba(96, 165, 250, 0.24)',
+  },
+  productsServiceCard: {
+    border: '1px solid rgba(71, 85, 105, 0.45)',
+    borderRadius: '8px',
+    padding: '1rem',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+  },
+  productsServiceHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    marginBottom: '0.75rem',
+    paddingBottom: '0.75rem',
+    borderBottom: '1px solid rgba(71, 85, 105, 0.4)',
   },
   productsHeader: {
     marginBottom: '0.75rem',
@@ -1205,6 +1297,11 @@ const styles = {
     color: '#e2e8f0',
     fontWeight: '500',
   },
+  productServiceRef: {
+    margin: '0.25rem 0 0 0',
+    fontSize: '0.78rem',
+    color: '#94a3b8',
+  },
   productDetails: {
     display: 'flex',
     gap: '0.5rem',
@@ -1219,6 +1316,13 @@ const styles = {
     color: '#10b981',
     minWidth: '70px',
     textAlign: 'right',
+  },
+  emptyText: {
+    fontSize: '0.875rem',
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: '0.5rem',
   },
   additionalRow: {
     display: 'flex',
