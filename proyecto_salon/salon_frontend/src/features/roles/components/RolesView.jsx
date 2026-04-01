@@ -10,6 +10,7 @@ function RolesView({
   onCreate,
   onEdit,
   onDelete,
+  pagination,
 }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('roles');
@@ -47,6 +48,7 @@ function RolesView({
           data={roles}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
         />
     </EntityListView>
   );

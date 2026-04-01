@@ -4,7 +4,7 @@ import { getClientColumns } from '../logic/ClientList.logic.jsx';
 import { usePermissions } from '../../auth/hooks';
 import '../ClientList.css';
 
-function ClientList({ clients, loading, onEdit, onDelete, onCreate }) {
+function ClientList({ clients, loading, onEdit, onDelete, onCreate, pagination }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('clients');
   const columns = getClientColumns();
@@ -22,6 +22,7 @@ function ClientList({ clients, loading, onEdit, onDelete, onCreate }) {
           data={clients}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
         />
     </EntityListView>
   );

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { getAppointmentStatusConfig } from '../utils/appointmentStatus';
 import { usePermissions } from '../../auth/hooks';
 
-function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate }) {
+function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate, pagination }) {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -122,6 +122,7 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
           data={appointments}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
           customActions={canWrite ? (row) => (
             <Button
               variant="success"

@@ -4,7 +4,7 @@ import { getProductColumns } from '../logic/ProductList.logic.jsx';
 import { usePermissions } from '../../auth/hooks';
 import '../ProductList.css';
 
-function ProductList({ products, loading, error, onCreate, onEdit, onDelete }) {
+function ProductList({ products, loading, error, onCreate, onEdit, onDelete, pagination }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('products');
   const columns = getProductColumns();
@@ -23,6 +23,7 @@ function ProductList({ products, loading, error, onCreate, onEdit, onDelete }) {
           data={products}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
         />
     </EntityListView>
   );

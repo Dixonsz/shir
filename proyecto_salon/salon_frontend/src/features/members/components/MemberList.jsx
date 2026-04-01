@@ -4,7 +4,7 @@ import { getMemberColumns } from '../logic/MemberList.logic.jsx';
 import { usePermissions } from '../../auth/hooks';
 import '../MemberList.css';
 
-function MemberList({ members, loading, error, onCreate, onEdit, onDelete }) {
+function MemberList({ members, loading, error, onCreate, onEdit, onDelete, pagination }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('members');
   const columns = getMemberColumns();
@@ -23,6 +23,7 @@ function MemberList({ members, loading, error, onCreate, onEdit, onDelete }) {
           data={members}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
         />
     </EntityListView>
   );

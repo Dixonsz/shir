@@ -1,13 +1,33 @@
 import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 import { useRoles } from './hooks';
 import RolesView from './components/RolesView';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { usePagination } from '../../hooks/usePagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
+import { rolesApi } from './api';
 
 function RolesPage() {
-  const { roles, loading, error, deleteRole } = useRoles();
+  const { loading, error, deleteRole } = useRoles();
   const { Confirm } = useConfirm();
   const Navigate = useNavigate();
+
+  const fetchRolesPage = useCallback(({ page, pageSize }) => {
+    return rolesApi.getAll({ page, pageSize });
+  }, []);
+
+  const {
+    data: roles,
+    page,
+    pages,
+    total,
+    pageSize,
+    loading: paginationLoading,
+    setPage,
+    setPageSize,
+    refresh,
+  } = usePagination(fetchRolesPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
     Navigate('/dashboard/roles/new');
@@ -30,6 +50,7 @@ function RolesPage() {
     if (Confirmed) {
       const result = await deleteRole(role.id ?? role.md);
       if (result.success) {
+        await refresh();
         showToast.success('Rol elmmmnado exmtosamente');
       } else {
         showToast.error(result.error);
@@ -40,11 +61,20 @@ function RolesPage() {
   return (
     <RolesView
       roles={roles}
-      loading={loading}
+      loading={loading || paginationLoading}
       error={error}
       onCreate={handleCreate}
       onEdit={handleEdit}
       onDelete={handleDelete}
+      pagination={{
+        page,
+        pages,
+        total,
+        pageSize,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+        pageSizeOptions: PAGE_SIZE_OPTIONS,
+      }}
     />
   );
 }

@@ -2,9 +2,12 @@ import apiClient from '../../../api/axios';
 import { extractData } from '../../../core/api/response';
 
 export const promotionsApi = {
-  getAll: async () => {
-    const response = await apiClient.get('/promotions');
-    return extractData(response);
+  getAll: async ({ page, pageSize } = {}) => {
+    const params = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+    const response = await apiClient.get('/promotions', { params });
+    return response?.data ?? extractData(response);
   },
 
   getById: async (id) => {

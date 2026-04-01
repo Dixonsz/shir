@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useServices } from './hooks';
 import ServiceList from './components/ServiceList';
 import ServiceForm from './components/ServiceForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { usePagination } from '../../hooks/usePagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
+import { servicesApi } from './api';
 
 function ServicesPage() {
   const {
-    services,
     categories,
     loading,
     error,
@@ -19,6 +21,22 @@ function ServicesPage() {
   const { confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedService, setSelectedService] = useState(null);
+
+  const fetchServicesPage = useCallback(({ page, pageSize }) => {
+    return servicesApi.getAll(true, { page, pageSize });
+  }, []);
+
+  const {
+    data: services,
+    page,
+    pages,
+    total,
+    pageSize,
+    loading: paginationLoading,
+    setPage,
+    setPageSize,
+    refresh,
+  } = usePagination(fetchServicesPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
     setSelectedService(null);
@@ -48,6 +66,7 @@ function ServicesPage() {
       const serviceId = service.id ?? service.md;
       const result = await deleteService(serviceId);
       if (result.success) {
+        await refresh();
         showToast.success('Servicio eliminado exitosamente');
       } else {
         showToast.error(result.error);
@@ -62,6 +81,7 @@ function ServicesPage() {
       : await createService(formData);
 
     if (result.success) {
+      await refresh();
       setView('list');
       showToast.success(
         selectedService
@@ -93,11 +113,20 @@ function ServicesPage() {
   return (
     <ServiceList
       services={services}
-      loading={loading}
+      loading={loading || paginationLoading}
       error={error}
       onCreate={handleCreate}
       onEdit={handleEdit}
       onDelete={handleDelete}
+      pagination={{
+        page,
+        pages,
+        total,
+        pageSize,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+        pageSizeOptions: PAGE_SIZE_OPTIONS,
+      }}
     />
   );
 }

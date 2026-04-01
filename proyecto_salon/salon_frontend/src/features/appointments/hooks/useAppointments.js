@@ -3,7 +3,7 @@ import { appointmentsApi } from '../api';
 import { clientsApi } from '../../clients/api';
 import { membersApi } from '../../members/api';
 
-export function useAppointments() {
+export function useAppointments({ skipAppointmentsFetch = false } = {}) {
   const [appointments, setAppointments] = useState([]);
   const [clients, setClients] = useState([]);
   const [members, setMembers] = useState([]);
@@ -89,10 +89,12 @@ export function useAppointments() {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    if (!skipAppointmentsFetch) {
+      fetchAppointments();
+    }
     fetchClients();
     fetchMembers();
-  }, []);
+  }, [skipAppointmentsFetch]);
 
   return {
     appointments,

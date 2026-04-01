@@ -4,7 +4,7 @@ import { getPromotionColumns } from '../logic/PromotionList.logic.jsx';
 import { usePermissions } from '../../auth/hooks';
 import '../PromotionList.css';
 
-function PromotionList({ promotions, loading, error, onEdit, onDelete, onCreate }) {
+function PromotionList({ promotions, loading, error, onEdit, onDelete, onCreate, pagination }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('promotions');
   const columns = getPromotionColumns();
@@ -23,6 +23,7 @@ function PromotionList({ promotions, loading, error, onEdit, onDelete, onCreate 
           data={promotions}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
         />
     </EntityListView>
   );

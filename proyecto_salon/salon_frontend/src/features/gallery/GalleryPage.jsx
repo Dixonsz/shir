@@ -1,15 +1,34 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useGallery } from './hooks';
 import GalleryList from './components/GalleryList';
 import GalleryForm from './components/GalleryForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { usePagination } from '../../hooks/usePagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
+import { galleryApi } from './api';
 
 function GalleryPage() {
-  const { galleryItems, loading, error, uploadImage, updateItem, deleteItem, toggleItemStatus } = useGallery();
+  const { loading, error, uploadImage, updateItem, deleteItem, toggleItemStatus } = useGallery();
   const { Confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedItem, setSelectedItem] = useState(null);
+
+  const fetchGalleryPage = useCallback(({ page, pageSize }) => {
+    return galleryApi.getAllAdmin({ page, pageSize });
+  }, []);
+
+  const {
+    data: galleryItems,
+    page,
+    pages,
+    total,
+    pageSize,
+    loading: paginationLoading,
+    setPage,
+    setPageSize,
+    refresh,
+  } = usePagination(fetchGalleryPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
     setSelectedItem(null);
@@ -24,6 +43,7 @@ function GalleryPage() {
   const handleDelete = async (itemId) => {
     const result = await deleteItem(itemId);
     if (result.success) {
+      await refresh();
       showToast.success('Imagen eliminada permanentemente');
     } else {
       showToast.error(result.error);
@@ -33,6 +53,7 @@ function GalleryPage() {
   const handleToggleStatus = async (itemId) => {
     const result = await toggleItemStatus(itemId);
     if (result.success) {
+      await refresh();
       const newStatus = result.data.is_active ? 'activado' : 'desactivado';
       showToast.success(`Item ${newStatus} exitosamente`);
     } else {
@@ -55,6 +76,7 @@ function GalleryPage() {
     }
 
     if (result.success) {
+      await refresh();
       setView('list');
       showToast.success(
         itemId
@@ -84,12 +106,21 @@ function GalleryPage() {
   return (
     <GalleryList
       galleryItems={galleryItems}
-      loading={loading}
+      loading={loading || paginationLoading}
       error={error}
       onCreate={handleCreate}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onToggleStatus={handleToggleStatus}
+      pagination={{
+        page,
+        pages,
+        total,
+        pageSize,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+        pageSizeOptions: PAGE_SIZE_OPTIONS,
+      }}
     />
   );
 }

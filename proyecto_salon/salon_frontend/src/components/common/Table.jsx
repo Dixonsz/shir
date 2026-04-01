@@ -121,6 +121,13 @@ function Table({
   customActions,
   enableGlobalFilters = true,
   showInlineFilters = false,
+  page,
+  pages,
+  total,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [10, 25, 50, 100],
 }) {
   const dataArray = Array.isArray(data) ? data : [];
   const columnsArray = Array.isArray(columns) ? columns : [];
@@ -216,6 +223,14 @@ function Table({
     setDateOrder('none');
     setDateField('');
   };
+
+  const hasServerPagination =
+    typeof page === 'number' &&
+    typeof pages === 'number' &&
+    typeof onPageChange === 'function';
+
+  const canGoPrev = hasServerPagination ? page > 1 : false;
+  const canGoNext = hasServerPagination ? page < pages : false;
   
   return (
     <div className="table-wrapper">
@@ -339,6 +354,56 @@ function Table({
           </tbody>
         </table>
       </div>
+
+      {hasServerPagination ? (
+        <div className="table-pagination">
+          <div className="table-pagination-summary">
+            {typeof total === 'number'
+              ? `Mostrando ${filteredData.length} de ${total} registros`
+              : `Mostrando ${filteredData.length} registros`}
+          </div>
+
+          <div className="table-pagination-controls">
+            {typeof onPageSizeChange === 'function' ? (
+              <label className="table-page-size">
+                <span>Filas</span>
+                <select
+                  value={pageSize}
+                  onChange={(event) => onPageSizeChange(Number(event.target.value))}
+                >
+                  {pageSizeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            <button
+              type="button"
+              className="table-pagination-btn"
+              onClick={() => onPageChange(page - 1)}
+              disabled={!canGoPrev}
+            >
+              Anterior
+            </button>
+
+            <span className="table-pagination-page">
+              Pagina {page} de {Math.max(1, pages)}
+            </span>
+
+            <button
+              type="button"
+              className="table-pagination-btn"
+              onClick={() => onPageChange(page + 1)}
+              disabled={!canGoNext}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

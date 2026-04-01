@@ -1,13 +1,33 @@
 import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 import { useMembers } from './hooks';
 import MemberList from './components/MemberList';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { usePagination } from '../../hooks/usePagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
+import { membersApi } from './api';
 
 function MembersPage() {
-  const { members, loading, error, deleteMember } = useMembers();
+  const { loading, error, deleteMember } = useMembers();
   const { Confirm } = useConfirm();
   const Navigate = useNavigate();
+
+  const fetchMembersPage = useCallback(({ page, pageSize }) => {
+    return membersApi.getAll({ page, pageSize });
+  }, []);
+
+  const {
+    data: members,
+    page,
+    pages,
+    total,
+    pageSize,
+    loading: paginationLoading,
+    setPage,
+    setPageSize,
+    refresh,
+  } = usePagination(fetchMembersPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
     Navigate('/dashboard/members/new');
@@ -30,6 +50,7 @@ function MembersPage() {
     if (Confirmed) {
       const result = await deleteMember(member.id ?? member.md);
       if (result.success) {
+        await refresh();
         showToast.success('Miembro eliminado exitosamente');
       } else {
         showToast.error(result.error);
@@ -40,11 +61,20 @@ function MembersPage() {
   return (
     <MemberList
       members={members}
-      loading={loading}
+      loading={loading || paginationLoading}
       error={error}
       onCreate={handleCreate}
       onEdit={handleEdit}
       onDelete={handleDelete}
+      pagination={{
+        page,
+        pages,
+        total,
+        pageSize,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+        pageSizeOptions: PAGE_SIZE_OPTIONS,
+      }}
     />
   );
 }

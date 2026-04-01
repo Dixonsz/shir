@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppointments } from './hooks';
 import AppointmentList from './components/AppointmentList';
 import AppointmentFormV2 from './AppointmentFormV2';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { usePagination } from '../../hooks/usePagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
+import { appointmentsApi } from './api';
 
 function AppointmentsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const {
-    appointments,
     clients,
     members,
     loading,
@@ -18,12 +20,28 @@ function AppointmentsPage() {
     createAppointment,
     updateAppointment,
     deleteAppointment,
-  } = useAppointments();
+  } = useAppointments({ skipAppointmentsFetch: true });
   const { confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [initialDate, setInitialDate] = useState(null);
   const [fromCalendar, setFromCalendar] = useState(false);
+
+  const fetchAppointmentsPage = useCallback(({ page, pageSize }) => {
+    return appointmentsApi.getAll(false, true, { page, pageSize });
+  }, []);
+
+  const {
+    data: appointments,
+    page,
+    pages,
+    total,
+    pageSize,
+    loading: paginationLoading,
+    setPage,
+    setPageSize,
+    refresh,
+  } = usePagination(fetchAppointmentsPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   useEffect(() => {
     if (location.state) {
@@ -71,6 +89,7 @@ function AppointmentsPage() {
       const appointmentId = appointment.id ?? appointment.md;
       const result = await deleteAppointment(appointmentId);
       if (result.success) {
+        await refresh();
         showToast.success('Cita eliminada exitosamente');
       } else {
         showToast.error(result.error);
@@ -85,6 +104,7 @@ function AppointmentsPage() {
       : await createAppointment(formData);
 
     if (result.success) {
+      await refresh();
       showToast.success(
         selectedAppointment
           ? 'Cita actualizada exitosamente'
@@ -133,10 +153,19 @@ function AppointmentsPage() {
       appointments={appointments}
       clients={clients}
       members={members}
-      loading={loading}
+      loading={loading || paginationLoading}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}
+      pagination={{
+        page,
+        pages,
+        total,
+        pageSize,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+        pageSizeOptions: PAGE_SIZE_OPTIONS,
+      }}
     />
   );
 }

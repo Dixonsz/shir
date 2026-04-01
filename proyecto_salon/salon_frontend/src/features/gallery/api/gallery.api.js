@@ -2,14 +2,20 @@ import apiClient from '../../../api/axios';
 import { extractData } from '../../../core/api/response';
 
 export const galleryApi = {
-  getAll: async () => {
-    const response = await apiClient.get('/gallery');
-    return extractData(response);
+  getAll: async ({ page, pageSize } = {}) => {
+    const params = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+    const response = await apiClient.get('/gallery', { params });
+    return response?.data ?? extractData(response);
   },
 
-  getAllAdmin: async () => {
-    const response = await apiClient.get('/gallery/admin');
-    return extractData(response);
+  getAllAdmin: async ({ page, pageSize } = {}) => {
+    const params = {};
+    if (page) params.page = page;
+    if (pageSize) params.page_size = pageSize;
+    const response = await apiClient.get('/gallery/admin', { params });
+    return response?.data ?? extractData(response);
   },
 
   getById: async (id) => {

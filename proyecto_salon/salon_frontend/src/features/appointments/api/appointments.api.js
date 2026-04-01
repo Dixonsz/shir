@@ -2,14 +2,19 @@ import apiClient from '../../../api/axios';
 import { extractData } from '../../../core/api/response';
 
 export const appointmentsApi = {
-  getAll: async (includeServices = false, includeTotal = true) => {
+  getAll: async (includeServices = false, includeTotal = true, { page, pageSize } = {}) => {
     const params = new URLSearchParams();
     if (includeServices) params.append('include_services', 'true');
     if (includeTotal) params.append('include_total', 'true');
+    if (page) params.append('page', String(page));
+    if (pageSize) params.append('page_size', String(pageSize));
     const queryString = params.toString() ? `?${params.toString()}` : '';
     
     const response = await apiClient.get(`/appointments${queryString}`);
-    return extractData(response);
+
+    // Para listados paginados necesitamos conservar la metadata (page/pages/total)
+    // y no solo el array de datos.
+    return response?.data ?? extractData(response);
   },
 
   getById: async (id, includeServices = true, includeTotal = true) => {

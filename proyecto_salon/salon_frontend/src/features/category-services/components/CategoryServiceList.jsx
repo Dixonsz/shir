@@ -4,7 +4,7 @@ import { getCategoryServiceColumns } from '../logic/CategoryServiceList.logic.js
 import { usePermissions } from '../../auth/hooks';
 import '../CategoryServiceList.css';
 
-function CategoryServiceList({ categories, loading, error, onCreate, onEdit, onDelete }) {
+function CategoryServiceList({ categories, loading, error, onCreate, onEdit, onDelete, pagination }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('category_services');
   const columns = getCategoryServiceColumns();
@@ -23,6 +23,7 @@ function CategoryServiceList({ categories, loading, error, onCreate, onEdit, onD
           data={categories}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
         />
     </EntityListView>
   );

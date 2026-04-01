@@ -1,15 +1,34 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useProducts } from './hooks';
 import ProductList from './components/ProductList';
 import ProductForm from './components/ProductForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { usePagination } from '../../hooks/usePagination';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
+import { productsApi } from './api';
 
 function ProductsPage() {
-  const { products, categories, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
+  const { categories, loading, error, createProduct, updateProduct, deleteProduct } = useProducts();
   const { confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const fetchProductsPage = useCallback(({ page, pageSize }) => {
+    return productsApi.getAll({ page, pageSize });
+  }, []);
+
+  const {
+    data: products,
+    page,
+    pages,
+    total,
+    pageSize,
+    loading: paginationLoading,
+    setPage,
+    setPageSize,
+    refresh,
+  } = usePagination(fetchProductsPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
     setSelectedProduct(null);
@@ -35,6 +54,7 @@ function ProductsPage() {
       const productId = product.id ?? product.md;
       const result = await deleteProduct(productId);
       if (result.success) {
+        await refresh();
         showToast.success('Producto eliminado exitosamente');
       } else {
         showToast.error(result.error);
@@ -49,6 +69,7 @@ function ProductsPage() {
       : await createProduct(formData);
 
     if (result.success) {
+      await refresh();
       setView('list');
       showToast.success(
         selectedProduct
@@ -79,11 +100,20 @@ function ProductsPage() {
   return (
     <ProductList
       products={products}
-      loading={loading}
+      loading={loading || paginationLoading}
       error={error}
       onCreate={handleCreate}
       onEdit={handleEdit}
       onDelete={handleDelete}
+      pagination={{
+        page,
+        pages,
+        total,
+        pageSize,
+        onPageChange: setPage,
+        onPageSizeChange: setPageSize,
+        pageSizeOptions: PAGE_SIZE_OPTIONS,
+      }}
     />
   );
 }

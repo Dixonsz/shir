@@ -4,7 +4,7 @@ import Table from '../../../components/common/Table';
 import { Plus, CheckCircle2, XCircle } from 'lucide-react';
 import { usePermissions } from '../../auth/hooks';
 
-function MarketingList({ campaigns, loading, onEdit, onDelete, onCreate }) {
+function MarketingList({ campaigns, loading, onEdit, onDelete, onCreate, pagination }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('marketing');
   const formatDate = (dateString) => {
@@ -110,6 +110,7 @@ function MarketingList({ campaigns, loading, onEdit, onDelete, onCreate }) {
           data={campaigns}
           onEdit={canWrite ? onEdit : undefined}
           onDelete={canWrite ? onDelete : undefined}
+          {...pagination}
         />
       </Card>
     </div>
