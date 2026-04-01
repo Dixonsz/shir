@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { galleryApi } from "../api";
+import { extractCollection } from "../../../core/api/response";
 
 export function useGallery() {
   const [galleryItems, setGalleryItems] = useState([]);
@@ -11,7 +12,7 @@ export function useGallery() {
     setError(null);
     try {
       const data = await galleryApi.getAllAdmin();
-      setGalleryItems(Array.isArray(data) ? data : []);
+      setGalleryItems(extractCollection(data));
     } catch (err) {
       console.error('Error al cargar galería:', err);
       setError(err.response?.data?.message || "Error al cargar galería");

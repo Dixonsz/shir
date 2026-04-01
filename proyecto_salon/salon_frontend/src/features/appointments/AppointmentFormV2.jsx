@@ -34,6 +34,27 @@ function memberHasStylistRole(member) {
   return roleNames.some((roleName) => normalizeRole(roleName) === 'estilista');
 }
 
+function extractCollection(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== 'object') return [];
+
+  const nested = payload.data && typeof payload.data === 'object' ? payload.data : null;
+
+  return (
+    (Array.isArray(payload.data) && payload.data) ||
+    (Array.isArray(nested?.data) && nested.data) ||
+    payload.items ||
+    nested?.items ||
+    payload.results ||
+    nested?.results ||
+    payload.rows ||
+    nested?.rows ||
+    payload.records ||
+    nested?.records ||
+    []
+  );
+}
+
 function AppointmentFormV2({ appointment, clients, members, appointments, onSubmit, onCancel, onClientCreated, initialDate }) {
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
@@ -178,8 +199,8 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
         servicesApi.getAll(true),
         productsApi.getAll()
       ]);
-      setAvailableServices(services);
-      setAvailableProducts(products);
+      setAvailableServices(extractCollection(services));
+      setAvailableProducts(extractCollection(products));
     } catch (error) {
       console.error('Error loading data:', error);
       showToast.error('Error al cargar servicios y productos');

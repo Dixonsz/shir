@@ -41,12 +41,14 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
   };
 
   const getClientName = (clientId) => {
-    const client = clients.find(c => c.id === clientId);
+    const normalizedId = Number(clientId);
+    const client = clients.find((c) => Number(c.id) === normalizedId);
     return client ? client.name : `ID: ${clientId}`;
   };
 
   const getMemberName = (memberId) => {
-    const member = members.find(m => m.id === memberId);
+    const normalizedId = Number(memberId);
+    const member = members.find((m) => Number(m.id) === normalizedId);
     return member ? `${member.first_name} ${member.last_name}` : `ID: ${memberId}`;
   };
 

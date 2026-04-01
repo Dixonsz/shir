@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { galleryApi } from '../../../gallery/api';
+import { extractCollection } from '../../../../core/api/response';
 import './Gallery.css';
 
 export default function Gallery() {
@@ -11,7 +12,7 @@ export default function Gallery() {
         const fetchGallery = async () => {
             try {
                 const data = await galleryApi.getAll();
-                const normalized = Array.isArray(data) ? data : [];
+                const normalized = extractCollection(data);
                 setImages(normalized);
                 setCurrentIndex(0);
             } catch (error) {

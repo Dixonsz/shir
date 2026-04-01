@@ -6,6 +6,7 @@ import { ArrowLeft, User, Calendar, DollarSign, Plus, Trash2, Package, X, Check,
 import { appointmentsApi } from '../api';
 import { servicesApi } from '../../services/api';
 import { productsApi } from '../../products/api';
+import { extractCollection } from '../../../core/api/response';
 import { useConfirm } from '../../../providers/ConfirmProvider';
 import { showToast } from '../../../providers/ToastProvider';
 
@@ -63,8 +64,8 @@ function AppointmentServiceView() {
       ]);
 
       let finalSummary = summaryData;
-      setAvailableServices(services);
-      setAvailableProducts(products);
+      setAvailableServices(extractCollection(services));
+      setAvailableProducts(extractCollection(products));
       
       if (summaryData.status === 'scheduled') {
         try {
@@ -423,6 +424,31 @@ function AppointmentServiceView() {
   const getSelectedService = () => {
     return availableServices.find((service) => service.id === parseInt(selectedServiceId, 10));
   };
+
+  const getGlobalProducts = () => {
+    if (!summary?.services || !Array.isArray(summary.services)) return [];
+
+    const productsMap = summary.services.reduce((acc, service) => {
+      (service.products || []).forEach((product) => {
+        const productKey = String(product.product_id || product.id);
+        if (!acc[productKey]) {
+          acc[productKey] = {
+            product_id: product.product_id,
+            product_name: product.product_name,
+            total_quantity: 0,
+          };
+        }
+
+        acc[productKey].total_quantity += parseInt(product.quantity_product || 0, 10);
+      });
+
+      return acc;
+    }, {});
+
+    return Object.values(productsMap).sort((a, b) =>
+      String(a.product_name || '').localeCompare(String(b.product_name || ''))
+    );
+  };
   
   if (loading) {
     return (
@@ -441,6 +467,7 @@ function AppointmentServiceView() {
   }
   
   const isCompleted = summary.status === 'completed';
+  const globalProducts = getGlobalProducts();
   
   return (
     <div style={styles.container}>
@@ -676,8 +703,33 @@ function AppointmentServiceView() {
                           </div>
                         );
                       })()}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={styles.emptyState}>
+                <p>No hay servicios agregados</p>
+              </div>
+            )}
+          </Card>
 
-                      {/* Productos del servicio */}
+          {/* PRODUCTOS */}
+          <Card style={{ marginBottom: '1.5rem' }}>
+            <h2 style={styles.sectionTitle}>Productos por servicio</h2>
+
+            {summary.services && summary.services.length > 0 ? (
+              <div style={styles.itemsList}>
+                {summary.services.map((service, index) => {
+                  const selector = productSelectors[service.id] || { product_id: '', quantity: '1' };
+
+                  return (
+                    <div key={service.id} style={styles.productsServiceCard}>
+                      <div style={styles.productsServiceHeader}>
+                        <span style={styles.serviceNumber}>#{index + 1}</span>
+                        <span style={styles.serviceName}>{service.service_name}</span>
+                      </div>
+
                       <div style={styles.productsSection}>
                         <div style={styles.productsHeader}>
                           <label style={styles.labelSmall}>
@@ -686,7 +738,6 @@ function AppointmentServiceView() {
                           </label>
                         </div>
 
-                        {/* Selector para agregar producto */}
                         {!isCompleted && (
                           <div style={styles.productAddRow}>
                             <select
@@ -730,7 +781,6 @@ function AppointmentServiceView() {
                           </p>
                         ) : null}
 
-                        {/* Lista de productos agregados */}
                         {service.products && service.products.length > 0 ? (
                           <div style={styles.productsList}>
                             {service.products.map((product) => (
@@ -761,7 +811,7 @@ function AppointmentServiceView() {
               </div>
             ) : (
               <div style={styles.emptyState}>
-                <p>No hay servicios agregados</p>
+                <p>Agrega servicios para poder registrar productos</p>
               </div>
             )}
           </Card>
@@ -856,8 +906,30 @@ function AppointmentServiceView() {
           </Card>
         </div>
         
-        {/* Resumen y Totales */}
+        {/* Productos y Resumen */}
         <div style={styles.sidebar}>
+          <Card style={{ marginBottom: '1.5rem' }}>
+            <h2 style={styles.sectionTitle}>
+              <Package size={20} style={{ marginRight: '8px' }} />
+              Productos de la cita
+            </h2>
+
+            {globalProducts.length > 0 ? (
+              <div style={styles.globalProductsList}>
+                {globalProducts.map((product) => (
+                  <div key={product.product_id} style={styles.globalProductItem}>
+                    <span style={styles.globalProductName}>{product.product_name}</span>
+                    <span style={styles.globalProductQuantity}>x{product.total_quantity}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={styles.emptyState}>
+                <p>No hay productos en la cita</p>
+              </div>
+            )}
+          </Card>
+
           <Card style={styles.summaryCard}>
             <h2 style={styles.summaryTitle}>Resumen de Cobro</h2>
             
@@ -1158,6 +1230,20 @@ const styles = {
   productsHeader: {
     marginBottom: '0.75rem',
   },
+  productsServiceCard: {
+    border: '1px solid rgba(71, 85, 105, 0.45)',
+    borderRadius: '8px',
+    padding: '1rem',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+  },
+  productsServiceHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    marginBottom: '0.75rem',
+    paddingBottom: '0.75rem',
+    borderBottom: '1px solid rgba(71, 85, 105, 0.4)',
+  },
   labelSmall: {
     fontSize: '0.85rem',
     fontWeight: '500',
@@ -1203,6 +1289,30 @@ const styles = {
   productQuantity: {
     color: '#94a3b8',
     fontWeight: 'normal',
+  },
+  globalProductsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.6rem',
+  },
+  globalProductItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0.65rem 0.75rem',
+    backgroundColor: 'rgba(30, 41, 59, 0.75)',
+    borderRadius: '6px',
+    border: '1px solid rgba(71, 85, 105, 0.45)',
+  },
+  globalProductName: {
+    fontSize: '0.92rem',
+    color: '#e2e8f0',
+    fontWeight: '500',
+  },
+  globalProductQuantity: {
+    fontSize: '0.9rem',
+    fontWeight: '700',
+    color: '#10b981',
   },
   additionalCard: {
     display: 'flex',

@@ -1,6 +1,7 @@
 import { useState,useEffect } from "react";
 import { membersApi } from "../api";
 import { rolesApi } from "../../roles/api";
+import { extractCollection } from "../../../core/api/response";
 
 export function useMembers() {
   const [members, setMembers] = useState([]);
@@ -13,7 +14,7 @@ export function useMembers() {
     setError(null);
     try {
       const data = await membersApi.getAll();
-      setMembers(Array.isArray(data) ? data : []);
+      setMembers(extractCollection(data));
     } catch (err) {
       setError(err.response?.data?.message || "Error al cargar miembros");
     } finally {

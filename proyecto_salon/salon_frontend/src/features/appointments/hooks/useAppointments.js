@@ -3,6 +3,27 @@ import { appointmentsApi } from '../api';
 import { clientsApi } from '../../clients/api';
 import { membersApi } from '../../members/api';
 
+const extractCollection = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== 'object') return [];
+
+  const nested = payload.data && typeof payload.data === 'object' ? payload.data : null;
+
+  return (
+    (Array.isArray(payload.data) && payload.data) ||
+    (Array.isArray(nested?.data) && nested.data) ||
+    payload.items ||
+    nested?.items ||
+    payload.results ||
+    nested?.results ||
+    payload.rows ||
+    nested?.rows ||
+    payload.records ||
+    nested?.records ||
+    []
+  );
+};
+
 export function useAppointments({ skipAppointmentsFetch = false } = {}) {
   const [appointments, setAppointments] = useState([]);
   const [clients, setClients] = useState([]);
@@ -15,7 +36,7 @@ export function useAppointments({ skipAppointmentsFetch = false } = {}) {
     setError(null);
     try {
       const data = await appointmentsApi.getAll();
-      setAppointments(Array.isArray(data) ? data : []);
+      setAppointments(extractCollection(data));
     } catch (err) {
       setError(err.response?.data?.message || 'Error al cargar citas');
     } finally {
@@ -26,7 +47,7 @@ export function useAppointments({ skipAppointmentsFetch = false } = {}) {
   const fetchClients = async () => {
     try {
       const data = await clientsApi.getAll();
-      setClients(Array.isArray(data) ? data : []);
+      setClients(extractCollection(data));
     } catch (err) {
       console.error('Error al cargar clientes:', err);
     }
@@ -35,7 +56,7 @@ export function useAppointments({ skipAppointmentsFetch = false } = {}) {
   const fetchMembers = async () => {
     try {
       const data = await membersApi.getAll();
-      setMembers(Array.isArray(data) ? data : []);
+      setMembers(extractCollection(data));
     } catch (err) {
       console.error('Error al cargar miembros:', err);
     }

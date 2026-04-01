@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { membersApi } from '../../../members/api';
+import { extractCollection } from '../../../../core/api/response';
 import MemberCard from './MemberCard';
 import './TeamSection.css';
 
@@ -16,7 +17,7 @@ export default function TeamSection() {
             try {
                 setLoading(true);
                 const data = await membersApi.getAll();
-                const activeMembers = data.filter((member) => member.is_active);
+                const activeMembers = extractCollection(data).filter((member) => member.is_active);
                 setMembers(activeMembers);
             } catch (err) {
                 console.error('Error fetchmng members:', err);

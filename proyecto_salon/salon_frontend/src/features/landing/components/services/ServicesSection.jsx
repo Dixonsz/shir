@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { servicesApi } from '../../../services/api';
+import { extractCollection } from '../../../../core/api/response';
 import ServiceCard from './ServiceCard';
 import './ServicesSection.css';
 
@@ -28,7 +29,7 @@ export default function ServicesSection() {
             try {
                 setLoading(true);
                 const data = await servicesApi.getAll(true);
-                setServices(data);
+                setServices(extractCollection(data));
             } catch (err) {
                 console.error('Error fetching services:', err);
                 setError('No se pudieron cargar los servicios');

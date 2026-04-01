@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { servicesApi } from "../api";
 import { categoryServicesApi } from "../../category-services/api";
+import { extractCollection } from "../../../core/api/response";
 
 export function useServices() {
   const [services, setServices] = useState([]);
@@ -13,7 +14,7 @@ export function useServices() {
     setError(null);
     try {
       const data = await servicesApi.getAll();
-      setServices(Array.isArray(data) ? data : []);
+      setServices(extractCollection(data));
     } catch (err) {
       setError(err.response?.data?.message || "Error al cargar servicios");
     } finally {
