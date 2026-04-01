@@ -9,7 +9,7 @@
 
 .dashboard-navbar-container {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.9rem;
 }
 
@@ -20,9 +20,6 @@
 .dashboard-navbar-search-section {
   flex: 1;
   max-width: 980px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
 }
 
 .dashboard-navbar-search-container {
@@ -43,39 +40,6 @@
   outline: none;
   color: #e2e8f0;
   font-size: 14px;
-}
-
-.dashboard-navbar-filters-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.dashboard-navbar-select-input,
-.dashboard-navbar-date-input {
-  min-width: 220px;
-  background-color: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(71, 85, 105, 0.4);
-  border-radius: 10px;
-  color: #e2e8f0;
-  font-size: 13px;
-  padding: 0.55rem 0.7rem;
-  outline: none;
-}
-
-.dashboard-navbar-date-input {
-  min-width: 180px;
-}
-
-.dashboard-navbar-clear-button {
-  background-color: transparent;
-  border: 1px solid rgba(239, 68, 68, 0.45);
-  border-radius: 10px;
-  color: #fda4af;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 0.55rem 0.85rem;
-  cursor: pointer;
 }
 
 @media (max-width: 1024px) {
@@ -106,12 +70,5 @@
 @media (max-width: 640px) {
   .dashboard-navbar {
     padding: 0.8rem;
-  }
-
-  .dashboard-navbar-select-input,
-  .dashboard-navbar-date-input,
-  .dashboard-navbar-clear-button {
-    width: 100%;
-    min-width: 0;
   }
 }

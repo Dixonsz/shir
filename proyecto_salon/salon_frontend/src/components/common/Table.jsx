@@ -80,6 +80,30 @@ function getEditDistanceWithinLimit(source, target, limit) {
   return previous[targetLength];
 }
 
+function isSubsequenceMatch(queryToken, rowToken) {
+  if (!queryToken || !rowToken) return false;
+
+  let queryIndex = 0;
+  let rowIndex = 0;
+
+  while (queryIndex < queryToken.length && rowIndex < rowToken.length) {
+    if (queryToken[queryIndex] === rowToken[rowIndex]) {
+      queryIndex += 1;
+    }
+    rowIndex += 1;
+  }
+
+  return queryIndex === queryToken.length;
+}
+
+function getAllowedDistance(queryToken, rowToken) {
+  const maxLength = Math.max(queryToken.length, rowToken.length);
+
+  if (maxLength <= 4) return 1;
+  if (maxLength <= 7) return 2;
+  return Math.min(3, Math.floor(maxLength * 0.34));
+}
+
 function isApproximateTokenMatch(queryToken, rowToken) {
   if (!queryToken || !rowToken) return false;
 
@@ -87,8 +111,11 @@ function isApproximateTokenMatch(queryToken, rowToken) {
     return true;
   }
 
-  const maxLength = Math.max(queryToken.length, rowToken.length);
-  const allowedDistance = maxLength >= 7 ? 2 : 1;
+  if (queryToken.length >= 2 && isSubsequenceMatch(queryToken, rowToken)) {
+    return true;
+  }
+
+  const allowedDistance = getAllowedDistance(queryToken, rowToken);
   const distance = getEditDistanceWithinLimit(queryToken, rowToken, allowedDistance);
   return distance <= allowedDistance;
 }
