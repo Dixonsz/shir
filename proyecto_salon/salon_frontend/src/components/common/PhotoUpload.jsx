@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import { Camera, X, Upload } from 'lucide-react';
 import Avatar from './Avatar';
 import Button from './Button';
@@ -13,6 +13,10 @@ function PhotoUpload({
 }) {
   const [preview, setPreview] = useState(currentPhoto);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setPreview(currentPhoto || null);
+  }, [currentPhoto]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];

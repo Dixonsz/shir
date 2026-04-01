@@ -33,12 +33,8 @@ export const membersApi = {
   uploadPhoto: async (id, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    
-    const response = await apiClient.post(`/members/${id}/photo`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+
+    const response = await apiClient.post(`/members/${id}/photo`, formData);
     return extractData(response);
   },
 

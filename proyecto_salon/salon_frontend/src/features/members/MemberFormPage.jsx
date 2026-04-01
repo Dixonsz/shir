@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMembers } from './hooks';
 import Button from '../../components/common/Button';
+import PhotoUpload from '../../components/common/PhotoUpload';
 import Input from '../../components/forms/Input';
 import Textarea from '../../components/forms/Textarea';
 import FormButtons from '../../components/forms/FormButtons';
 import EntityFormView from '../../components/layout/EntityFormView';
 import { showToast } from '../../providers/ToastProvider';
+import { membersApi } from './api';
 
 function MemberFormPage() {
   const { id } = useParams();
@@ -29,6 +31,8 @@ function MemberFormPage() {
     rol_ids: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [currentPhoto, setCurrentPhoto] = useState(null);
   const isEditing = Boolean(id);
 
   useEffect(() => {
@@ -40,6 +44,7 @@ function MemberFormPage() {
     const member = members.find((item) => item.id === memberId || item.md === memberId);
 
     if (member) {
+      setCurrentPhoto(member.photo_url || null);
       setFormData({
         first_name: member.first_name || '',
         last_name: member.last_name || '',
@@ -60,6 +65,45 @@ function MemberFormPage() {
       });
     }
   }, [id, members]);
+
+  const handlePhotoUpload = async (file) => {
+    const memberId = Number(id);
+
+    if (!isEditing || !memberId) {
+      showToast.error('Debe guardar el miembro antes de subir una foto');
+      return;
+    }
+
+    setPhotoUploading(true);
+    try {
+      const result = await membersApi.uploadPhoto(memberId, file);
+      setCurrentPhoto(result?.photo_url || null);
+      showToast.success('Foto subida exitosamente');
+    } catch (error) {
+      showToast.error(error?.response?.data?.message || 'Error al subir la foto');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const handlePhotoDelete = async () => {
+    const memberId = Number(id);
+
+    if (!isEditing || !memberId) {
+      return;
+    }
+
+    setPhotoUploading(true);
+    try {
+      await membersApi.deletePhoto(memberId);
+      setCurrentPhoto(null);
+      showToast.success('Foto eliminada exitosamente');
+    } catch (error) {
+      showToast.error(error?.response?.data?.message || 'Error al eliminar la foto');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -149,6 +193,19 @@ function MemberFormPage() {
   return (
     <EntityFormView title={isEditing ? 'Editar Miembro' : 'Nuevo Miembro'} onBack={handleCancel}>
       <form onSubmit={handleSubmit}>
+        {isEditing && (
+          <div style={styles.photoSection}>
+            <h3 style={styles.photoTitle}>Foto de Perfil</h3>
+            <PhotoUpload
+              currentPhoto={currentPhoto}
+              onUpload={handlePhotoUpload}
+              onDelete={handlePhotoDelete}
+              loading={photoUploading}
+              size="large"
+            />
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           <Input
             name="first_name"
@@ -333,6 +390,15 @@ const styles = {
     justifyContent: 'flex-end',
     marginTop: '-0.5rem',
     marginBottom: '1rem',
+  },
+  photoSection: {
+    marginBottom: '1.5rem',
+  },
+  photoTitle: {
+    margin: '0 0 0.75rem',
+    color: '#e2e8f0',
+    fontSize: '1rem',
+    fontWeight: 600,
   },
 };
 
