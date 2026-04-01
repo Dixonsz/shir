@@ -60,7 +60,7 @@ export default function Gallery() {
     const activeImage = images[currentIndex];
 
     return (
-        <section className="gallery-section">
+        <section className="gallery-section" id="galeria">
             <div className="gallery-header">
                 <div className="gallery-header-content">
                     <h2 className="gallery-title">Nuestra Galeria</h2>

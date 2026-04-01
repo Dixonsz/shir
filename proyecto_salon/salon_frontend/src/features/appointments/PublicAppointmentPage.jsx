@@ -298,7 +298,7 @@ export default function PublicAppointmentPage() {
           </p>
           
           <Link to="/" className="public-appointment-back-link">
-            Volver al inicio
+            Regresar
           </Link>
         </header>
 

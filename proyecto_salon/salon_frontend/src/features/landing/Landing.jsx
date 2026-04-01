@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import './Landing.css';
 import Header from "./components/header/Header";
 import Hero from "./components/hero/Hero";
@@ -10,6 +12,23 @@ import Schedule from "../../components/common/Schedule";
 import Footer from "../../components/layout/Footer";
 
 export default function Landing() {
+    const { hash } = useLocation();
+
+    useEffect(() => {
+        if (!hash) {
+            return;
+        }
+
+        const sectionId = hash.replace('#', '');
+        const target = document.getElementById(sectionId);
+
+        if (target) {
+            window.setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 0);
+        }
+    }, [hash]);
+
     return (
         <div className="landing-page">
             <Header />

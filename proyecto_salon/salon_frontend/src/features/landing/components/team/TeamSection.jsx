@@ -51,16 +51,16 @@ export default function TeamSection() {
     };
 
     if (loading) {
-        return <div className="team-section"><p>Cargando equipo de trabajo...</p></div>;
+        return <div className="team-section" id="equipo"><p>Cargando equipo de trabajo...</p></div>;
     }
 
     if (error) {
-        return <div className="team-section"><p>{error}</p></div>;
+        return <div className="team-section" id="equipo"><p>{error}</p></div>;
     }
 
     if (members.length === 0) {
         return (
-            <div className="team-section">
+            <div className="team-section" id="equipo">
                 <h2>Nuestro Equipo</h2>
                 <p>No hay miembros disponibles en este momento.</p>
             </div>
@@ -68,7 +68,7 @@ export default function TeamSection() {
     }
 
     return (
-        <section className="team-section">
+        <section className="team-section" id="equipo">
             <h2>Nuestro Equipo</h2>
             <p className="team-subtitle">Conoce a nuestros profesionales especializados</p>
             <div className="team-info">

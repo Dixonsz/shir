@@ -2,7 +2,7 @@
 
 export default function Location() {
     return (
-        <div className="location-section">
+        <div className="location-section" id="ubicacion">
             <h2>Nuestra Ubicación</h2>  
             <p>Encuéntranos en Shirsalon. ¡Visítanos y disfruta de nuestros servicios!</p>
             <div className="map-container">
