@@ -641,12 +641,11 @@ class WhatsAppService:
                 'Nueva reserva registrada\n'
                 f'Cita: #{getattr(appointment, "id", "N/A")}\n'
                 f'Cliente: {getattr(client, "name", "N/A")}\n'
-                f'Telefono cliente: {source_confirmation_phone or "N/A"}\n'
-                f'Email cliente: {getattr(client, "email", "N/A") or "N/A"}\n'
+                f'Teléfono cliente: {source_confirmation_phone or "N/A"}\n'
+                f'Correo cliente: {getattr(client, "email", "N/A") or "N/A"}\n'
                 f'Fecha: {scheduled_text}\n'
                 f'Estilista: {member_name}\n'
                 f'Servicios: {services_text}\n'
-                f'Notas: {notes_text}'
             )
             if provider == 'meta' and WhatsAppService._meta_template_is_enabled():
                 admin_template_name = current_app.config.get('WHATSAPP_META_TEMPLATE_NEW_APPOINTMENT', '')

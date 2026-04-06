@@ -12,7 +12,6 @@ from app.controllers.product_controller import product_bp
 from app.controllers.promotion_controller import promotion_bp
 from app.controllers.rol_controller import rol_bp
 from app.controllers.service_controller import service_bp
-from app.controllers.whatsapp_webhook_controller import whatsapp_webhook_bp
 
 API_BLUEPRINTS = (
     auth_bp,
@@ -29,5 +28,4 @@ API_BLUEPRINTS = (
     category_product_bp,
     marketing_bp,
     gallery_bp,
-    whatsapp_webhook_bp,
 )

@@ -1,5 +1,6 @@
 import apiClient from '../../../api/axios';
 import { extractData } from '../../../core/api/response';
+import { getNotificationSettings } from '../../../core/notifications/notificationSettings';
 
 export const appointmentsApi = {
   getAll: async (includeServices = false, includeTotal = true, { page, pageSize } = {}) => {
@@ -38,7 +39,17 @@ export const appointmentsApi = {
   },
 
   create: async (appointmentData) => {
-    const response = await apiClient.post('/appointments', appointmentData);
+    const notificationSettings = getNotificationSettings();
+    const payload = {
+      ...appointmentData,
+      admin_notification_email: notificationSettings.adminEmail || undefined,
+      notify_client: notificationSettings.notifyClient,
+      notify_admin: notificationSettings.notifyAdmin,
+      admin_ics_duration_minutes: notificationSettings.adminIcsDurationMinutes,
+      admin_ics_location: notificationSettings.adminIcsLocation || undefined,
+      admin_calendar_link_enabled: notificationSettings.adminCalendarLinkEnabled,
+    };
+    const response = await apiClient.post('/appointments', payload);
     return extractData(response);
   },
 

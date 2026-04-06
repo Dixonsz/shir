@@ -40,6 +40,35 @@ class Config:
     WHATSAPP_DEFAULT_COUNTRY_CODE = os.getenv('WHATSAPP_DEFAULT_COUNTRY_CODE', '+57')
     WHATSAPP_REQUEST_TIMEOUT = int(os.getenv('WHATSAPP_REQUEST_TIMEOUT', 6))
     WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.getenv('WHATSAPP_WEBHOOK_VERIFY_TOKEN', '').strip()
+
+    # Configuracion de SMS transaccional por cita
+    SMS_ENABLED = os.getenv('SMS_ENABLED', 'false').lower() == 'true'
+    SMS_PROVIDER = os.getenv('SMS_PROVIDER', 'twilio').strip().lower()
+    SMS_TWILIO_ACCOUNT_SID = os.getenv('SMS_TWILIO_ACCOUNT_SID', '').strip()
+    SMS_TWILIO_AUTH_TOKEN = os.getenv('SMS_TWILIO_AUTH_TOKEN', '').strip()
+    SMS_TWILIO_FROM = os.getenv('SMS_TWILIO_FROM', '').strip()
+    SMS_ADMIN_PHONE = os.getenv('SMS_ADMIN_PHONE', '').strip()
+    SMS_NOTIFY_CLIENT = os.getenv('SMS_NOTIFY_CLIENT', 'true').strip().lower() == 'true'
+    SMS_NOTIFY_ADMIN = os.getenv('SMS_NOTIFY_ADMIN', 'true').strip().lower() == 'true'
+    SMS_DEFAULT_COUNTRY_CODE = os.getenv('SMS_DEFAULT_COUNTRY_CODE', '+57').strip()
+    SMS_REQUEST_TIMEOUT = int(os.getenv('SMS_REQUEST_TIMEOUT', 6))
+
+    # Configuracion de correo transaccional por cita
+    EMAIL_ENABLED = os.getenv('EMAIL_ENABLED', 'false').lower() == 'true'
+    EMAIL_SMTP_HOST = os.getenv('EMAIL_SMTP_HOST', '').strip()
+    EMAIL_SMTP_PORT = int(os.getenv('EMAIL_SMTP_PORT', 587))
+    EMAIL_SMTP_USERNAME = os.getenv('EMAIL_SMTP_USERNAME', '').strip()
+    EMAIL_SMTP_PASSWORD = os.getenv('EMAIL_SMTP_PASSWORD', '').strip()
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'true').strip().lower() == 'true'
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').strip().lower() == 'true'
+    EMAIL_FROM = os.getenv('EMAIL_FROM', '').strip()
+    EMAIL_ADMIN_TO = os.getenv('EMAIL_ADMIN_TO', os.getenv('DEFAULT_MEMBER_EMAIL', 'admin@salon.local')).strip()
+    EMAIL_NOTIFY_CLIENT = os.getenv('EMAIL_NOTIFY_CLIENT', 'true').strip().lower() == 'true'
+    EMAIL_NOTIFY_ADMIN = os.getenv('EMAIL_NOTIFY_ADMIN', 'true').strip().lower() == 'true'
+    EMAIL_SUBJECT_PREFIX = os.getenv('EMAIL_SUBJECT_PREFIX', '[Salon]').strip()
+    EMAIL_ADMIN_CALENDAR_LINK_ENABLED = os.getenv('EMAIL_ADMIN_CALENDAR_LINK_ENABLED', 'true').strip().lower() == 'true'
+    EMAIL_ADMIN_ICS_DURATION_MINUTES = int(os.getenv('EMAIL_ADMIN_ICS_DURATION_MINUTES', 60))
+    EMAIL_ADMIN_ICS_LOCATION = os.getenv('EMAIL_ADMIN_ICS_LOCATION', 'Salon').strip()
     
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', SECRET_KEY)
     JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))  

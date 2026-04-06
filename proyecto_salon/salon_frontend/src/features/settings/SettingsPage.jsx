@@ -9,6 +9,11 @@ import {
   getCalendarSettings,
   saveCalendarSettings,
 } from '../../core/calendar/calendarSettings';
+import {
+  DEFAULT_NOTIFICATION_SETTINGS,
+  getNotificationSettings,
+  saveNotificationSettings,
+} from '../../core/notifications/notificationSettings';
 
 const WEEKDAY_OPTIONS = [
   { value: 0, label: 'Domingo' },
@@ -22,7 +27,9 @@ const WEEKDAY_OPTIONS = [
 
 function SettingsPage() {
   const initial = useMemo(() => getCalendarSettings(), []);
+  const initialNotification = useMemo(() => getNotificationSettings(), []);
   const [settings, setSettings] = useState(initial);
+  const [notificationSettings, setNotificationSettings] = useState(initialNotification);
   const [newBlockedDate, setNewBlockedDate] = useState('');
   const [newRange, setNewRange] = useState({ start: '12:00', end: '13:00' });
 
@@ -85,17 +92,111 @@ function SettingsPage() {
 
   const handleSave = () => {
     saveCalendarSettings(settings);
-    showToast.success('Configuracion de calendario guardada.');
+    saveNotificationSettings(notificationSettings);
+    showToast.success('Configuracion guardada.');
   };
 
   const handleReset = () => {
     setSettings(DEFAULT_CALENDAR_SETTINGS);
+    setNotificationSettings(DEFAULT_NOTIFICATION_SETTINGS);
     saveCalendarSettings(DEFAULT_CALENDAR_SETTINGS);
+    saveNotificationSettings(DEFAULT_NOTIFICATION_SETTINGS);
     showToast.success('Configuracion restablecida.');
   };
 
   return (
-    <EntityFormView title="Configuración de Calendario" onBack={() => window.history.back()}>
+    <EntityFormView title="Configuración" onBack={() => window.history.back()}>
+      <Card style={{ marginBottom: '1rem' }}>
+        <h2 style={styles.title}>Notificaciones</h2>
+        <p style={styles.hintText}>
+          Correo administrativo para recibir notificaciones de nuevas citas.
+        </p>
+        <Input
+          label="Correo administrativo"
+          type="email"
+          value={notificationSettings.adminEmail}
+          onChange={(event) =>
+            setNotificationSettings((prev) => ({
+              ...prev,
+              adminEmail: event.target.value,
+            }))
+          }
+          placeholder="admin@salon.com"
+        />
+        <div style={styles.row}>
+          <label style={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={Boolean(notificationSettings.notifyClient)}
+              onChange={(event) =>
+                setNotificationSettings((prev) => ({
+                  ...prev,
+                  notifyClient: event.target.checked,
+                }))
+              }
+            />
+            Enviar notificaciones al cliente
+          </label>
+        </div>
+        <div style={styles.row}>
+          <label style={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={Boolean(notificationSettings.notifyAdmin)}
+              onChange={(event) =>
+                setNotificationSettings((prev) => ({
+                  ...prev,
+                  notifyAdmin: event.target.checked,
+                }))
+              }
+            />
+            Enviar notificaciones al administrador
+          </label>
+        </div>
+        <div style={styles.row}>
+          <label style={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={Boolean(notificationSettings.adminCalendarLinkEnabled)}
+              onChange={(event) =>
+                setNotificationSettings((prev) => ({
+                  ...prev,
+                  adminCalendarLinkEnabled: event.target.checked,
+                }))
+              }
+            />
+            Incluir evento al calendario del administrador
+          </label>
+        </div>
+        <div style={styles.grid2}>
+          <Input
+            label="Duración evento (min)"
+            type="number"
+            value={notificationSettings.adminIcsDurationMinutes}
+            onChange={(event) =>
+              setNotificationSettings((prev) => ({
+                ...prev,
+                adminIcsDurationMinutes: event.target.value,
+              }))
+            }
+            min="15"
+            step="5"
+          />
+          <Input
+            label="Ubicación del evento"
+            type="text"
+            value={notificationSettings.adminIcsLocation}
+            onChange={(event) =>
+              setNotificationSettings((prev) => ({
+                ...prev,
+                adminIcsLocation: event.target.value,
+              }))
+            }
+            placeholder="Salon"
+          />
+        </div>
+      </Card>
+
       <Card style={{ marginBottom: '1rem' }}>
         <h2 style={styles.title}>Horario laboral</h2>
         <div style={styles.grid2}>
@@ -262,6 +363,12 @@ const styles = {
     justifyContent: 'flex-end',
     gap: '0.6rem',
     marginTop: '1rem',
+  },
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.45rem',
+    color: '#cbd5e1',
   },
 };
 

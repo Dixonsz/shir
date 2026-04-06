@@ -10,7 +10,7 @@ from app.repositories.client_repository import ClientRepository
 from app.repositories.member_repository import MemberRepository
 from app.repositories.service_repository import ServiceRepository
 from app.repositories.product_repository import ProductRepository
-from app.services.whatsapp_service import WhatsAppService
+from app.services.notification_service import NotificationService
 from datetime import datetime
 from flask import current_app
 import unicodedata
@@ -156,10 +156,15 @@ class AppointmentService:
         services_data = data.get('services', [])
         products_data = data.get('products', [])
         additionals_data = data.get('additionals', [])
+        admin_notification_email = data.get('admin_notification_email')
+        notify_client = data.get('notify_client')
+        notify_admin = data.get('notify_admin')
+        admin_ics_duration_minutes = data.get('admin_ics_duration_minutes')
+        admin_ics_location = data.get('admin_ics_location')
+        admin_calendar_link_enabled = data.get('admin_calendar_link_enabled')
         confirmation_phone = (
             data.get('confirmation_phone')
             or data.get('confirmation_phone_number')
-            or data.get('whatsapp_phone')
         )
 
         appointment_services_created = []
@@ -215,33 +220,40 @@ class AppointmentService:
 
         try:
             current_app.logger.info(
-                'Disparando notificaciones WhatsApp para cita %s (cliente=%s, miembro=%s).',
+                'Disparando notificaciones SMS/Email para cita %s (cliente=%s, miembro=%s).',
                 created.id,
                 client.id,
                 member.id,
             )
-            notification_result = WhatsAppService.send_appointment_notifications(
+            extra_notification_result = NotificationService.send_appointment_notifications(
                 appointment=created,
                 client=client,
                 member=member,
                 service_names=service_names,
                 confirmation_phone=confirmation_phone,
+                admin_notification_email=admin_notification_email,
+                scheduled_date_override=scheduled_date,
+                notify_client=notify_client,
+                notify_admin=notify_admin,
+                admin_ics_duration_minutes=admin_ics_duration_minutes,
+                admin_ics_location=admin_ics_location,
+                admin_calendar_link_enabled=admin_calendar_link_enabled,
             )
             current_app.logger.info(
-                'Resultado notificaciones WhatsApp cita %s: %s',
+                'Resultado notificaciones SMS/Email cita %s: %s',
                 created.id,
-                notification_result,
+                extra_notification_result,
             )
-            if not notification_result.get('success', False):
+            if not extra_notification_result.get('success', False):
                 current_app.logger.warning(
-                    'No se pudieron enviar notificaciones WhatsApp para la cita %s: %s',
+                    'No se pudieron enviar notificaciones SMS/Email para la cita %s: %s',
                     created.id,
-                    notification_result.get('error', 'error desconocido'),
+                    extra_notification_result,
                 )
         except Exception as exc:
             # No bloquear la creacion de la cita por fallos de servicios externos.
             current_app.logger.exception(
-                'Error no controlado enviando WhatsApp para la cita %s: %s',
+                'Error no controlado enviando SMS/Email para la cita %s: %s',
                 created.id,
                 str(exc),
             )
