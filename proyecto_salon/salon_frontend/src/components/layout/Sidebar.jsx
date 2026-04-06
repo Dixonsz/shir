@@ -11,6 +11,7 @@ import {
   Layers,
   Image,
   Megaphone,
+  ChartColumn,
   Settings,
   LogOut,
   Sparkles,
@@ -45,6 +46,7 @@ function Sidebar({ isOpen = false, onClose }) {
     { path: '/dashboard/promotions', label: 'Promociones', icon: Tag, resource: 'promotions' },
     { path: '/dashboard/marketing', label: 'Marketing', icon: Megaphone, resource: 'marketing' },
     { path: '/dashboard/gallery', label: 'Galería', icon: Image, resource: 'gallery' },
+    { path: '/dashboard/reports', label: 'Reportes', icon: ChartColumn, resource: 'reports' },
     { path: '/dashboard/roles', label: 'Roles', icon: UserCog, resource: 'roles' },
     { path: '/dashboard/settings', label: 'Configuracion', icon: Settings, resource: 'settings', requiresWrite: true },
   ];

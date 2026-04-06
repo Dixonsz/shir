@@ -5,7 +5,7 @@ const DEFAULT_SORT = 'none';
 
 const TableFiltersContext = createContext(null);
 
-function resolveDateRange(preset, customFrom, customTo) {
+export function resolveDateRange(preset, customFrom, customTo) {
   const now = new Date();
   const end = new Date(now);
   end.setHours(23, 59, 59, 999);

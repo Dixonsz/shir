@@ -10,6 +10,7 @@ from app.controllers.marketing_controller import marketing_bp
 from app.controllers.member_controller import member_bp
 from app.controllers.product_controller import product_bp
 from app.controllers.promotion_controller import promotion_bp
+from app.controllers.reports_controller import reports_bp
 from app.controllers.rol_controller import rol_bp
 from app.controllers.service_controller import service_bp
 
@@ -24,6 +25,7 @@ API_BLUEPRINTS = (
     appointment_bp,
     service_bp,
     promotion_bp,
+    reports_bp,
     category_service_bp,
     category_product_bp,
     marketing_bp,
