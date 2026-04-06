@@ -37,7 +37,21 @@ function formatDateLabel(dateString) {
   return dateValue.toLocaleDateString('es-CR', { day: '2-digit', month: 'short' });
 }
 
-function FilterSection({ datePreset, setDatePreset, customFromDate, setCustomFromDate, customToDate, setCustomToDate, status, setStatus, exportType, setExportType, onExport }) {
+function FilterSection({
+  datePreset,
+  setDatePreset,
+  customFromDate,
+  setCustomFromDate,
+  customToDate,
+  setCustomToDate,
+  status,
+  setStatus,
+  exportType,
+  setExportType,
+  exportFormat,
+  setExportFormat,
+  onExport,
+}) {
   return (
     <section className="reports-filters">
       <div className="reports-filter-row">
@@ -88,7 +102,7 @@ function FilterSection({ datePreset, setDatePreset, customFromDate, setCustomFro
 
       <div className="reports-filter-row reports-export-row">
         <div>
-          <label htmlFor="reports-export">Exportar CSV</label>
+          <label htmlFor="reports-export">Tipo de reporte</label>
           <select
             id="reports-export"
             value={exportType}
@@ -99,11 +113,26 @@ function FilterSection({ datePreset, setDatePreset, customFromDate, setCustomFro
             <option value="clients">Clientes</option>
             <option value="members">Miembros</option>
             <option value="revenue">Ingresos</option>
+            <option value="summary">Resumen</option>
+            <option value="inventory">Inventario</option>
+            <option value="all">Todos los reportes</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="reports-export-format">Formato</label>
+          <select
+            id="reports-export-format"
+            value={exportFormat}
+            onChange={(event) => setExportFormat(event.target.value)}
+          >
+            <option value="csv">CSV</option>
+            <option value="word">WORD</option>
           </select>
         </div>
 
         <button type="button" className="btn btn-primary" onClick={onExport}>
-          Descargar CSV
+          Descargar archivo
         </button>
       </div>
     </section>
@@ -116,6 +145,7 @@ function ReportsPage() {
   const [customToDate, setCustomToDate] = useState('');
   const [status, setStatus] = useState('completed');
   const [exportType, setExportType] = useState('services');
+  const [exportFormat, setExportFormat] = useState('csv');
 
   const dateRange = useMemo(
     () => resolveDateRange(datePreset, customFromDate, customToDate),
@@ -146,22 +176,30 @@ function ReportsPage() {
   } = useReports(filters);
 
   const handleExportCsv = async () => {
+    if (exportType === 'all' && exportFormat === 'csv') {
+      showToast.info('Para descargar todos los reportes, usa formato WORD.');
+      return;
+    }
+
     try {
-      const endpoint = reportsApi.exportCsvUrl(exportType, filters);
+      const endpoint = reportsApi.exportUrl(exportType, exportFormat, filters);
       const response = await apiClient.get(endpoint, { responseType: 'blob' });
 
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+      const extension = exportFormat === 'word' ? 'doc' : 'csv';
+      const mimeType = exportFormat === 'word' ? 'application/msword' : 'text/csv';
+
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: mimeType }));
       const anchor = document.createElement('a');
       anchor.href = blobUrl;
-      anchor.setAttribute('download', `reporte_${exportType}.csv`);
+      anchor.setAttribute('download', `reporte_${exportType}.${extension}`);
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);
       window.URL.revokeObjectURL(blobUrl);
 
-      showToast.success('CSV descargado con exito.');
+      showToast.success(`Archivo ${extension.toUpperCase()} descargado con exito.`);
     } catch (downloadError) {
-      showToast.error(downloadError?.userMessage || 'No se pudo descargar el CSV.');
+      showToast.error(downloadError?.userMessage || 'No se pudo descargar el archivo.');
     }
   };
 
@@ -169,7 +207,7 @@ function ReportsPage() {
     <div className="reports-page">
       <div className="reports-header">
         <div>
-          <h1>Reportes de Gestion</h1>
+          <h1>Reportes de Gestión</h1>
           <p>Analiza servicios, productos, clientes, miembros, ingresos e inventario.</p>
         </div>
         <button type="button" className="btn btn-secondary" onClick={refresh}>
@@ -188,6 +226,8 @@ function ReportsPage() {
         setStatus={setStatus}
         exportType={exportType}
         setExportType={setExportType}
+        exportFormat={exportFormat}
+        setExportFormat={setExportFormat}
         onExport={handleExportCsv}
       />
 
@@ -214,7 +254,7 @@ function ReportsPage() {
 
       <section className="reports-grid-two">
         <article className="reports-panel">
-          <h2>Servicios mas usados</h2>
+          <h2>Servicios más usados</h2>
           <div className="reports-chart-wrap">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={services}>
@@ -229,7 +269,7 @@ function ReportsPage() {
         </article>
 
         <article className="reports-panel">
-          <h2>Ingresos por dia</h2>
+          <h2>Ingresos por día</h2>
           <div className="reports-chart-wrap">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={revenueTimeline.map((item) => ({ ...item, date_label: formatDateLabel(item.date) }))}>
@@ -246,7 +286,7 @@ function ReportsPage() {
 
       <section className="reports-grid-two">
         <article className="reports-panel">
-          <h2>Productos mas usados</h2>
+          <h2>Productos más usados</h2>
           <div className="reports-table-wrapper">
             <table className="reports-table">
               <thead>
@@ -351,7 +391,7 @@ function ReportsPage() {
         </article>
 
         <article className="reports-panel">
-          <h2>Desempeno miembros</h2>
+          <h2>Desempeño miembros</h2>
           <div className="reports-table-wrapper">
             <table className="reports-table">
               <thead>
@@ -375,7 +415,7 @@ function ReportsPage() {
                   <tr>
                     <td colSpan={4}>Sin datos para el periodo seleccionado.</td>
                   </tr>
-                ) : null}
+                ) : null}   
               </tbody>
             </table>
           </div>

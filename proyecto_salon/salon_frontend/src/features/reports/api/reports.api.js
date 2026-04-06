@@ -57,10 +57,11 @@ export const reportsApi = {
     const response = await apiClient.get(`/reports/inventory${query}`);
     return response?.data?.data ?? {};
   },
-  exportCsvUrl: (reportType, filters = {}) => {
+  exportUrl: (reportType, formatType = 'csv', filters = {}) => {
     const params = buildCommonParams(filters);
     params.set('report', reportType);
+    params.set('format', formatType);
     const query = params.toString() ? `?${params.toString()}` : '';
-    return `/reports/export.csv${query}`;
+    return `/reports/export${query}`;
   },
 };

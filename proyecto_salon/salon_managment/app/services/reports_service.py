@@ -296,6 +296,191 @@ class ReportsService:
         }
 
     @staticmethod
+    def _build_export_payload(report_type, from_date=None, to_date=None, status='completed', limit=10):
+        report_type = (report_type or '').strip().lower()
+
+        if report_type == 'services':
+            report = ReportsService.get_top_services(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            return {'report': report_type, 'data': report['data'], 'meta': report.get('meta', {})}
+
+        if report_type == 'products':
+            report = ReportsService.get_products_related(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            return {'report': report_type, 'data': report['data'], 'meta': report.get('meta', {})}
+
+        if report_type == 'clients':
+            report = ReportsService.get_top_clients(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            return {'report': report_type, 'data': report['data'], 'meta': report.get('meta', {})}
+
+        if report_type == 'members':
+            report = ReportsService.get_member_performance(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            return {'report': report_type, 'data': report['data'], 'meta': report.get('meta', {})}
+
+        if report_type == 'revenue':
+            report = ReportsService.get_revenue_timeline(from_date=from_date, to_date=to_date, status=status)
+            return {'report': report_type, 'data': report['data'], 'meta': report.get('meta', {})}
+
+        if report_type == 'summary':
+            report = ReportsService.get_summary(from_date=from_date, to_date=to_date, status=status)
+            return {'report': report_type, 'data': report['data'], 'meta': {'status_filter': status}}
+
+        if report_type == 'inventory':
+            report = ReportsService.get_inventory()
+            return {'report': report_type, 'data': report['data'], 'meta': {}}
+
+        if report_type == 'all':
+            summary = ReportsService.get_summary(from_date=from_date, to_date=to_date, status=status)
+            services = ReportsService.get_top_services(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            products = ReportsService.get_products_related(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            clients = ReportsService.get_top_clients(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            members = ReportsService.get_member_performance(limit=limit, from_date=from_date, to_date=to_date, status=status)
+            revenue = ReportsService.get_revenue_timeline(from_date=from_date, to_date=to_date, status=status)
+            inventory = ReportsService.get_inventory()
+
+            return {
+                'report': report_type,
+                'data': {
+                    'summary': summary['data'],
+                    'services': services['data'],
+                    'products': products['data'],
+                    'clients': clients['data'],
+                    'members': members['data'],
+                    'revenue': revenue['data'],
+                    'inventory': inventory['data'],
+                },
+                'meta': {
+                    'period': ReportsService._build_period(from_date, to_date),
+                    'status_filter': status,
+                    'limit': limit,
+                },
+            }
+
+        raise ValueError('Tipo de reporte no soportado para exportacion.')
+
+    @staticmethod
+    def _to_cell_text(value):
+        if isinstance(value, list):
+            return ', '.join(str(item) for item in value)
+
+        if isinstance(value, dict):
+            return '; '.join(f'{key}: {item}' for key, item in value.items())
+
+        return '' if value is None else str(value)
+
+    @staticmethod
+    def _escape_html(value):
+        text = ReportsService._to_cell_text(value)
+        return (
+            text
+            .replace('&', '&amp;')
+            .replace('<', '&lt;')
+            .replace('>', '&gt;')
+        )
+
+    @staticmethod
+    def _table_html(records):
+        if not isinstance(records, list) or not records:
+            return '<p>Sin datos disponibles.</p>'
+
+        first = records[0]
+        if not isinstance(first, dict):
+            rows = ''.join(f'<li>{ReportsService._escape_html(item)}</li>' for item in records)
+            return f'<ul>{rows}</ul>'
+
+        headers = list(first.keys())
+        thead = ''.join(f'<th>{ReportsService._escape_html(header)}</th>' for header in headers)
+        body_rows = []
+        for row in records:
+            tds = ''.join(f'<td>{ReportsService._escape_html(row.get(header))}</td>' for header in headers)
+            body_rows.append(f'<tr>{tds}</tr>')
+
+        tbody = ''.join(body_rows)
+        return (
+            '<table border="1" cellspacing="0" cellpadding="4" '
+            'style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:12px;">'
+            f'<thead><tr style="background:#e2e8f0;">{thead}</tr></thead>'
+            f'<tbody>{tbody}</tbody>'
+            '</table>'
+        )
+
+    @staticmethod
+    def _word_document_html(payload, filters):
+        report_name = ReportsService._escape_html(payload.get('report', 'reporte'))
+        generated_at = ReportsService._escape_html(datetime.utcnow().isoformat() + 'Z')
+        filter_html = (
+            f"<p><strong>Desde:</strong> {ReportsService._escape_html(filters.get('from_date')) or '-'} | "
+            f"<strong>Hasta:</strong> {ReportsService._escape_html(filters.get('to_date')) or '-'} | "
+            f"<strong>Estado:</strong> {ReportsService._escape_html(filters.get('status'))} | "
+            f"<strong>Límite:</strong> {ReportsService._escape_html(filters.get('limit'))}</p>"
+        )
+
+        data = payload.get('data')
+        if payload.get('report') == 'all' and isinstance(data, dict):
+            sections = []
+            for section_name, section_data in data.items():
+                sections.append(f'<h2 style="margin-top:20px;">{ReportsService._escape_html(section_name)}</h2>')
+                sections.append(ReportsService._table_html(section_data if isinstance(section_data, list) else [section_data]))
+            content_html = ''.join(sections)
+        else:
+            content_html = ReportsService._table_html(data if isinstance(data, list) else [data])
+
+        return (
+            '<html><head><meta charset="utf-8"></head><body>'
+            f'<h1 style="font-family:Arial,sans-serif;">Reporte: {report_name}</h1>'
+            f'<p><strong>Generado:</strong> {generated_at}</p>'
+            f'{filter_html}'
+            f'{content_html}'
+            '</body></html>'
+        )
+
+    @staticmethod
+    def build_export(report_type, format_type='csv', from_date=None, to_date=None, status='completed', limit=10):
+        normalized_format = (format_type or 'csv').strip().lower()
+        normalized_report = (report_type or 'services').strip().lower()
+
+        if normalized_format == 'csv':
+            if normalized_report == 'all':
+                raise ValueError('El formato CSV no soporta report=all. Usa formato WORD.')
+
+            csv_result = ReportsService.build_csv(
+                report_type=normalized_report,
+                from_date=from_date,
+                to_date=to_date,
+                status=status,
+                limit=limit,
+            )
+            return {
+                'content': csv_result['csv'],
+                'filename': csv_result['filename'],
+                'mimetype': 'text/csv',
+            }
+
+        if normalized_format == 'word':
+            payload = ReportsService._build_export_payload(
+                report_type=normalized_report,
+                from_date=from_date,
+                to_date=to_date,
+                status=status,
+                limit=limit,
+            )
+            html = ReportsService._word_document_html(
+                payload,
+                {
+                    'from_date': from_date.isoformat() if from_date else None,
+                    'to_date': to_date.isoformat() if to_date else None,
+                    'status': status,
+                    'limit': limit,
+                }
+            )
+
+            return {
+                'content': html,
+                'filename': f'reporte_{normalized_report}.doc',
+                'mimetype': 'application/msword',
+            }
+
+        raise ValueError('Formato de exportacion no soportado. Usa csv o word.')
+
+    @staticmethod
     def parse_filters(args):
         from_date = ReportsService._parse_iso_date(args.get('from_date'))
         to_date = ReportsService._parse_iso_date(args.get('to_date'), end_of_day=True)

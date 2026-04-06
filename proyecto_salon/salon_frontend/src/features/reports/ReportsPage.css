@@ -15,11 +15,12 @@
 
 .reports-header h1 {
   margin: 0;
+  color: #ffffff;
 }
 
 .reports-header p {
   margin: 0.35rem 0 0;
-  color: #475569;
+  color: #ffffff;
 }
 
 .reports-filters {
@@ -28,7 +29,7 @@
   gap: 0.75rem;
   padding: 1rem;
   background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-  border: 1px solid #e2e8f0;
+  border: 1px solid #122641;
   border-radius: 12px;
 }
 
@@ -60,6 +61,14 @@
 
 .reports-export-row {
   justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.reports-export-row .btn {
+  width: 100%;
 }
 
 .reports-kpi-grid {
@@ -289,7 +298,8 @@
   .reports-filters,
   .reports-kpi-grid,
   .reports-inventory-kpis,
-  .reports-custom-dates {
+  .reports-custom-dates,
+  .reports-export-row {
     grid-template-columns: 1fr;
   }
 

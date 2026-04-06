@@ -100,8 +100,9 @@ def export_csv():
     report_type = request.args.get('report', default='services', type=str)
 
     try:
-        result = ReportsService.build_csv(
+        result = ReportsService.build_export(
             report_type=report_type,
+            format_type='csv',
             from_date=filters['from_date'],
             to_date=filters['to_date'],
             status=filters['status'],
@@ -111,8 +112,38 @@ def export_csv():
         return jsonify(success=False, message=str(exc)), 400
 
     return Response(
-        result['csv'],
-        mimetype='text/csv',
+        result['content'],
+        mimetype=result['mimetype'],
+        headers={
+            'Content-Disposition': f'attachment; filename={result["filename"]}',
+        },
+    )
+
+
+@reports_bp.route('/export', methods=['GET'])
+def export_report():
+    filters, error = _get_filters()
+    if error:
+        return jsonify(success=False, message=error), 400
+
+    report_type = request.args.get('report', default='services', type=str)
+    format_type = request.args.get('format', default='csv', type=str)
+
+    try:
+        result = ReportsService.build_export(
+            report_type=report_type,
+            format_type=format_type,
+            from_date=filters['from_date'],
+            to_date=filters['to_date'],
+            status=filters['status'],
+            limit=filters['limit'],
+        )
+    except ValueError as exc:
+        return jsonify(success=False, message=str(exc)), 400
+
+    return Response(
+        result['content'],
+        mimetype=result['mimetype'],
         headers={
             'Content-Disposition': f'attachment; filename={result["filename"]}',
         },
