@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'salon_calendar_settings';
+const DATE_ONLY_REGEX = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 export const DEFAULT_CALENDAR_SETTINGS = {
   businessHours: {
@@ -17,10 +18,49 @@ function toMinutes(time) {
   return h * 60 + m;
 }
 
-function normalizeDate(value) {
+function parseDateInput(value) {
   if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
+
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    return new Date(value.getTime());
+  }
+
+  if (typeof value === 'string') {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return null;
+
+    const dateMatch = trimmedValue.match(DATE_ONLY_REGEX);
+    if (dateMatch) {
+      const year = Number(dateMatch[1]);
+      const month = Number(dateMatch[2]);
+      const day = Number(dateMatch[3]);
+      const localDate = new Date(year, month - 1, day);
+
+      if (
+        localDate.getFullYear() !== year
+        || localDate.getMonth() !== month - 1
+        || localDate.getDate() !== day
+      ) {
+        return null;
+      }
+
+      return localDate;
+    }
+
+    const parsedDate = new Date(trimmedValue);
+    if (Number.isNaN(parsedDate.getTime())) return null;
+    return parsedDate;
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) return null;
+  return parsedDate;
+}
+
+function normalizeDate(value) {
+  const date = parseDateInput(value);
+  if (!date) return null;
 
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -87,8 +127,8 @@ export function saveCalendarSettings(nextSettings) {
 }
 
 export function isDateBlocked(dateInput, settings = getCalendarSettings()) {
-  const date = new Date(dateInput);
-  if (Number.isNaN(date.getTime())) return false;
+  const date = parseDateInput(dateInput);
+  if (!date) return false;
 
   const weekday = date.getDay();
   const normalizedDate = normalizeDate(date);
@@ -100,8 +140,8 @@ export function isDateBlocked(dateInput, settings = getCalendarSettings()) {
 }
 
 export function isOutsideBusinessHours(dateInput, settings = getCalendarSettings()) {
-  const date = new Date(dateInput);
-  if (Number.isNaN(date.getTime())) return false;
+  const date = parseDateInput(dateInput);
+  if (!date) return false;
 
   const currentMinutes = date.getHours() * 60 + date.getMinutes();
   const startMinutes = toMinutes(settings.businessHours.start);
@@ -112,8 +152,8 @@ export function isOutsideBusinessHours(dateInput, settings = getCalendarSettings
 }
 
 export function isTimeRangeBlocked(dateInput, settings = getCalendarSettings()) {
-  const date = new Date(dateInput);
-  if (Number.isNaN(date.getTime())) return false;
+  const date = parseDateInput(dateInput);
+  if (!date) return false;
 
   const currentMinutes = date.getHours() * 60 + date.getMinutes();
 
@@ -136,7 +176,7 @@ export function isDateTimeBlocked(dateInput, settings = getCalendarSettings()) {
 
 export function getBlockingReason(dateInput, settings = getCalendarSettings()) {
   if (isDateBlocked(dateInput, settings)) {
-    return 'El dia seleccionado esta bloqueado en configuracion.';
+    return 'El dia seleccionado no esta disponible.';
   }
 
   if (isOutsideBusinessHours(dateInput, settings)) {
