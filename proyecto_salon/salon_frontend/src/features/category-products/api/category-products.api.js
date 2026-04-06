@@ -7,11 +7,27 @@ export const categoryProductsApi = {
     if (page) params.page = page;
     if (pageSize) params.page_size = pageSize;
     const response = await apiClient.get('/category-products', { params });
-    return response?.data ?? extractData(response);
+    if (page || pageSize) {
+      return response?.data ?? {};
+    }
+
+    return extractData(response);
   },
 
   getById: async (id) => {
     const response = await apiClient.get(`/category-products/${id}`);
+    return extractData(response);
+  },
+
+  getForSelect: async () => {
+    const response = await apiClient.get('/category-products', {
+      params: {
+        page: 1,
+        page_size: 500,
+        order: 'asc',
+        order_by: 'name',
+      },
+    });
     return extractData(response);
   },
 

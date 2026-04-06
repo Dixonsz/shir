@@ -7,7 +7,11 @@ export const productsApi = {
     if (page) params.page = page;
     if (pageSize) params.page_size = pageSize;
     const response = await apiClient.get('/products', { params });
-    return response?.data ?? extractData(response);
+    if (page || pageSize) {
+      return response?.data ?? {};
+    }
+
+    return extractData(response);
   },
 
   getById: async (id) => {

@@ -296,10 +296,24 @@ function ReportsPage() {
             {(inventory?.low_stock || []).slice(0, 8).map((item) => (
               <li key={item.id}>
                 <span>{item.name}</span>
-                <strong>{item.stock}</strong>
+                <div className="reports-stock-meta">
+                  <em className="reports-stock-badge reports-stock-badge-low">Stock bajo</em>
+                  <strong>{item.stock}</strong>
+                </div>
               </li>
             ))}
-            {(inventory?.low_stock || []).length === 0 ? <li>No hay productos en bajo stock.</li> : null}
+            {(inventory?.out_of_stock || []).slice(0, 8).map((item) => (
+              <li key={`out-${item.id}`}>
+                <span>{item.name}</span>
+                <div className="reports-stock-meta">
+                  <em className="reports-stock-badge reports-stock-badge-out">Sin stock</em>
+                  <strong>{item.stock}</strong>
+                </div>
+              </li>
+            ))}
+            {(inventory?.low_stock || []).length === 0 && (inventory?.out_of_stock || []).length === 0 ? (
+              <li>No hay productos en bajo stock o sin stock.</li>
+            ) : null}
           </ul>
         </article>
       </section>

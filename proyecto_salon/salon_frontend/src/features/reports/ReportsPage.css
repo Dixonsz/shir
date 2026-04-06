@@ -189,8 +189,11 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.55rem 0;
-  border-bottom: 1px dashed #e2e8f0;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 0.45rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
 }
 
 .reports-list li span {
@@ -198,6 +201,40 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.reports-stock-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reports-stock-badge {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.reports-stock-badge-low {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+}
+
+.reports-stock-badge-out {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+}
+
+.reports-list li strong {
+  color: #0b1220;
+  font-weight: 800;
 }
 
 .reports-error {

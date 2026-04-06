@@ -23,7 +23,7 @@ export function useProducts() {
 
   const fetchCategories = async () => {
     try {
-      const data = await categoryProductsApi.getAll();
+      const data = await categoryProductsApi.getForSelect();
       setCategories(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error al cargar categorías:", err);
