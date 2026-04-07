@@ -9,7 +9,7 @@ export default function Footer() {
                     <div className="footer-logo-icon">
                         <Sparkles size={20} />
                     </div>
-                    <span className="footer-logo-text">SHIR SALON</span>
+                    <span className="footer-logo-text">SHIR SALÓN</span>
                 </div>
                 
                 <p className="footer-description">
@@ -62,7 +62,7 @@ export default function Footer() {
                 </div>
                 
                 <div className="footer-copyright">
-                    <p>&copy; 2026 Shir Salon. Todos los derechos reservados.</p>
+                    <p>&copy; 2026 Shir Salón. Todos los derechos reservados.</p>
                 </div>
             </div>
         </footer>

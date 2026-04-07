@@ -40,7 +40,7 @@ export default function Header() {
                         Inicio
                     </button>
                     <button className="header-nav-btn" onClick={() => goToSection('galeria')}>
-                        Galeria 
+                        Galería
                     </button>
                     <button className="header-nav-btn" onClick={() => goToSection('servicios')}>
                         Servicios
@@ -49,7 +49,7 @@ export default function Header() {
                         Nuestro equipo
                     </button>
                     <button className="header-nav-btn" onClick={() => goToSection('ubicacion')}>
-                        Ubicacion 
+                        Ubicación 
                     </button>
                     <button className="header-nav-btn" onClick={() => goToSection('contacto')}>
                         Contacto

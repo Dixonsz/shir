@@ -25,9 +25,9 @@ export default function Hero() {
                             Creamos experiencias premium que conectan con tu estilo, tu tiempo y tu forma de verte.
                         </p>
                         <div className="hero-highlights" aria-label="Beneficios principales">
-                            <span>Atencion personalizada</span>
+                            <span>Atención personalizada</span>
                             <span>Equipo profesional</span>
-                            <span>Reservas en linea</span>
+                            <span>Reservas en línea</span>
                         </div>
                         <button className="hero-btn" onClick={() => navigate('/reservar')}>
                             Reservar ahora

@@ -291,7 +291,7 @@ export default function PublicAppointmentPage() {
     <section className="public-appointment-page">
       <div className="public-appointment-shell">
         <header className="public-appointment-header">
-          <p className="public-appointment-kicker">Reserva en linea</p>
+          <p className="public-appointment-kicker">Reserva en línea</p>
           <h1>Agenda tu cita</h1>
           <p className="public-appointment-description">
             Elige tu servicio, especialista y horario en pocos pasos.
@@ -306,7 +306,7 @@ export default function PublicAppointmentPage() {
           <div className="public-appointment-grid">
             <div className="public-appointment-grid-full public-appointment-lookup">
               <label>
-                Cedula
+                Cédula
                 <div className="public-appointment-lookup-row">
                   <input
                     type="text"
@@ -394,7 +394,7 @@ export default function PublicAppointmentPage() {
             </label>
 
             <label>
-              Especialista
+              Estilista
               <select
                 name="member_id"
                 value={formData.member_id}
@@ -402,7 +402,7 @@ export default function PublicAppointmentPage() {
                 required
                 disabled={loading}
               >
-                <option value="">Selecciona un especialista</option>
+                <option value="">Selecciona un estilista</option>
                 {members.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.full_name || `${member.first_name} ${member.last_name}`}
@@ -436,7 +436,7 @@ export default function PublicAppointmentPage() {
               Servicio: <strong>{selectedService?.name || 'Sin seleccionar'}</strong>
             </p>
             <p>
-              Especialista:{' '}
+              Estilista:{' '}
               <strong>
                 {selectedMember
                   ? selectedMember.full_name || `${selectedMember.first_name} ${selectedMember.last_name}`
@@ -444,11 +444,11 @@ export default function PublicAppointmentPage() {
               </strong>
             </p>
             <p>
-              Desde : <strong>{formatCurrency(selectedService?.price)}</strong>
+              Desde <strong>{formatCurrency(selectedService?.price)}</strong>
             </p>
             {conflict ? (
               <p className="public-appointment-warning">
-                El horario seleccionado no esta disponible para ese especialista.
+                El horario seleccionado no esta disponible para ese estilista.
               </p>
             ) : null}
             <button type="submit" disabled={saving || loading || Boolean(conflict) || Boolean(blockedReason)}>

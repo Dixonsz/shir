@@ -8,7 +8,7 @@ export default function ServiceCard({ service }) {
         <article className="service-card" role="listitem">
             <div className="service-card-header">
                 <h3>{service.name}</h3>
-                <span className="service-price">desde: ₡{service.price}</span>
+                <span className="service-price">A partir de ₡{service.price}</span>
             </div>
 
             <p className="service-description">
@@ -19,11 +19,7 @@ export default function ServiceCard({ service }) {
                 <span className="service-duration">
                     <Clock3 size={16} /> {service.duration_minutes} minutos
                 </span>
-                {promotionsCount > 0 && (
-                    <span className="service-promotion">
-                        <Sparkles size={14} /> {promotionsCount} promoción{promotionsCount > 1 ? 'es' : ''}
-                    </span>
-                )}
+                
             </div>
         </article>
     );

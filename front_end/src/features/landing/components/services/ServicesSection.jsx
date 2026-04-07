@@ -107,7 +107,7 @@ export default function ServicesSection() {
             <div className="services-shell">
                 <header className="services-header">
                     <p className="services-kicker">SERVICIOS DESTACADOS</p>
-                    <h2>Promociones y Servicios</h2>
+                    <h2>Conoce nuestros servicios</h2>
                     <p>Explora nuestros servicios en un vistazo rapido y descubre cuales tienen beneficios especiales hoy.</p>
                 </header>
 
