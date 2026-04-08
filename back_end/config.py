@@ -1,7 +1,25 @@
 import os
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def _normalize_database_url(raw_url):
+    if not raw_url:
+        return ''
+
+    parsed = urlparse(raw_url)
+    if not parsed.scheme:
+        return ''
+
+    if raw_url.startswith('mysql://'):
+        return raw_url.replace('mysql://', 'mysql+pymysql://', 1)
+
+    if raw_url.startswith('mysql+mysqldb://'):
+        return raw_url.replace('mysql+mysqldb://', 'mysql+pymysql://', 1)
+
+    return raw_url
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -73,13 +91,17 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', SECRET_KEY)
     JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))  
     
+    DATABASE_URL = _normalize_database_url(os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL'))
+
     DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_PORT = os.getenv('DB_PORT', '3306')
     DB_USER = os.getenv('DB_USER', 'root')
     DB_PASSWORD = os.getenv('DB_PASSWORD', '1234')
     DB_NAME = os.getenv('DB_NAME', 'salon_managment')
-    
-    SQLALCHEMY_DATABASE_URI = f"mysql+mysqldb://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL or (
+        f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
 
