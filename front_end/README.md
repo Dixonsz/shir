@@ -10,7 +10,7 @@
 Este frontend usa variables de Vite:
 
 - `VITE_API_URL`: URL base del backend, por ejemplo `https://api.tu-dominio.com/api`
-- `VITE_RECAPTCHA_SITE_KEY`: site key publica de reCAPTCHA
+- `VITE_RECAPTCHA_SITE_KEY`: site key publica de reCAPTCHA v3
 
 Usa `.env.example` como referencia para crear tus variables locales o de produccion.
 
@@ -64,3 +64,8 @@ vercel --prod
 
 En local, Vite tiene proxy para `/api` hacia `http://localhost:5000` en `vite.config.js`.
 En produccion no se usa ese proxy: el frontend consume `VITE_API_URL`.
+
+## reCAPTCHA v3
+
+Este frontend usa reCAPTCHA v3 (sin checkbox visible) y genera token con la accion `login`.
+Si Vercel muestra `ERROR del propietario del sitio: El tipo de clave no es valido`, normalmente la clave en `VITE_RECAPTCHA_SITE_KEY` no es de tipo v3.

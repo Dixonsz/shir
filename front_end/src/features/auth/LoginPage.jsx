@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import ReCAPTCHA from 'react-google-recaptcha';
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useAuth } from './hooks';
 import { showToast } from '../../providers/ToastProvider';
 import './LoginPage.css';
@@ -14,14 +14,13 @@ function canUsePasswordCredentials() {
     && 'PasswordCredential' in window;
 }
 
-function LoginPage() {
+function LoginForm() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const { login, isAuthenticated } = useAuth();
-  const recaptchaRef = useRef(null);
   const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
   const isRecaptchaEnabled = Boolean(recaptchaSiteKey);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -99,12 +98,27 @@ function LoginPage() {
       return;
     }
 
-    if (!captchaToken) {
-      setError('Debes completar el reCAPTCHA para continuar.');
+    if (!executeRecaptcha) {
+      setError('El servicio de reCAPTCHA aun no esta listo. Intenta nuevamente.');
       return;
     }
 
     setIsSubmitting(true);
+
+    let captchaToken = '';
+    try {
+      captchaToken = await executeRecaptcha('login');
+    } catch {
+      setError('No se pudo generar el token de reCAPTCHA. Intenta nuevamente.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!captchaToken) {
+      setError('No se pudo validar reCAPTCHA. Intenta nuevamente.');
+      setIsSubmitting(false);
+      return;
+    }
 
     const result = await login({
       ...formData,
@@ -131,8 +145,6 @@ function LoginPage() {
       }
     } else {
       setError(result.error);
-      recaptchaRef.current?.reset();
-      setCaptchaToken('');
     }
 
     setIsSubmitting(false);
@@ -210,12 +222,7 @@ function LoginPage() {
 
           {isRecaptchaEnabled ? (
             <div className="login-captcha-wrap">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={recaptchaSiteKey}
-                onChange={(token) => setCaptchaToken(token || '')}
-                onExpired={() => setCaptchaToken('')}
-              />
+              <small>Este sitio esta protegido por reCAPTCHA v3.</small>
             </div>
           ) : (
             <p className="login-error">
@@ -226,13 +233,28 @@ function LoginPage() {
           <button
             type="submit"
             className="login-button"
-            disabled={isSubmitting || !captchaToken || !isRecaptchaEnabled}
+            disabled={isSubmitting || !isRecaptchaEnabled}
           >
             {isSubmitting ? 'Ingresando...' : 'Entrar'}
           </button>
         </form>
       </section>
     </main>
+  );
+}
+
+function LoginPage() {
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+  const isRecaptchaEnabled = Boolean(recaptchaSiteKey);
+
+  if (!isRecaptchaEnabled) {
+    return <LoginForm />;
+  }
+
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
+      <LoginForm />
+    </GoogleReCaptchaProvider>
   );
 }
 
