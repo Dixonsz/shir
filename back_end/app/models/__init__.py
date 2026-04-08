@@ -16,6 +16,7 @@ from app.models.marketing import Marketing
 from app.models.marketing_item import MarketingItem
 from app.models.additional import Additional
 from app.models.gallery import Gallery
+from app.models.product_stock_movement import ProductStockMovement
 
 __all__ = [
     'Client',
@@ -34,5 +35,6 @@ __all__ = [
     'Marketing',
     'MarketingItem',
     'Additional',
-    'Gallery'
+    'Gallery',
+    'ProductStockMovement'
 ]

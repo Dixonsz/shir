@@ -156,6 +156,26 @@ CREATE TABLE IF NOT EXISTS products (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
+-- TABLA: product_stock_movements
+-- Descripción: Movimientos de inventario por producto (ingresos/egresos)
+-- Permite trazar ingresos de stock con precio de compra sin alterar historial.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS product_stock_movements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    movement_type VARCHAR(20) NOT NULL DEFAULT 'in',
+    quantity INT NOT NULL,
+    stock_before INT NOT NULL,
+    stock_after INT NOT NULL,
+    purchase_price FLOAT DEFAULT NULL,
+    notes VARCHAR(255) DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    INDEX idx_product_stock_movements_product_id (product_id),
+    INDEX idx_product_stock_movements_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
 -- TABLA: appointments
 -- Descripción: Citas programadas
 -- Gestiona citas entre clientes y miembros con fecha y estado

@@ -29,6 +29,16 @@ export const productsApi = {
     return extractData(response);
   },
 
+  addStock: async (id, stockData) => {
+    const response = await apiClient.post(`/products/${id}/stock-in`, stockData);
+    return extractData(response);
+  },
+
+  getStockMovements: async (id) => {
+    const response = await apiClient.get(`/products/${id}/stock-movements`);
+    return extractData(response);
+  },
+
   delete: async (id) => {
     const response = await apiClient.delete(`/products/${id}`);
     return extractData(response);

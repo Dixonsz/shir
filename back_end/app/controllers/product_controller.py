@@ -88,3 +88,37 @@ def delete_product(product_id):
         message=result["message"]
     ), 200
 
+
+@product_bp.route('/products/<int:product_id>/stock-in', methods=['POST'])
+def add_product_stock(product_id):
+    result = ProductService.add_stock(product_id, request.json)
+
+    if not result["success"]:
+        status_code = 404 if result["error"] == "Producto no encontrado." else 400
+        return jsonify(
+            success=False,
+            message=result["error"]
+        ), status_code
+
+    return jsonify(
+        success=True,
+        data=result["data"]
+    ), 200
+
+
+@product_bp.route('/products/<int:product_id>/stock-movements', methods=['GET'])
+def get_product_stock_movements(product_id):
+    result = ProductService.get_stock_movements(product_id)
+
+    if not result["success"]:
+        status_code = 404 if result["error"] == "Producto no encontrado." else 400
+        return jsonify(
+            success=False,
+            message=result["error"]
+        ), status_code
+
+    return jsonify(
+        success=True,
+        data=result["data"]
+    ), 200
+
