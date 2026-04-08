@@ -21,8 +21,25 @@ def _normalize_database_url(raw_url):
 
     return raw_url
 
+
+def _require_env(name):
+    value = os.getenv(name, '').strip()
+    if not value:
+        raise RuntimeError(f'La variable de entorno {name} es obligatoria en produccion.')
+    return value
+
+
+def _require_any_env(*names):
+    for name in names:
+        value = os.getenv(name, '').strip()
+        if value:
+            return value
+
+    joined_names = ' o '.join(names)
+    raise RuntimeError(f'Debes configurar {joined_names} en produccion.')
+
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = os.getenv('SECRET_KEY', '')
 
     RECAPTCHA_ENABLED = os.getenv('RECAPTCHA_ENABLED', 'false').lower() == 'true'
     RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY', '')
@@ -50,7 +67,7 @@ class Config:
     EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'true').strip().lower() == 'true'
     EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').strip().lower() == 'true'
     EMAIL_FROM = os.getenv('EMAIL_FROM', '').strip()
-    EMAIL_ADMIN_TO = os.getenv('EMAIL_ADMIN_TO', os.getenv('DEFAULT_MEMBER_EMAIL', 'admin@salon.local')).strip()
+    EMAIL_ADMIN_TO = os.getenv('EMAIL_ADMIN_TO', '').strip()
     EMAIL_NOTIFY_CLIENT = os.getenv('EMAIL_NOTIFY_CLIENT', 'true').strip().lower() == 'true'
     EMAIL_NOTIFY_ADMIN = os.getenv('EMAIL_NOTIFY_ADMIN', 'true').strip().lower() == 'true'
     EMAIL_SUBJECT_PREFIX = os.getenv('EMAIL_SUBJECT_PREFIX', '[Salon]').strip()
@@ -58,7 +75,7 @@ class Config:
     EMAIL_ADMIN_ICS_DURATION_MINUTES = int(os.getenv('EMAIL_ADMIN_ICS_DURATION_MINUTES', 60))
     EMAIL_ADMIN_ICS_LOCATION = os.getenv('EMAIL_ADMIN_ICS_LOCATION', 'Salon').strip()
     
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', SECRET_KEY)
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', '') or SECRET_KEY
     JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))  
     
     DATABASE_URL = _normalize_database_url(os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL'))
@@ -66,7 +83,7 @@ class Config:
     DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_PORT = os.getenv('DB_PORT', '3306')
     DB_USER = os.getenv('DB_USER', 'root')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '1234')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
     DB_NAME = os.getenv('DB_NAME', 'salon_managment')
 
     SQLALCHEMY_DATABASE_URI = DATABASE_URL or (
@@ -98,20 +115,27 @@ class Config:
             'description': 'Gestion de promociones, campanas y galeria',
         },
     ]
-    DEFAULT_ROLE_NAME = os.getenv('DEFAULT_ROLE_NAME', 'Administrador')
-    DEFAULT_ROLE_DESCRIPTION = os.getenv('DEFAULT_ROLE_DESCRIPTION', 'Rol creado automaticamente para el seed inicial')
-    DEFAULT_MEMBER_FIRST_NAME = os.getenv('DEFAULT_MEMBER_FIRST_NAME', 'Admin')
-    DEFAULT_MEMBER_LAST_NAME = os.getenv('DEFAULT_MEMBER_LAST_NAME', 'Salon')
-    DEFAULT_MEMBER_EMAIL = os.getenv('DEFAULT_MEMBER_EMAIL', 'admin@salon.local')
-    DEFAULT_MEMBER_PASSWORD = os.getenv('DEFAULT_MEMBER_PASSWORD', 'Admin123*')
-    DEFAULT_MEMBER_PHONE = os.getenv('DEFAULT_MEMBER_PHONE', '8888-8888')
-    DEFAULT_MEMBER_SPECIALTY = os.getenv('DEFAULT_MEMBER_SPECIALTY', 'Administracion')
+    DEFAULT_ROLE_NAME = os.getenv('DEFAULT_ROLE_NAME', '').strip()
+    DEFAULT_ROLE_DESCRIPTION = os.getenv('DEFAULT_ROLE_DESCRIPTION', '').strip()
+    DEFAULT_MEMBER_FIRST_NAME = os.getenv('DEFAULT_MEMBER_FIRST_NAME', '').strip()
+    DEFAULT_MEMBER_LAST_NAME = os.getenv('DEFAULT_MEMBER_LAST_NAME', '').strip()
+    DEFAULT_MEMBER_EMAIL = os.getenv('DEFAULT_MEMBER_EMAIL', '').strip()
+    DEFAULT_MEMBER_PASSWORD = os.getenv('DEFAULT_MEMBER_PASSWORD', '')
+    DEFAULT_MEMBER_PHONE = os.getenv('DEFAULT_MEMBER_PHONE', '').strip()
+    DEFAULT_MEMBER_SPECIALTY = os.getenv('DEFAULT_MEMBER_SPECIALTY', '').strip()
 
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_ECHO = True
 
 class ProductionConfig(Config):
+    SECRET_KEY = _require_env('SECRET_KEY')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', '').strip() or SECRET_KEY
+    DATABASE_URL = _normalize_database_url(_require_any_env('DATABASE_URL', 'MYSQL_URL'))
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    DEFAULT_MEMBER_EMAIL = _require_env('DEFAULT_MEMBER_EMAIL')
+    DEFAULT_MEMBER_PASSWORD = _require_env('DEFAULT_MEMBER_PASSWORD')
+
     DEBUG = False
     SQLALCHEMY_ECHO = False
 
