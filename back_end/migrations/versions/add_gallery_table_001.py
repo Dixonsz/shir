@@ -1,7 +1,7 @@
 """add gallery table
 
 Revision ID: add_gallery_table_001
-Revises: add_photo_fields_001
+Revises: b1f3e7a9c245
 Create Date: 2026-02-08 12:00:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'add_gallery_table_001'
-down_revision = 'add_photo_fields_001'  # ID de la última migración
+down_revision = 'b1f3e7a9c245'
 branch_labels = None
 depends_on = None
 
