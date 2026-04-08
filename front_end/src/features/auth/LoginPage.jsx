@@ -222,7 +222,7 @@ function LoginForm() {
 
           {isRecaptchaEnabled ? (
             <div className="login-captcha-wrap">
-              <small>Este sitio esta protegido por reCAPTCHA v3.</small>
+              <small>Este sitio esta protegido por reCAPTCHA</small>
             </div>
           ) : (
             <p className="login-error">

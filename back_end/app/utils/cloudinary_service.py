@@ -38,9 +38,6 @@ def upload_image(file, folder: str, transformation=None, allowed_formats=None):
             "transformation": effective_transformation,
         }
 
-        # Cloudinary puede detectar algunos SVG como formato no estandar (p.ej. xml)
-        # y rechazarlo cuando se envía allowed_formats. Para SVG usamos validación local
-        # (extension/MIME) y evitamos ese filtro remoto estricto.
         if not is_svg:
             upload_options["allowed_formats"] = allowed_formats or DEFAULT_ALLOWED_FORMATS
 
