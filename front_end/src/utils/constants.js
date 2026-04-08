@@ -1,34 +1,5 @@
 ﻿// API Base URL
-const DEFAULT_API_BASE_URL = 'https://shir-api.up.railway.app/api';
-
-function normalizeApiBaseUrl(value) {
-  if (!value || typeof value !== 'string') {
-    return DEFAULT_API_BASE_URL;
-  }
-
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return DEFAULT_API_BASE_URL;
-  }
-
-  const hasProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(trimmed);
-  const withProtocol = hasProtocol ? trimmed : `https://${trimmed}`;
-
-  try {
-    const url = new URL(withProtocol);
-
-    // Si no se define path, usamos /api porque todos los endpoints del backend viven bajo ese prefijo.
-    if (!url.pathname || url.pathname === '/') {
-      url.pathname = '/api';
-    }
-
-    return url.toString().replace(/\/+$/, '');
-  } catch {
-    return DEFAULT_API_BASE_URL;
-  }
-}
-
-export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://shir-api.up.railway.app/api';
 
 
 
