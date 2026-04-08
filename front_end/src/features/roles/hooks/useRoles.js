@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { rolesApi } from '../api';
+import { extractCollection } from '../../../core/api/response';
 
 export function useRoles() {
   const [roles, setRoles] = useState([]);
@@ -11,7 +12,7 @@ export function useRoles() {
     setError(null);
     try {
       const data = await rolesApi.getAll();
-      setRoles(Array.isArray(data) ? data : []);
+      setRoles(extractCollection(data));
     } catch (err) {
       setError(err.response?.data?.message || 'Error al cargar roles');
     } finally {

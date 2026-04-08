@@ -6,6 +6,7 @@ import Textarea from '../../components/forms/Textarea';
 import FormButtons from '../../components/forms/FormButtons';
 import EntityFormView from '../../components/layout/EntityFormView';
 import { showToast } from '../../providers/ToastProvider';
+import { rolesApi } from './api';
 
 function RoleFormPage() {
   const { id } = useParams();
@@ -17,24 +18,48 @@ function RoleFormPage() {
     is_active: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingRole, setIsLoadingRole] = useState(false);
   const isEditing = Boolean(id);
 
   useEffect(() => {
-    if (!id || roles.length === 0) {
+    if (!id) {
       return;
     }
 
-    const roleId = Number(id);
-    const role = roles.find((item) => item.id === roleId || item.md === roleId);
+    let isMounted = true;
 
-    if (role) {
-      setFormData({
-        name: role.name || '',
-        description: role.description || '',
-        is_active: role.is_active ?? true,
-      });
-    }
-  }, [id, roles]);
+    const loadRole = async () => {
+      setIsLoadingRole(true);
+      try {
+        const roleId = Number(id);
+        const role = await rolesApi.getById(roleId);
+
+        if (!isMounted || !role) {
+          return;
+        }
+
+        setFormData({
+          name: role.name || '',
+          description: role.description || '',
+          is_active: role.is_active ?? true,
+        });
+      } catch (error) {
+        if (isMounted) {
+          showToast.error(error?.response?.data?.message || 'No se pudo cargar el rol');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingRole(false);
+        }
+      }
+    };
+
+    loadRole();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -104,7 +129,7 @@ function RoleFormPage() {
         <FormButtons
           onCancel={handleCancel}
           submitLabel={isEditing ? 'Actualizar' : 'Crear Rol'}
-          isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting || isLoadingRole}
         />
       </form>
     </EntityFormView>
