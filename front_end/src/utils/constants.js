@@ -1,5 +1,5 @@
 ﻿// API Base URL
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'shir-production.up.railway.app';
 
 // Auth
 export const TOKEN_KEY = 'salon_token';
