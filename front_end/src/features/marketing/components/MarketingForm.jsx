@@ -43,9 +43,15 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
   const loadPromotions = async () => {
     try {
       const data = await promotionsApi.getAll();
-      setPromotions(data);
+      const promotionsList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : [];
+      setPromotions(promotionsList);
     } catch (err) {
       console.error('Error al cargar promociones:', err);
+      setPromotions([]);
     }
   };
 
@@ -128,7 +134,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
       )}
 
       <Input
-        md="name"
+        id="name"
         name="name"
         label="Nombre de la Campaña"
         value={formData.name}
@@ -138,7 +144,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
       />
 
       <Textarea
-        md="description"
+        id="description"
         name="description"
         label="Descripción"
         value={formData.description}
@@ -164,7 +170,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
 
       <div className="marketing-form-row">
         <Input
-          md="start_date"
+          id="start_date"
           name="start_date"
           label="Fecha de Inicio"
           type="date"
@@ -173,7 +179,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
         />
 
         <Input
-          md="end_date"
+          id="end_date"
           name="end_date"
           label="Fecha de Fin"
           type="date"
