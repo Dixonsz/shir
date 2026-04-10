@@ -208,14 +208,6 @@ function LoginForm() {
               />
               <span>Recordarme</span>
             </label>
-
-            <button
-              type="button"
-              className="login-forgot-link"
-              onClick={() => showToast.info('Solicita el restablecimiento de contraseña con un administrador.')}
-            >
-              Olvide mi contraseña
-            </button>
           </div>
 
           {error ? <p className="login-error">{error}</p> : null}
