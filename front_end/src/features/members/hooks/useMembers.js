@@ -25,9 +25,10 @@ export function useMembers() {
     const fetchRoles = async () => {
     try {
       const data = await rolesApi.getAll();
-      setRoles(Array.isArray(data) ? data : []);
+      setRoles(extractCollection(data));
     } catch (err) {
       console.error("Error al cargar roles:", err);
+      setRoles([]);
     }
     };
     const createMember = async (memberData) => {    
