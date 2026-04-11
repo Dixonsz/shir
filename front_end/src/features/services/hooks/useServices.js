@@ -25,7 +25,7 @@ export function useServices() {
   const fetchCategories = async () => {
     try {
       const data = await categoryServicesApi.getAll();
-      setCategories(Array.isArray(data) ? data : []);
+      setCategories(extractCollection(data));
     } catch (err) {
       console.error("Error al cargar categorías:", err);
     }

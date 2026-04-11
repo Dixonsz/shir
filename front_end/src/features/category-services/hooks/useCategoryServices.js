@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { categoryServicesApi } from "../api";
+import { extractCollection } from "../../../core/api/response";
 
 export function useCategoryServices() {
   const [categories, setCategories] = useState([]);
@@ -11,7 +12,7 @@ export function useCategoryServices() {
     setError(null);
     try {
       const data = await categoryServicesApi.getAll();
-      setCategories(Array.isArray(data) ? data : []);
+      setCategories(extractCollection(data));
     } catch (err) {
       setError(err.response?.data?.message || "Error al cargar categorías");
     } finally {
