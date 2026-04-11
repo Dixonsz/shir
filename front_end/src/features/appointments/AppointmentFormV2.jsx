@@ -11,6 +11,7 @@ import { servicesApi } from '../services/api';
 import { productsApi } from '../products/api';
 import { showToast } from '../../providers/ToastProvider';
 import { getBlockingReason, getCalendarSettings, isDateTimeBlocked } from '../../core/calendar/calendarSettings';
+import { formatForDateTimeLocalInput, parseAppointmentDateTime } from './utils/dateTime';
 
 function normalizeRole(value) {
   if (!value) return '';
@@ -59,14 +60,7 @@ function extractCollection(payload) {
 function AppointmentFormV2({ appointment, clients, members, appointments, onSubmit, onCancel, onClientCreated, initialDate }) {
   const isMountedRef = useRef(true);
   const formatDateForInput = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return formatForDateTimeLocalInput(dateString);
   };
 
   const formatCurrency = (amount) => {
@@ -290,7 +284,8 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   const checkMemberAvailability = (memberId, scheduledDate, currentAppointmentId = null) => {
     if (!memberId || !scheduledDate || !appointments) return true;
     
-    const newStart = new Date(scheduledDate);
+    const newStart = parseAppointmentDateTime(scheduledDate);
+    if (!newStart) return true;
     const newEnd = new Date(newStart.getTime() + 60 * 60 * 1000);
     
     const conflicts = appointments.filter(apt => {
@@ -298,7 +293,8 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
       if (apt.member_id !== parseInt(memberId)) return false;
       if (apt.status === 'cancelled' || !apt.is_active) return false;
       
-      const aptStart = new Date(apt.scheduled_date);
+      const aptStart = parseAppointmentDateTime(apt.scheduled_date);
+      if (!aptStart) return false;
       const aptEnd = new Date(aptStart.getTime() + 60 * 60 * 1000);
       
       return (newStart < aptEnd && newEnd > aptStart);
@@ -485,7 +481,11 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
       );
       
       if (availability !== true) {
-        const conflictDate = new Date(availability.scheduled_date);
+        const conflictDate = parseAppointmentDateTime(availability.scheduled_date);
+        if (!conflictDate) {
+          showToast.error('Este miembro ya tiene una cita en ese horario.');
+          return;
+        }
         const timeStr = conflictDate.toLocaleTimeString('es-ES', {
           hour: '2-digit',
           minute: '2-digit'

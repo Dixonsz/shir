@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getAppointmentStatusConfig } from '../utils/appointmentStatus';
 import { usePermissions } from '../../auth/hooks';
+import { formatAppointmentDateTimeLabel } from '../utils/dateTime';
 
 function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate, pagination, isMutating = false }) {
   const navigate = useNavigate();
@@ -24,20 +25,7 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   const formatDateTime = (dateString) => {
-    if (!dateString) return '-';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return '-';
-      return date.toLocaleString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return '-';
-    }
+    return formatAppointmentDateTimeLabel(dateString);
   };
 
   const getClientName = (clientId) => {
