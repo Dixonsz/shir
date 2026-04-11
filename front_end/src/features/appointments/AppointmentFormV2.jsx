@@ -504,7 +504,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
     const submitData = {
       ...formData,
-      scheduled_date: formData.scheduled_date ? new Date(formData.scheduled_date).toISOString() : null,
+      scheduled_date: formData.scheduled_date || null,
       services: appointmentServices.map(s => ({
         service_id: s.service_id,
         price_applied: parseFloat(s.price_applied),

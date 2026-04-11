@@ -6,6 +6,29 @@ import './TeamSection.css';
 
 const ITEMS_PER_PAGE = 6;
 
+function normalizeRole(value) {
+    if (!value) return '';
+
+    const normalized = String(value)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+
+    if (normalized === 'employee') return 'estilista';
+    return normalized;
+}
+
+function memberHasStylistRole(member) {
+    const roleNames = Array.isArray(member?.role_names)
+        ? member.role_names
+        : member?.rol_name
+            ? [member.rol_name]
+            : [];
+
+    return roleNames.some((roleName) => normalizeRole(roleName) === 'estilista');
+}
+
 export default function TeamSection() {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,8 +40,10 @@ export default function TeamSection() {
             try {
                 setLoading(true);
                 const data = await membersApi.getAll();
-                const activeMembers = extractCollection(data).filter((member) => member.is_active);
-                setMembers(activeMembers);
+                const stylistMembers = extractCollection(data).filter(
+                    (member) => member.is_active && memberHasStylistRole(member)
+                );
+                setMembers(stylistMembers);
             } catch (err) {
                 console.error('Error fetchmng members:', err);
                 setError('No se pudieron cargar los miembros del equipo');

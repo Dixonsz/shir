@@ -14,6 +14,7 @@ import {
   getNotificationSettings,
   saveNotificationSettings,
 } from '../../core/notifications/notificationSettings';
+import './SettingsPage.css';
 
 const WEEKDAY_OPTIONS = [
   { value: 0, label: 'Domingo' },
@@ -106,9 +107,9 @@ function SettingsPage() {
 
   return (
     <EntityFormView title="Configuración" onBack={() => window.history.back()}>
-      <Card style={{ marginBottom: '1rem' }}>
-        <h2 style={styles.title}>Notificaciones</h2>
-        <p style={styles.hintText}>
+      <Card className="settings-card">
+        <h2 className="settings-title">Notificaciones</h2>
+        <p className="settings-hint-text">
           Correo administrativo para recibir notificaciones de nuevas citas.
         </p>
         <Input
@@ -123,8 +124,8 @@ function SettingsPage() {
           }
           placeholder="admin@salon.com"
         />
-        <div style={styles.row}>
-          <label style={styles.checkboxLabel}>
+        <div className="settings-row">
+          <label className="settings-checkbox-label">
             <input
               type="checkbox"
               checked={Boolean(notificationSettings.notifyClient)}
@@ -138,8 +139,8 @@ function SettingsPage() {
             Enviar notificaciones al cliente
           </label>
         </div>
-        <div style={styles.row}>
-          <label style={styles.checkboxLabel}>
+        <div className="settings-row">
+          <label className="settings-checkbox-label">
             <input
               type="checkbox"
               checked={Boolean(notificationSettings.notifyAdmin)}
@@ -153,8 +154,8 @@ function SettingsPage() {
             Enviar notificaciones al administrador
           </label>
         </div>
-        <div style={styles.row}>
-          <label style={styles.checkboxLabel}>
+        <div className="settings-row">
+          <label className="settings-checkbox-label">
             <input
               type="checkbox"
               checked={Boolean(notificationSettings.adminCalendarLinkEnabled)}
@@ -168,7 +169,7 @@ function SettingsPage() {
             Incluir evento al calendario del administrador
           </label>
         </div>
-        <div style={styles.grid2}>
+        <div className="settings-grid2">
           <Input
             label="Duración evento (min)"
             type="number"
@@ -197,9 +198,9 @@ function SettingsPage() {
         </div>
       </Card>
 
-      <Card style={{ marginBottom: '1rem' }}>
-        <h2 style={styles.title}>Horario laboral</h2>
-        <div style={styles.grid2}>
+      <Card className="settings-card">
+        <h2 className="settings-title">Horario laboral</h2>
+        <div className="settings-grid2">
           <Input
             label="Hora inicio"
             type="time"
@@ -215,9 +216,9 @@ function SettingsPage() {
         </div>
       </Card>
 
-      <Card style={{ marginBottom: '1rem' }}>
-        <h2 style={styles.title}>Bloqueo por días de semana</h2>
-        <div style={styles.chips}>
+      <Card className="settings-card">
+        <h2 className="settings-title">Bloqueo por días de semana</h2>
+        <div className="settings-chips">
           {WEEKDAY_OPTIONS.map((weekday) => {
             const active = settings.blockedWeekdays.includes(weekday.value);
             return (
@@ -225,7 +226,7 @@ function SettingsPage() {
                 key={weekday.value}
                 type="button"
                 onClick={() => toggleWeekday(weekday.value)}
-                style={{ ...styles.chip, ...(active ? styles.chipActive : null) }}
+                className={`settings-chip ${active ? 'settings-chip-active' : ''}`}
               >
                 {weekday.label}
               </button>
@@ -234,20 +235,20 @@ function SettingsPage() {
         </div>
       </Card>
 
-      <Card style={{ marginBottom: '1rem' }}>
-        <h2 style={styles.title}>Bloqueo por días especificos</h2>
-        <div style={styles.row}>
+      <Card className="settings-card">
+        <h2 className="settings-title">Bloqueo por días especificos</h2>
+        <div className="settings-row settings-row-wrap">
           <input
             type="date"
             value={newBlockedDate}
             onChange={(event) => setNewBlockedDate(event.target.value)}
-            style={styles.input}
+            className="settings-input"
           />
           <Button type="button" onClick={addBlockedDate}>Agregar</Button>
         </div>
-        <div style={styles.list}>
+        <div className="settings-list">
           {settings.blockedDates.map((dateValue) => (
-            <div key={dateValue} style={styles.listItem}>
+            <div key={dateValue} className="settings-list-item">
               <span>{dateValue}</span>
               <Button type="button" variant="danger" size="sm" onClick={() => removeBlockedDate(dateValue)}>
                 Quitar
@@ -257,26 +258,26 @@ function SettingsPage() {
         </div>
       </Card>
 
-      <Card style={{ marginBottom: '1rem' }}>
-        <h2 style={styles.title}>Bloqueo por franjas horarias</h2>
-        <div style={styles.row}>
+      <Card className="settings-card">
+        <h2 className="settings-title">Bloqueo por franjas horarias</h2>
+        <div className="settings-row settings-row-wrap">
           <input
             type="time"
             value={newRange.start}
             onChange={(event) => setNewRange((prev) => ({ ...prev, start: event.target.value }))}
-            style={styles.input}
+            className="settings-input"
           />
           <input
             type="time"
             value={newRange.end}
             onChange={(event) => setNewRange((prev) => ({ ...prev, end: event.target.value }))}
-            style={styles.input}
+            className="settings-input"
           />
           <Button type="button" onClick={addBlockedRange}>Agregar</Button>
         </div>
-        <div style={styles.list}>
+        <div className="settings-list">
           {settings.blockedTimeRanges.map((range, index) => (
-            <div key={`${range.start}-${range.end}-${index}`} style={styles.listItem}>
+            <div key={`${range.start}-${range.end}-${index}`} className="settings-list-item">
               <span>{range.start} - {range.end}</span>
               <Button type="button" variant="danger" size="sm" onClick={() => removeBlockedRange(index)}>
                 Quitar
@@ -286,90 +287,12 @@ function SettingsPage() {
         </div>
       </Card>
 
-      <div style={styles.footerActions}>
+      <div className="settings-footer-actions">
         <Button type="button" variant="outline" onClick={handleReset}>Restablecer</Button>
         <Button type="button" onClick={handleSave}>Guardar configuración</Button>
       </div>
     </EntityFormView>
   );
 }
-
-const styles = {
-  title: {
-    marginTop: 0,
-    color: '#e2e8f0',
-    fontSize: '1.05rem',
-    marginBottom: '0.75rem',
-  },
-  hintText: {
-    marginTop: '-0.3rem',
-    marginBottom: '0.75rem',
-    color: '#94a3b8',
-    fontSize: '0.82rem',
-  },
-  grid2: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '0.75rem',
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.5rem',
-  },
-  chip: {
-    border: '1px solid rgba(71, 85, 105, 0.7)',
-    background: 'rgba(15, 23, 42, 0.45)',
-    color: '#cbd5e1',
-    borderRadius: '9999px',
-    padding: '0.35rem 0.8rem',
-    cursor: 'pointer',
-  },
-  chipActive: {
-    border: '1px solid rgba(239, 68, 68, 0.7)',
-    background: 'rgba(239, 68, 68, 0.16)',
-    color: '#fecaca',
-  },
-  row: {
-    display: 'flex',
-    gap: '0.5rem',
-    alignItems: 'center',
-    marginBottom: '0.75rem',
-  },
-  input: {
-    padding: '0.55rem 0.65rem',
-    border: '1px solid rgba(71, 85, 105, 0.7)',
-    borderRadius: '8px',
-    background: 'rgba(15, 23, 42, 0.7)',
-    color: '#e2e8f0',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.45rem',
-  },
-  listItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.55rem 0.7rem',
-    border: '1px solid rgba(71, 85, 105, 0.4)',
-    borderRadius: '8px',
-    color: '#e2e8f0',
-    background: 'rgba(15, 23, 42, 0.45)',
-  },
-  footerActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '0.6rem',
-    marginTop: '1rem',
-  },
-  checkboxLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.45rem',
-    color: '#cbd5e1',
-  },
-};
 
 export default SettingsPage;

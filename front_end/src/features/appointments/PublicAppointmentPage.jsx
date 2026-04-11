@@ -259,7 +259,7 @@ export default function PublicAppointmentPage() {
       await appointmentsApi.create({
         client_id: clientId,
         member_id: Number(formData.member_id),
-        scheduled_date: new Date(formData.scheduled_date).toISOString(),
+        scheduled_date: formData.scheduled_date,
         status: 'scheduled',
         is_active: true,
         services: [

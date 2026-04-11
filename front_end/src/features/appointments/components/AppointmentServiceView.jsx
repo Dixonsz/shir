@@ -345,6 +345,37 @@ function AppointmentServiceView() {
       showToast.error('Error al agregar adicional');
     }
   };
+
+  const savePendingAdditionals = async () => {
+    if (additionalForm.length === 0) {
+      return true;
+    }
+
+    const incomplete = additionalForm.some(
+      (additional) => !additional?.concept?.trim() || additional?.price === '' || additional?.price === null
+    );
+
+    if (incomplete) {
+      showToast.error('Hay adicionales pendientes incompletos. Completa o elimina esos registros antes de completar la cita.');
+      return false;
+    }
+
+    try {
+      for (const additional of additionalForm) {
+        await appointmentsApi.addAdditional(id, {
+          concept: additional.concept.trim(),
+          price: parseFloat(additional.price),
+        });
+      }
+
+      setAdditionalForm([]);
+      return true;
+    } catch (error) {
+      console.error('Error guardando adicionales pendientes:', error);
+      showToast.error(error.response?.data?.message || 'No se pudieron guardar los adicionales pendientes');
+      return false;
+    }
+  };
   
   const handleRemoveAdditional = async (additionalId, concept) => {
     const confirmed = await confirm(`Eliminar el adicional "${concept}"?`, {
@@ -369,6 +400,9 @@ function AppointmentServiceView() {
       confirmText: 'Completar',
     });
     if (!confirmed) return;
+
+    const pendingSaved = await savePendingAdditionals();
+    if (!pendingSaved) return;
     
     try {
       await appointmentsApi.update(id, {

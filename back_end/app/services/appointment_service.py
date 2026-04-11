@@ -54,6 +54,35 @@ class AppointmentService:
         return notes if notes else None
 
     @staticmethod
+    def _parse_scheduled_date(raw_value):
+        if raw_value in (None, ''):
+            return None
+
+        value = str(raw_value).strip()
+        if not value:
+            return None
+
+        parsed = None
+        try:
+            parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        except ValueError:
+            for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M'):
+                try:
+                    parsed = datetime.strptime(value, fmt)
+                    break
+                except ValueError:
+                    continue
+
+        if not parsed:
+            return None
+
+        # La app agenda por hora local; removemos tz para persistir hora "de pared".
+        if parsed.tzinfo is not None:
+            parsed = parsed.replace(tzinfo=None)
+
+        return parsed
+
+    @staticmethod
     def _get_reserved_quantity_for_product(appointment_id, product_id):
         required_products = AppointmentService._get_required_products_by_appointment(appointment_id)
         return int(required_products.get(product_id, 0))
@@ -135,12 +164,12 @@ class AppointmentService:
                 "error": "Solo se pueden asignar miembros con rol estilista a una cita."
             }
 
-        scheduled_date = None
-        if data.get('scheduled_date'):
-            try:
-                scheduled_date = datetime.fromisoformat(data['scheduled_date'].replace('Z', '+00:00'))
-            except:
-                scheduled_date = datetime.strptime(data['scheduled_date'], '%Y-%m-%dT%H:%M')
+        scheduled_date = AppointmentService._parse_scheduled_date(data.get('scheduled_date'))
+        if data.get('scheduled_date') and not scheduled_date:
+            return {
+                "success": False,
+                "error": "La fecha y hora de la cita es inválida."
+            }
 
         appointment = Appointment(
             client_id=client_id,
@@ -326,10 +355,14 @@ class AppointmentService:
             appointment.member_id = int(data['member_id'])
         
         if data.get('scheduled_date'):
-            try:
-                appointment.scheduled_date = datetime.fromisoformat(data['scheduled_date'].replace('Z', '+00:00'))
-            except:
-                appointment.scheduled_date = datetime.strptime(data['scheduled_date'], '%Y-%m-%dT%H:%M')
+            parsed_scheduled_date = AppointmentService._parse_scheduled_date(data.get('scheduled_date'))
+            if not parsed_scheduled_date:
+                return {
+                    "success": False,
+                    "error": "La fecha y hora de la cita es inválida."
+                }
+
+            appointment.scheduled_date = parsed_scheduled_date
         
         appointment.status = next_status
         if 'notes' in data:
