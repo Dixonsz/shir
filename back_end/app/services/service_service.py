@@ -6,13 +6,57 @@ class ServiceService:
 
     @staticmethod
     def create_service(data):
+        if not isinstance(data, dict):
+            return {
+                "success": False,
+                "error": "Datos inválidos para crear servicio."
+            }
+
+        name = (data.get('name') or '').strip()
+        if not name:
+            return {
+                "success": False,
+                "error": "El nombre del servicio es obligatorio."
+            }
+
+        category_service_id_raw = data.get('category_service_id')
+        if category_service_id_raw in (None, ''):
+            return {
+                "success": False,
+                "error": "La categoría del servicio es obligatoria."
+            }
+
+        try:
+            category_service_id = int(category_service_id_raw)
+        except (TypeError, ValueError):
+            return {
+                "success": False,
+                "error": "La categoría del servicio es inválida."
+            }
+
+        try:
+            price = float(data.get('price'))
+        except (TypeError, ValueError):
+            return {
+                "success": False,
+                "error": "El precio es inválido."
+            }
+
+        try:
+            duration_minutes = int(data.get('duration_minutes'))
+        except (TypeError, ValueError):
+            return {
+                "success": False,
+                "error": "La duración en minutos es inválida."
+            }
+
         if ServiceRepository.get_by_name(data.get('name')):
             return {
                 "success": False,
                 "error": "Ya existe un servicio con este nombre."
             }
         
-        if not CategoryServiceRepository.get_by_id(data.get('category_service_id')):
+        if not CategoryServiceRepository.get_by_id(category_service_id):
             return {
                 "success": False,
                 "error": "Categoría de servicio no encontrada."
@@ -22,13 +66,9 @@ class ServiceService:
         if description == '':
             description = None
         
-        category_service_id = int(data['category_service_id']) if data.get('category_service_id') else None
-        price = float(data['price']) if data.get('price') else 0.0
-        duration_minutes = int(data['duration_minutes']) if data.get('duration_minutes') else 0
-
         service = Service(
             category_service_id=category_service_id,
-            name=data['name'],
+            name=name,
             description=description,
             price=price,
             duration_minutes=duration_minutes
@@ -68,6 +108,12 @@ class ServiceService:
     
     @staticmethod
     def update_service(service_id, data):
+        if not isinstance(data, dict):
+            return {
+                "success": False,
+                "error": "Datos inválidos para actualizar servicio."
+            }
+
         service = ServiceRepository.get_by_id(service_id)
         if not service:
             return {
@@ -76,7 +122,21 @@ class ServiceService:
             }
         
         if 'category_service_id' in data and data['category_service_id']:
-            service.category_service_id = int(data['category_service_id'])
+            try:
+                category_service_id = int(data['category_service_id'])
+            except (TypeError, ValueError):
+                return {
+                    "success": False,
+                    "error": "La categoría del servicio es inválida."
+                }
+
+            if not CategoryServiceRepository.get_by_id(category_service_id):
+                return {
+                    "success": False,
+                    "error": "Categoría de servicio no encontrada."
+                }
+
+            service.category_service_id = category_service_id
         
         service.name = data.get('name', service.name)
         
@@ -84,9 +144,21 @@ class ServiceService:
         service.description = None if description == '' else description
         
         if 'price' in data:
-            service.price = float(data['price']) if data['price'] else 0.0
+            try:
+                service.price = float(data['price']) if data['price'] else 0.0
+            except (TypeError, ValueError):
+                return {
+                    "success": False,
+                    "error": "El precio es inválido."
+                }
         if 'duration_minutes' in data:
-            service.duration_minutes = int(data['duration_minutes']) if data['duration_minutes'] else 0
+            try:
+                service.duration_minutes = int(data['duration_minutes']) if data['duration_minutes'] else 0
+            except (TypeError, ValueError):
+                return {
+                    "success": False,
+                    "error": "La duración en minutos es inválida."
+                }
 
         updated = ServiceRepository.update(service)
         return {
