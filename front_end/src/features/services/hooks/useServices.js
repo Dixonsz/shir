@@ -37,9 +37,18 @@ export function useServices() {
       setServices((prev) => [...(Array.isArray(prev) ? prev : []), newService]);
       return { success: true, data: newService };
     } catch (err) {
+      const backendMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error;
+
+      console.error("Error al crear servicio:", {
+        status: err?.response?.status,
+        data: err?.response?.data,
+      });
+
       return {
         success: false,
-        error: err.response?.data?.message || "Error al crear servicio",
+        error: backendMessage || "Error al crear servicio",
       };
     }
   };
