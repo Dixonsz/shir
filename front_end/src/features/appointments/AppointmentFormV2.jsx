@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/forms/Input';
 import FormButtons from '../../components/forms/FormButtons';
 import { ArrowLeft, Plus, Trash2, X, DollarSign, Package, Sparkles } from 'lucide-react';
+import { useMutationLock } from '../../hooks/useMutationLock';
 import { clientsApi } from '../clients/api';
 import { servicesApi } from '../services/api';
 import { productsApi } from '../products/api';
@@ -56,6 +57,7 @@ function extractCollection(payload) {
 }
 
 function AppointmentFormV2({ appointment, clients, members, appointments, onSubmit, onCancel, onClientCreated, initialDate }) {
+  const isMountedRef = useRef(true);
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -126,6 +128,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   const [selectedProductQuantity, setSelectedProductQuantity] = useState(1);
 
   const [showClientModal, setShowClientModal] = useState(false);
+  const { isLocked: isSubmitting, setIsLocked: setIsSubmitting } = useMutationLock();
   const [newClient, setNewClient] = useState({
     number_id: '',
     name: '',
@@ -167,6 +170,12 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
 
   useEffect(() => {
     loadAvailableData();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -453,6 +462,10 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     const selectedMember = (members || []).find((member) => member.id === parseInt(formData.member_id, 10));
     if (!memberHasStylistRole(selectedMember)) {
       showToast.error('Solo puedes asignar especialistas con rol estilista.');
@@ -519,8 +532,15 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
         price: parseFloat(a.price),
       })),
     };
-    
-    onSubmit(submitData);
+
+    try {
+      setIsSubmitting(true);
+      await onSubmit(submitData);
+    } finally {
+      if (isMountedRef.current) {
+        setIsSubmitting(false);
+      }
+    }
   };
 
   const handleCreateClient = async (e) => {
@@ -548,7 +568,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
   return (
     <div>
       <div style={{ ...styles.header, ...(isMobile ? styles.headerMobile : null) }}>
-        <Button onClick={onCancel} variant="secondary">
+        <Button onClick={onCancel} variant="secondary" disabled={isSubmitting}>
           <ArrowLeft size={20} />
           Volver
         </Button>
@@ -585,6 +605,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
                   variant="secondary"
                   onClick={() => setShowClientModal(true)}
                   title="Crear nuevo cliente"
+                  disabled={isSubmitting}
                   style={{ padding: '8px 12px' }}
                 >
                   <Plus size={20} />
@@ -957,6 +978,7 @@ function AppointmentFormV2({ appointment, clients, members, appointments, onSubm
         <FormButtons
           onCancel={onCancel}
           submitLabel={appointment ? 'Actualizar Cita' : 'Crear Cita'}
+          isSubmitting={isSubmitting}
         />
       </form>
 

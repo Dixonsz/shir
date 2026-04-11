@@ -81,6 +81,8 @@ function GalleryForm({ item, onSubmit, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     const normalizedTitle = (formData.title || '').trim();
     const normalizedOrder =
       formData.order === '' || formData.order === null || formData.order === undefined
@@ -133,6 +135,7 @@ function GalleryForm({ item, onSubmit, onCancel }) {
             name="title"
             value={formData.title}
             onChange={handleChange}
+            disabled={loading}
             required
             placeholder="Título de la imagen"
           />
@@ -142,6 +145,7 @@ function GalleryForm({ item, onSubmit, onCancel }) {
             name="description"
             value={formData.description}
             onChange={handleChange}
+            disabled={loading}
             placeholder="Descripción de la imagen"
             rows={3}
           />
@@ -152,6 +156,7 @@ function GalleryForm({ item, onSubmit, onCancel }) {
             type="number"
             value={formData.order}
             onChange={handleChange}
+            disabled={loading}
             placeholder="Orden de visualización"
           />
 
@@ -165,6 +170,7 @@ function GalleryForm({ item, onSubmit, onCancel }) {
                   type="button" 
                   onClick={handleRemoveImage}
                   className="gallery-form-remove-button"
+                  disabled={loading}
                 >
                   <X size={16} />
                   Quitar imagen
@@ -177,6 +183,7 @@ function GalleryForm({ item, onSubmit, onCancel }) {
                   id="image"
                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml,.svg"
                   onChange={handleImageChange}
+                  disabled={loading}
                   className="gallery-form-file-input"
                 />
                 <label htmlFor="image" className="gallery-form-upload-label">

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { getAppointmentStatusConfig } from '../utils/appointmentStatus';
 import { usePermissions } from '../../auth/hooks';
 
-function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate, pagination }) {
+function AppointmentList({ appointments, clients, members, loading, onEdit, onDelete, onCreate, pagination, isMutating = false }) {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -109,9 +109,9 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
       <div style={{ ...styles.header, ...(isMobile ? styles.headerMobile : null) }}>
         <h1 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : null) }}>Citas</h1>
         {canWrite ? (
-          <Button onClick={onCreate} fullWidth={isMobile}>
+          <Button onClick={onCreate} fullWidth={isMobile} disabled={isMutating}>
             <Plus size={20} />
-            Nueva Cita
+            {isMutating ? 'Procesando...' : 'Nueva Cita'}
           </Button>
         ) : null}
       </div>
@@ -122,8 +122,8 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
         <Table
           columns={columns}
           data={appointments}
-          onEdit={canWrite ? onEdit : undefined}
-          onDelete={canWrite ? onDelete : undefined}
+          onEdit={canWrite && !isMutating ? onEdit : undefined}
+          onDelete={canWrite && !isMutating ? onDelete : undefined}
           {...pagination}
           customActions={canWrite ? (row) => (
             <Button
@@ -131,6 +131,7 @@ function AppointmentList({ appointments, clients, members, loading, onEdit, onDe
               size="sm"
               onClick={() => navigate(`/dashboard/appointments/${row.id}/service`)}
               title="Atender cita"
+              disabled={isMutating}
             >
               <ClipboardCheck size={16} />
             </Button>

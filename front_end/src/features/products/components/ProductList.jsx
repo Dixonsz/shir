@@ -5,7 +5,7 @@ import { usePermissions } from '../../auth/hooks';
 import { PackagePlus } from 'lucide-react';
 import '../ProductList.css';
 
-function ProductList({ products, loading, error, onCreate, onEdit, onDelete, onStockIn, pagination }) {
+function ProductList({ products, loading, error, onCreate, onEdit, onDelete, onStockIn, pagination, isMutating = false }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('products');
   const columns = getProductColumns();
@@ -17,6 +17,7 @@ function ProductList({ products, loading, error, onCreate, onEdit, onDelete, onS
           onClick={() => onStockIn(row)}
           className="table-icon-btn product-stock-in-btn"
           title="Ingresar stock"
+          disabled={isMutating}
         >
           <PackagePlus size={18} />
         </button>
@@ -29,6 +30,8 @@ function ProductList({ products, loading, error, onCreate, onEdit, onDelete, onS
       description="Inventario y catalogo de productos"
       actionLabel="Nuevo Producto"
       onCreate={canWrite ? onCreate : undefined}
+      actionDisabled={isMutating}
+      actionLoading={isMutating}
       loading={loading}
       error={error}
     >
@@ -36,8 +39,8 @@ function ProductList({ products, loading, error, onCreate, onEdit, onDelete, onS
           columns={columns}
           data={products}
           customActions={customActions}
-          onEdit={canWrite ? onEdit : undefined}
-          onDelete={canWrite ? onDelete : undefined}
+          onEdit={canWrite && !isMutating ? onEdit : undefined}
+          onDelete={canWrite && !isMutating ? onDelete : undefined}
           {...pagination}
         />
     </EntityListView>

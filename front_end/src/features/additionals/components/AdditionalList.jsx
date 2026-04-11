@@ -4,16 +4,21 @@ import { Plus } from 'lucide-react';
 import { getAdditionalColumns } from '../logic/AdditionalList.logic';
 import '../AdditionalList.css';
 
-function AdditionalList({ additionals, loading, onEdit, onDelete, onCreate }) {
+function AdditionalList({ additionals, Additionals, loading, onEdit, onDelete, onCreate, isMutating = false }) {
   const columns = getAdditionalColumns();
+  const rows = Array.isArray(additionals)
+    ? additionals
+    : Array.isArray(Additionals)
+      ? Additionals
+      : [];
 
   return (
     <div>
       <div className="additional-list-header">
         <h1 className="additional-list-title">Adicionales</h1>
-        <Button onClick={onCreate}>
+        <Button onClick={onCreate} disabled={isMutating}>
           <Plus size={20} />
-          Nuevo Adicional
+          {isMutating ? 'Procesando...' : 'Nuevo Adicional'}
         </Button>
       </div>
 
@@ -22,9 +27,9 @@ function AdditionalList({ additionals, loading, onEdit, onDelete, onCreate }) {
       ) : (
         <Table
           columns={columns}
-          data={additionals}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          data={rows}
+          onEdit={isMutating ? undefined : onEdit}
+          onDelete={isMutating ? undefined : onDelete}
         />
       )}
     </div>

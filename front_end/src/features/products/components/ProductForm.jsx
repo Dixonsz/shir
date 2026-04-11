@@ -2,15 +2,19 @@ import Input from '../../../components/forms/Input';
 import Textarea from '../../../components/forms/Textarea';
 import FormButtons from '../../../components/forms/FormButtons';
 import EntityFormView from '../../../components/layout/EntityFormView';
+import { useMutationLock } from '../../../hooks/useMutationLock';
 import { useProductForm } from '../logic/ProductForm.logic';
 import '../ProductForm.css';
 
 function ProductForm({ product, categories = [], onSubmit, onCancel }) {
   const { formData, handleChange } = useProductForm(product);
+  const { isLocked: isSubmitting, runWithLock } = useMutationLock();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    await runWithLock(async () => {
+      await onSubmit(formData);
+    });
   };
 
   return (
@@ -22,6 +26,7 @@ function ProductForm({ product, categories = [], onSubmit, onCancel }) {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="Nombre del producto"
             />
@@ -31,6 +36,7 @@ function ProductForm({ product, categories = [], onSubmit, onCancel }) {
                 name="category_product_id"
                 value={formData.category_product_id}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 required
                 className="product-form-select"
               >
@@ -49,6 +55,7 @@ function ProductForm({ product, categories = [], onSubmit, onCancel }) {
             name="description"
             value={formData.description}
             onChange={handleChange}
+            disabled={isSubmitting}
             placeholder="Descripción del producto"
             rows={3}
           />
@@ -61,6 +68,7 @@ function ProductForm({ product, categories = [], onSubmit, onCancel }) {
               step="0.01"
               value={formData.price}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="0.00"
             />
@@ -70,6 +78,7 @@ function ProductForm({ product, categories = [], onSubmit, onCancel }) {
               type="number"
               value={formData.stock}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="0"
             />
@@ -82,6 +91,7 @@ function ProductForm({ product, categories = [], onSubmit, onCancel }) {
                 name="is_active"
                 checked={formData.is_active}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 className="product-form-checkbox"
               />
               <span>Activo</span>
@@ -91,6 +101,7 @@ function ProductForm({ product, categories = [], onSubmit, onCancel }) {
           <FormButtons
             onCancel={onCancel}
             submitLabel={product ? 'Actualizar' : 'Crear'}
+            isSubmitting={isSubmitting}
           />
         </form>
     </EntityFormView>

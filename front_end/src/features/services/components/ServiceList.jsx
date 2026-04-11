@@ -4,7 +4,7 @@ import { getServiceColumns } from '../logic/ServiceList.logic.jsx';
 import { usePermissions } from '../../auth/hooks';
 import '../ServiceList.css';
 
-function ServiceList({ services, loading, error, onCreate, onEdit, onDelete, pagination }) {
+function ServiceList({ services, loading, error, onCreate, onEdit, onDelete, pagination, isMutating = false }) {
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('services');
   const columns = getServiceColumns();
@@ -15,14 +15,16 @@ function ServiceList({ services, loading, error, onCreate, onEdit, onDelete, pag
       description="Catalogo y configuracion de servicios"
       actionLabel="Nuevo Servicio"
       onCreate={canWrite ? onCreate : undefined}
+      actionDisabled={isMutating}
+      actionLoading={isMutating}
       loading={loading}
       error={error}
     >
         <Table
           columns={columns}
           data={services}
-          onEdit={canWrite ? onEdit : undefined}
-          onDelete={canWrite ? onDelete : undefined}
+          onEdit={canWrite && !isMutating ? onEdit : undefined}
+          onDelete={canWrite && !isMutating ? onDelete : undefined}
           {...pagination}
         />
     </EntityListView>

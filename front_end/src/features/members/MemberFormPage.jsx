@@ -7,6 +7,7 @@ import Input from '../../components/forms/Input';
 import Textarea from '../../components/forms/Textarea';
 import FormButtons from '../../components/forms/FormButtons';
 import EntityFormView from '../../components/layout/EntityFormView';
+import { useMutationLock } from '../../hooks/useMutationLock';
 import { showToast } from '../../providers/ToastProvider';
 import { membersApi } from './api';
 
@@ -30,7 +31,7 @@ function MemberFormPage() {
     rol_id: '',
     rol_ids: [],
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isLocked: isSubmitting, setIsLocked: setIsSubmitting } = useMutationLock();
   const [photoUploading, setPhotoUploading] = useState(false);
   const [currentPhoto, setCurrentPhoto] = useState(null);
   const isEditing = Boolean(id);
@@ -134,6 +135,8 @@ function MemberFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
     if (!isEditing && !formData.password.trim()) {
       showToast.error('La contraseña es obligatoria al crear un miembro.');
       return;
@@ -154,8 +157,6 @@ function MemberFormPage() {
       return;
     }
 
-    setIsSubmitting(true);
-
     const payload = {
       ...formData,
       membership_start_date: formData.membership_start_date || new Date().toISOString().split('T')[0],
@@ -170,20 +171,23 @@ function MemberFormPage() {
     }
     delete payload.confirm_password;
 
-    const memberId = Number(id);
-    const result = isEditing
-      ? await updateMember(memberId, payload)
-      : await createMember(payload);
+    try {
+      setIsSubmitting(true);
+      const memberId = Number(id);
+      const result = isEditing
+        ? await updateMember(memberId, payload)
+        : await createMember(payload);
 
-    setIsSubmitting(false);
+      if (result.success) {
+        showToast.success(isEditing ? 'Miembro actualizado exitosamente' : 'Miembro creado exitosamente');
+        navigate('/dashboard/members');
+        return;
+      }
 
-    if (result.success) {
-      showToast.success(isEditing ? 'Miembro actualizado exitosamente' : 'Miembro creado exitosamente');
-      navigate('/dashboard/members');
-      return;
+      showToast.error(result.error);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    showToast.error(result.error);
   };
 
   const handleCancel = () => {
@@ -265,6 +269,7 @@ function MemberFormPage() {
             variant="secondary"
             size="small"
             onClick={() => setShowPassword(!showPassword)}
+            disabled={isSubmitting}
           >
             {showPassword ? 'Ocultar' : 'Mostrar'} contraseña
           </Button>
@@ -293,6 +298,7 @@ function MemberFormPage() {
                   key={roleValue}
                   type="button"
                   onClick={() => handleToggleRole(roleValue)}
+                  disabled={isSubmitting}
                   style={{
                     ...styles.roleChip,
                     ...(isSelected ? styles.roleChipActive : null),

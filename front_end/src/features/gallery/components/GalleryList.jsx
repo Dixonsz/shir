@@ -5,7 +5,7 @@ import { Plus, CheckCircle2, XCircle, Power } from 'lucide-react';
 import { useConfirm } from '../../../providers/ConfirmProvider';
 import { usePermissions } from '../../auth/hooks';
 
-function GalleryList({ galleryItems, loading, error, onCreate, onEdit, onDelete, onToggleStatus }) {
+function GalleryList({ galleryItems, loading, error, onCreate, onEdit, onDelete, onToggleStatus, isMutating = false }) {
   const { confirm } = useConfirm();
   const { canWriteResource } = usePermissions();
   const canWrite = canWriteResource('gallery');
@@ -98,9 +98,9 @@ function GalleryList({ galleryItems, loading, error, onCreate, onEdit, onDelete,
       <div style={styles.header}>
         <h1 style={styles.title}>Gestión de Galería</h1>
         {canWrite ? (
-          <Button onClick={onCreate} variant="primary">
+          <Button onClick={onCreate} variant="primary" disabled={isMutating}>
             <Plus size={20} />
-            Nueva Imagen
+            {isMutating ? 'Procesando...' : 'Nueva Imagen'}
           </Button>
         ) : null}
       </div>
@@ -109,12 +109,13 @@ function GalleryList({ galleryItems, loading, error, onCreate, onEdit, onDelete,
         <Table
           columns={columns}
           data={galleryItems}
-          onEdit={canWrite ? onEdit : undefined}
-          onDelete={canWrite ? handleDelete : undefined}
+          onEdit={canWrite && !isMutating ? onEdit : undefined}
+          onDelete={canWrite && !isMutating ? handleDelete : undefined}
           customActions={canWrite ? (item) => (
             <button
               onClick={() => handleToggleStatus(item)}
               title={item.is_active ? 'Desactivar' : 'Activar'}
+              disabled={isMutating}
               style={{
                 ...styles.actionButton,
                 backgroundColor: item.is_active 

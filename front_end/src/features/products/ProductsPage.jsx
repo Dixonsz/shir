@@ -6,6 +6,7 @@ import ProductStockInModal from './components/ProductStockInModal';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 import { usePagination } from '../../hooks/usePagination';
+import { useMutationLock } from '../../hooks/useMutationLock';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
 import { productsApi } from './api';
 
@@ -14,6 +15,7 @@ function ProductsPage() {
   const { confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const { isLocked: isMutating, runWithLock } = useMutationLock();
   const [showStockInModal, setShowStockInModal] = useState(false);
   const [stockProduct, setStockProduct] = useState(null);
   const [stockLoading, setStockLoading] = useState(false);
@@ -35,54 +37,60 @@ function ProductsPage() {
   } = usePagination(fetchProductsPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
+    if (isMutating) return;
     setSelectedProduct(null);
     setView('form');
   };
 
   const handleEdit = (product) => {
+    if (isMutating) return;
     setSelectedProduct(product);
     setView('form');
   };
 
   const handleDelete = async (product) => {
-    const confirmed = await confirm(
-      `¿Está seguro de eliminar el producto "${product.name}"?`,
-      {
-        title: 'Confirmar eliminación',
-        confirmText: 'Eliminar',
-        cancelText: 'Cancelar',
-      }
-    );
+    await runWithLock(async () => {
+      const confirmed = await confirm(
+        `¿Está seguro de eliminar el producto "${product.name}"?`,
+        {
+          title: 'Confirmar eliminación',
+          confirmText: 'Eliminar',
+          cancelText: 'Cancelar',
+        }
+      );
 
-    if (confirmed) {
-      const productId = product.id ?? product.md;
-      const result = await deleteProduct(productId);
-      if (result.success) {
-        await refresh();
-        showToast.success('Producto eliminado exitosamente');
-      } else {
-        showToast.error(result.error);
+      if (confirmed) {
+        const productId = product.id ?? product.md;
+        const result = await deleteProduct(productId);
+        if (result.success) {
+          await refresh();
+          showToast.success('Producto eliminado exitosamente');
+        } else {
+          showToast.error(result.error);
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (formData) => {
     const selectedId = selectedProduct?.id ?? selectedProduct?.md;
-    const result = selectedProduct
-      ? await updateProduct(selectedId, formData)
-      : await createProduct(formData);
+    await runWithLock(async () => {
+      const result = selectedProduct
+        ? await updateProduct(selectedId, formData)
+        : await createProduct(formData);
 
-    if (result.success) {
-      await refresh();
-      setView('list');
-      showToast.success(
-        selectedProduct
-          ? 'Producto actualizado exitosamente'
-          : 'Producto creado exitosamente'
-      );
-    } else {
-      showToast.error(result.error);
-    }
+      if (result.success) {
+        await refresh();
+        setView('list');
+        showToast.success(
+          selectedProduct
+            ? 'Producto actualizado exitosamente'
+            : 'Producto creado exitosamente'
+        );
+      } else {
+        showToast.error(result.error);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -134,6 +142,7 @@ function ProductsPage() {
         products={products}
         loading={loading || paginationLoading}
         error={error}
+        isMutating={isMutating}
         onCreate={handleCreate}
         onEdit={handleEdit}
         onDelete={handleDelete}

@@ -8,6 +8,8 @@ function EntityListView({
   description,
   actionLabel = 'Nuevo',
   onCreate,
+  actionDisabled = false,
+  actionLoading = false,
   loading,
   error,
   children,
@@ -20,9 +22,9 @@ function EntityListView({
           {description ? <p className="entity-view-description">{description}</p> : null}
         </div>
         {onCreate ? (
-          <Button onClick={onCreate} variant="primary">
+          <Button onClick={onCreate} variant="primary" disabled={actionDisabled}>
             <Plus size={20} />
-            {actionLabel}
+            {actionLoading ? 'Procesando...' : actionLabel}
           </Button>
         ) : null}
       </header>

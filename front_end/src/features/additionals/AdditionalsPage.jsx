@@ -4,54 +4,62 @@ import AdditionalList from './components/AdditionalList';
 import AdditionalForm from './components/AdditionalForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
+import { useMutationLock } from '../../hooks/useMutationLock';
 
 function AdditionalsPage() {
   const { Additionals, loading, error, createAdditional, updateAdditional, deleteAdditional } = useAdditionals();
   const { Confirm } = useConfirm();
   const [view, setview] = useState('List');
   const [selectedAdditional, setSelectedAdditional] = useState(null);
+  const { isLocked: isMutating, runWithLock } = useMutationLock();
 
   const handleCreate = () => {
+    if (isMutating) return;
     setSelectedAdditional(null);
     setview('form');
   };
 
   const handleEdit = (Additional) => {
+    if (isMutating) return;
     setSelectedAdditional(Additional);
     setview('form');
   };
 
   const handleDelete = async (Additional) => {
-    const Confirmed = await Confirm(
-      `¿Está seguro de eliminar este adicional?`,
-      'Esta acción no se puede deshacer.'
-    );
+    await runWithLock(async () => {
+      const Confirmed = await Confirm(
+        `¿Está seguro de eliminar este adicional?`,
+        'Esta acción no se puede deshacer.'
+      );
 
-    if (Confirmed) {
-      const result = await deleteAdditional(Additional.md);
-      if (result.success) {
-        showToast.success('Adicional eliminado exitosamente');
-      } else {
-        showToast.error(result.error);
+      if (Confirmed) {
+        const result = await deleteAdditional(Additional.md);
+        if (result.success) {
+          showToast.success('Adicional eliminado exitosamente');
+        } else {
+          showToast.error(result.error);
+        }
       }
-    }
+    });
   };
 
   const handlesubmit = async (formData) => {
-    const result = selectedAdditional
-      ? await updateAdditional(selectedAdditional.md, formData)
-      : await createAdditional(formData);
+    await runWithLock(async () => {
+      const result = selectedAdditional
+        ? await updateAdditional(selectedAdditional.md, formData)
+        : await createAdditional(formData);
 
-    if (result.success) {
-      setview('List');
-      showToast.success(
-        selectedAdditional
-          ? 'Adicional actualizado exitosamente'
-          : 'Adicional creado exitosamente'
-      );
-    } else {
-      showToast.error(result.error);
-    }
+      if (result.success) {
+        setview('List');
+        showToast.success(
+          selectedAdditional
+            ? 'Adicional actualizado exitosamente'
+            : 'Adicional creado exitosamente'
+        );
+      } else {
+        showToast.error(result.error);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -73,6 +81,7 @@ function AdditionalsPage() {
     <AdditionalList
       Additionals={Additionals}
       loading={loading}
+      isMutating={isMutating}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}

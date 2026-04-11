@@ -2,10 +2,12 @@ import Input from '../../../components/forms/Input';
 import FormButtons from '../../../components/forms/FormButtons';
 import PhotoUpload from '../../../components/common/PhotoUpload';
 import EntityFormView from '../../../components/layout/EntityFormView';
+import { useMutationLock } from '../../../hooks/useMutationLock';
 import { useClientForm } from '../logic/ClientForm.logic';
 import '../ClientForm.css';
 
 function ClientForm({ client, onSubmit, onCancel }) {
+  const { isLocked: isSubmitting, runWithLock } = useMutationLock();
   const {
     formData,
     photoUploading,
@@ -15,9 +17,11 @@ function ClientForm({ client, onSubmit, onCancel }) {
     handlePhotoDelete,
   } = useClientForm(client);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    await runWithLock(async () => {
+      await onSubmit(formData);
+    });
   };
 
   return (
@@ -31,7 +35,7 @@ function ClientForm({ client, onSubmit, onCancel }) {
                 currentPhoto={currentPhoto}
                 onUpload={handlePhotoUpload}
                 onDelete={handlePhotoDelete}
-                loading={photoUploading}
+                loading={photoUploading || isSubmitting}
                 size="large"
               />
             </div>
@@ -43,6 +47,7 @@ function ClientForm({ client, onSubmit, onCancel }) {
               name="number_id"
               value={formData.number_id}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="Ej: 1-2345-6789"
             />
@@ -51,6 +56,7 @@ function ClientForm({ client, onSubmit, onCancel }) {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="Nombre del cliente"
             />
@@ -63,6 +69,7 @@ function ClientForm({ client, onSubmit, onCancel }) {
               type="email"
               value={formData.email}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="correo@ejemplo.com"
             />
@@ -72,6 +79,7 @@ function ClientForm({ client, onSubmit, onCancel }) {
               type="tel"
               value={formData.phone_number}
               onChange={handleChange}
+              disabled={isSubmitting}
               placeholder="Ej: 8888-8888"
             />
           </div>
@@ -83,6 +91,7 @@ function ClientForm({ client, onSubmit, onCancel }) {
                 name="is_active"
                 checked={formData.is_active}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 className="client-form-checkbox"
               />
               <span>Activo</span>
@@ -92,6 +101,7 @@ function ClientForm({ client, onSubmit, onCancel }) {
           <FormButtons
             onCancel={onCancel}
             submitLabel={client ? 'Actualizar' : 'Crear'}
+            isSubmitting={isSubmitting}
           />
         </form>
     </EntityFormView>

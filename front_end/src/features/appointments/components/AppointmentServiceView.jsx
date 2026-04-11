@@ -6,6 +6,7 @@ import { ArrowLeft, User, Calendar, DollarSign, Plus, Trash2, Package, X, Check,
 import { appointmentsApi } from '../api';
 import { servicesApi } from '../../services/api';
 import { productsApi } from '../../products/api';
+import { useMutationLock } from '../../../hooks/useMutationLock';
 import { extractCollection } from '../../../core/api/response';
 import { useConfirm } from '../../../providers/ConfirmProvider';
 import { showToast } from '../../../providers/ToastProvider';
@@ -16,6 +17,7 @@ function AppointmentServiceView() {
   const { confirm } = useConfirm();
   
   const [loading, setLoading] = useState(true);
+  const { isLocked: isMutating, setIsLocked: setIsMutating } = useMutationLock();
   const [summary, setSummary] = useState(null);
   const [notes, setNotes] = useState('');
   const [availableServices, setAvailableServices] = useState([]);
@@ -88,12 +90,15 @@ function AppointmentServiceView() {
   };
   
   const handleAddService = async () => {
+    if (isMutating) return;
+
     if (!selectedServiceId) {
       showToast.error('Selecciona un servicio');
       return;
     }
     
     try {
+      setIsMutating(true);
       const service = availableServices.find((item) => item.id === parseInt(selectedServiceId, 10));
       const selectedPromotion = getValidPromotionsByService(service).find(
         (promotion) => promotion.id === parseInt(selectedPromotionId, 10)
@@ -120,23 +125,30 @@ function AppointmentServiceView() {
       setSelectedServiceId('');
       setSelectedPromotionId('');
       setSelectedServicePrice('');
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error agregando servicio:', error);
       showToast.error(error.response?.data?.message || 'Error al agregar servicio');
+    } finally {
+      setIsMutating(false);
     }
   };
   
   const handleUpdateServicePrice = async (serviceId, newPrice) => {
+    if (isMutating) return;
+
     try {
+      setIsMutating(true);
       await appointmentsApi.updateService(id, serviceId, {
         price_applied: parseFloat(newPrice)
       });
       showToast.success('Precio actualizado');
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error actualizando precio:', error);
       showToast.error('Error al actualizar precio');
+    } finally {
+      setIsMutating(false);
     }
   };
 
@@ -188,6 +200,8 @@ function AppointmentServiceView() {
   };
 
   const handleApplyPromotionToService = async (appointmentService) => {
+    if (isMutating) return;
+
     const selectedPromotionValue = servicePromotionSelectors[appointmentService.id] || '';
     if (!selectedPromotionValue) {
       showToast.error('Selecciona una promocion para aplicar.');
@@ -208,19 +222,24 @@ function AppointmentServiceView() {
     const newPrice = calculatePromotionPrice(basePrice, promotion);
 
     try {
+      setIsMutating(true);
       await appointmentsApi.updateService(id, appointmentService.id, {
         price_applied: newPrice,
       });
       showToast.success('Promocion aplicada al servicio.');
       setServicePromotionSelectors((prev) => ({ ...prev, [appointmentService.id]: '' }));
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error aplicando promocion:', error);
       showToast.error(error.response?.data?.message || 'Error al aplicar promocion');
+    } finally {
+      setIsMutating(false);
     }
   };
   
   const handleRemoveService = async (appointmentServiceId, serviceName) => {
+    if (isMutating) return;
+
     const confirmed = await confirm(`Eliminar el servicio "${serviceName}"?`, {
       title: 'Confirmar eliminacion',
       confirmText: 'Eliminar',
@@ -228,16 +247,21 @@ function AppointmentServiceView() {
     if (!confirmed) return;
     
     try {
+      setIsMutating(true);
       await appointmentsApi.removeService(id, appointmentServiceId);
       showToast.success('Servicio eliminado correctamente');
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error eliminando servicio:', error);
       showToast.error('Error al eliminar servicio');
+    } finally {
+      setIsMutating(false);
     }
   };
   
   const handleAddProduct = async (appointmentServiceId) => {
+    if (isMutating) return;
+
     const selector = productSelectors[appointmentServiceId];
     if (!selector || !selector.product_id) {
       showToast.error('Selecciona un producto');
@@ -259,6 +283,7 @@ function AppointmentServiceView() {
     }
     
     try {
+      setIsMutating(true);
       await appointmentsApi.addProductToService(
         id,
         appointmentServiceId,
@@ -274,10 +299,12 @@ function AppointmentServiceView() {
         [appointmentServiceId]: { product_id: '', quantity: '1' }
       }));
       
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error agregando producto:', error);
       showToast.error(error.response?.data?.message || 'Error al agregar producto');
+    } finally {
+      setIsMutating(false);
     }
   };
   
@@ -293,6 +320,8 @@ function AppointmentServiceView() {
   };
   
   const handleRemoveProduct = async (appointmentServiceId, serviceProductId, productName) => {
+    if (isMutating) return;
+
     const confirmed = await confirm(`Eliminar el producto "${productName}"?`, {
       title: 'Confirmar eliminacion',
       confirmText: 'Eliminar',
@@ -300,12 +329,15 @@ function AppointmentServiceView() {
     if (!confirmed) return;
     
     try {
+      setIsMutating(true);
       await appointmentsApi.removeProductFromService(id, appointmentServiceId, serviceProductId);
       showToast.success('Producto eliminado correctamente');
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error eliminando producto:', error);
       showToast.error('Error al eliminar producto');
+    } finally {
+      setIsMutating(false);
     }
   };
   
@@ -324,6 +356,8 @@ function AppointmentServiceView() {
   };
   
   const handleSaveAdditional = async (tempId) => {
+    if (isMutating) return;
+
     const additional = additionalForm.find(a => a.tempId === tempId);
     
     if (!additional || !additional.concept || !additional.price) {
@@ -332,6 +366,7 @@ function AppointmentServiceView() {
     }
     
     try {
+      setIsMutating(true);
       await appointmentsApi.addAdditional(id, {
         concept: additional.concept,
         price: parseFloat(additional.price)
@@ -339,10 +374,12 @@ function AppointmentServiceView() {
       showToast.success('Adicional agregado correctamente');
       
       removeAdditionalRow(tempId);
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error agregando adicional:', error);
       showToast.error('Error al agregar adicional');
+    } finally {
+      setIsMutating(false);
     }
   };
 
@@ -378,6 +415,8 @@ function AppointmentServiceView() {
   };
   
   const handleRemoveAdditional = async (additionalId, concept) => {
+    if (isMutating) return;
+
     const confirmed = await confirm(`Eliminar el adicional "${concept}"?`, {
       title: 'Confirmar eliminacion',
       confirmText: 'Eliminar',
@@ -385,26 +424,33 @@ function AppointmentServiceView() {
     if (!confirmed) return;
     
     try {
+      setIsMutating(true);
       await appointmentsApi.removeAdditional(id, additionalId);
       showToast.success('Adicional eliminado correctamente');
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error eliminando adicional:', error);
       showToast.error('Error al eliminar adicional');
+    } finally {
+      setIsMutating(false);
     }
   };
   
   const handleCompleteAppointment = async () => {
+    if (isMutating) return;
+
     const confirmed = await confirm('Marcar esta cita como completada?', {
       title: 'Completar cita',
       confirmText: 'Completar',
     });
     if (!confirmed) return;
 
-    const pendingSaved = await savePendingAdditionals();
-    if (!pendingSaved) return;
-    
     try {
+      setIsMutating(true);
+
+      const pendingSaved = await savePendingAdditionals();
+      if (!pendingSaved) return;
+
       await appointmentsApi.update(id, {
         status: 'completed',
         notes,
@@ -414,11 +460,16 @@ function AppointmentServiceView() {
     } catch (error) {
       console.error('Error completando cita:', error);
       showToast.error('Error al completar la cita');
+    } finally {
+      setIsMutating(false);
     }
   };
 
   const handleSaveNotes = async () => {
+    if (isMutating) return;
+
     try {
+      setIsMutating(true);
       await appointmentsApi.update(id, { notes });
       showToast.success('Anotaciones guardadas');
       setSummary((prev) => {
@@ -431,6 +482,8 @@ function AppointmentServiceView() {
     } catch (error) {
       console.error('Error guardando anotaciones:', error);
       showToast.error(error.response?.data?.message || 'Error al guardar anotaciones');
+    } finally {
+      setIsMutating(false);
     }
   };
   
@@ -508,16 +561,16 @@ function AppointmentServiceView() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
-          <Button variant="secondary" onClick={() => navigate('/appointments')}>
+          <Button variant="secondary" onClick={() => navigate('/appointments')} disabled={isMutating}>
             <ArrowLeft size={20} />
             Volver
           </Button>
           <h1 style={styles.pageTitle}>Atención de Cita</h1>
         </div>
         {!isCompleted && (
-          <Button onClick={handleCompleteAppointment} variant="success">
+          <Button onClick={handleCompleteAppointment} variant="success" disabled={isMutating}>
             <Check size={20} />
-            Completar Cita
+            {isMutating ? 'Procesando...' : 'Completar Cita'}
           </Button>
         )}
       </div>
@@ -576,7 +629,7 @@ function AppointmentServiceView() {
             <div style={styles.sectionHeader}>
               <h2 style={styles.sectionTitle}>Anotaciones del proceso</h2>
               {!isCompleted && (
-                <Button type="button" variant="secondary" size="sm" onClick={handleSaveNotes}>
+                <Button type="button" variant="secondary" size="sm" onClick={handleSaveNotes} disabled={isMutating}>
                   Guardar anotaciones
                 </Button>
               )}
@@ -609,6 +662,7 @@ function AppointmentServiceView() {
                       setSelectedServiceId(e.target.value);
                       setSelectedPromotionId('');
                     }}
+                    disabled={isMutating}
                     style={{ ...styles.select, flex: 2 }}
                   >
                     <option value="">Seleccione un servicio</option>
@@ -623,7 +677,7 @@ function AppointmentServiceView() {
                     value={selectedPromotionId}
                     onChange={(e) => setSelectedPromotionId(e.target.value)}
                     style={{ ...styles.select, flex: 1.5 }}
-                    disabled={!selectedServiceId}
+                    disabled={!selectedServiceId || isMutating}
                   >
                     <option value="">Sin promocion</option>
                     {getValidPromotionsByService(getSelectedService()).map((promotion) => (
@@ -652,12 +706,13 @@ function AppointmentServiceView() {
                       )}`
                       : 'Precio'}
                     style={{ ...styles.input, flex: 1 }}
+                    disabled={isMutating}
                   />
 
                   <Button
                     type="button"
                     onClick={handleAddService}
-                    disabled={!selectedServiceId}
+                    disabled={!selectedServiceId || isMutating}
                   >
                     <Plus size={16} />
                     Agregar
@@ -687,14 +742,14 @@ function AppointmentServiceView() {
                             value={service.price_applied}
                             onChange={(e) => handleUpdateServicePrice(service.id, e.target.value)}
                             style={styles.priceInput}
-                            disabled={isCompleted}
+                            disabled={isCompleted || isMutating}
                           />
                           <Button
                             type="button"
                             variant="danger"
                             size="sm"
                             onClick={() => handleRemoveService(service.id, service.service_name)}
-                            disabled={isCompleted}
+                            disabled={isCompleted || isMutating}
                           >
                             <Trash2 size={16} />
                           </Button>
@@ -717,6 +772,7 @@ function AppointmentServiceView() {
                                 [service.id]: e.target.value,
                               }))}
                               style={{ ...styles.selectSmall, flex: 2.5 }}
+                              disabled={isMutating}
                             >
                               <option value="">Aplicar promocion...</option>
                               {validPromotions.map((promotion) => (
@@ -730,7 +786,7 @@ function AppointmentServiceView() {
                               size="sm"
                               variant="secondary"
                               onClick={() => handleApplyPromotionToService(service)}
-                              disabled={!servicePromotionSelectors[service.id]}
+                              disabled={!servicePromotionSelectors[service.id] || isMutating}
                             >
                               Aplicar
                             </Button>
@@ -778,6 +834,7 @@ function AppointmentServiceView() {
                               value={selector.product_id}
                               onChange={(e) => updateProductSelector(service.id, 'product_id', e.target.value)}
                               style={styles.selectSmall}
+                              disabled={isMutating}
                             >
                               <option value="">Seleccione un producto</option>
                               {availableProducts.map((product) => (
@@ -795,6 +852,7 @@ function AppointmentServiceView() {
                               style={styles.inputSmall}
                               placeholder="Cant."
                               max={selector.product_id ? getAvailableForAppointment(selector.product_id) : undefined}
+                              disabled={isMutating}
                             />
 
                             <Button
@@ -802,7 +860,7 @@ function AppointmentServiceView() {
                               variant="secondary"
                               size="sm"
                               onClick={() => handleAddProduct(service.id)}
-                              disabled={!selector.product_id || getAvailableForAppointment(selector.product_id) <= 0}
+                              disabled={!selector.product_id || getAvailableForAppointment(selector.product_id) <= 0 || isMutating}
                             >
                               <Plus size={14} />
                             </Button>
@@ -828,6 +886,7 @@ function AppointmentServiceView() {
                                     variant="danger"
                                     size="sm"
                                     onClick={() => handleRemoveProduct(service.id, product.id, product.product_name)}
+                                    disabled={isMutating}
                                   >
                                     <X size={14} />
                                   </Button>
@@ -858,7 +917,7 @@ function AppointmentServiceView() {
                 Adicionales
               </h2>
               {!isCompleted && (
-                <Button type="button" onClick={addAdditionalRow} size="sm" variant="secondary">
+                <Button type="button" onClick={addAdditionalRow} size="sm" variant="secondary" disabled={isMutating}>
                   <Plus size={16} />
                   Agregar
                 </Button>
@@ -880,6 +939,7 @@ function AppointmentServiceView() {
                         variant="danger"
                         size="sm"
                         onClick={() => handleRemoveAdditional(additional.id, additional.concept)}
+                        disabled={isMutating}
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -915,6 +975,7 @@ function AppointmentServiceView() {
                       type="button"
                       onClick={() => handleSaveAdditional(additional.tempId)}
                       size="sm"
+                      disabled={isMutating}
                     >
                       <Check size={16} />
                     </Button>
@@ -924,6 +985,7 @@ function AppointmentServiceView() {
                       variant="danger"
                       size="sm"
                       onClick={() => removeAdditionalRow(additional.tempId)}
+                      disabled={isMutating}
                     >
                       <X size={16} />
                     </Button>

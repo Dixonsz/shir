@@ -5,6 +5,7 @@ import PromotionForm from './components/PromotionForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 import { usePagination } from '../../hooks/usePagination';
+import { useMutationLock } from '../../hooks/useMutationLock';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
 import { promotionsApi } from './api';
 
@@ -13,6 +14,7 @@ function PromotionsPage() {
   const { Confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedPromotion, setSelectedPromotion] = useState(null);
+  const { isLocked: isMutating, runWithLock } = useMutationLock();
 
   const fetchPromotionsPage = useCallback(({ page, pageSize }) => {
     return promotionsApi.getAll({ page, pageSize });
@@ -31,48 +33,54 @@ function PromotionsPage() {
   } = usePagination(fetchPromotionsPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
+    if (isMutating) return;
     setSelectedPromotion(null);
     setView('form');
   };
 
   const handleEdit = (promotion) => {
+    if (isMutating) return;
     setSelectedPromotion(promotion);
     setView('form');
   };
 
   const handleDelete = async (promotion) => {
-    const Confirmed = await Confirm(
-      `¿Está seguro de eliminar la promoción "${promotion.name}"?`,
-      'Esta acción no se puede deshacer.'
-    );
+    await runWithLock(async () => {
+      const Confirmed = await Confirm(
+        `¿Está seguro de eliminar la promoción "${promotion.name}"?`,
+        'Esta acción no se puede deshacer.'
+      );
 
-    if (Confirmed) {
-      const result = await deletePromotion(promotion.id ?? promotion.md);
-      if (result.success) {
-        await refresh();
-        showToast.success('Promoción eliminada exitosamente');
-      } else {
-        showToast.error(result.error);
+      if (Confirmed) {
+        const result = await deletePromotion(promotion.id ?? promotion.md);
+        if (result.success) {
+          await refresh();
+          showToast.success('Promoción eliminada exitosamente');
+        } else {
+          showToast.error(result.error);
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (formData) => {
-    const result = selectedPromotion
-      ? await updatePromotion(selectedPromotion.id ?? selectedPromotion.md, formData)
-      : await createPromotion(formData);
+    await runWithLock(async () => {
+      const result = selectedPromotion
+        ? await updatePromotion(selectedPromotion.id ?? selectedPromotion.md, formData)
+        : await createPromotion(formData);
 
-    if (result.success) {
-      await refresh();
-      setView('list');
-      showToast.success(
-        selectedPromotion
-          ? 'Promoción actualizada exitosamente'
-          : 'Promoción creada exitosamente'
-      );
-    } else {
-      showToast.error(result.error);
-    }
+      if (result.success) {
+        await refresh();
+        setView('list');
+        showToast.success(
+          selectedPromotion
+            ? 'Promoción actualizada exitosamente'
+            : 'Promoción creada exitosamente'
+        );
+      } else {
+        showToast.error(result.error);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -95,6 +103,7 @@ function PromotionsPage() {
       promotions={promotions}
       loading={loading || paginationLoading}
       error={error}
+      isMutating={isMutating}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}

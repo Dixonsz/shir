@@ -3,6 +3,7 @@ import Input from '../../../components/forms/Input';
 import Textarea from '../../../components/forms/Textarea';
 import FormButtons from '../../../components/forms/FormButtons';
 import EntityFormView from '../../../components/layout/EntityFormView';
+import { useMutationLock } from '../../../hooks/useMutationLock';
 import { servicesApi } from '../../services/api';
 import { showToast } from '../../../providers/ToastProvider';
 import { usePromotionForm } from '../logic/PromotionForm.logic';
@@ -11,6 +12,7 @@ import '../PromotionForm.css';
 function PromotionForm({ promotion, onSubmit, onCancel }) {
   const { formData, handleChange, prepareSubmitData, toggleService } = usePromotionForm(promotion);
   const [services, setServices] = useState([]);
+  const { isLocked: isSubmitting, runWithLock } = useMutationLock();
 
   useEffect(() => {
     const loadServices = async () => {
@@ -26,10 +28,12 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
     loadServices();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const submitData = prepareSubmitData();
-    onSubmit(submitData);
+    await runWithLock(async () => {
+      await onSubmit(submitData);
+    });
   };
 
   return (
@@ -41,6 +45,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="Nombre de la promoción"
             />
@@ -50,6 +55,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
                 name="discount_type"
                 value={formData.discount_type}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 required
                 className="promotion-form-select"
               >
@@ -64,6 +70,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
             name="description"
             value={formData.description}
             onChange={handleChange}
+            disabled={isSubmitting}
             placeholder="Descripción de la promoción"
             rows={3}
           />
@@ -78,6 +85,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
               max={formData.discount_type === 'porcentual' ? '100' : undefined}
               value={formData.discount_value}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder={formData.discount_type === 'porcentual' ? '0-100' : '0.00'}
             />
@@ -90,6 +98,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
               type="date"
               value={formData.start_date}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
             />
             <Input
@@ -98,6 +107,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
               type="date"
               value={formData.end_date}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
             />
           </div>
@@ -109,6 +119,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
                 name="is_active"
                 checked={formData.is_active}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 className="promotion-form-checkbox"
               />
               <span>Activo</span>
@@ -126,6 +137,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
                     type="button"
                     className={`promotion-service-chip ${isSelected ? 'promotion-service-chip-active' : ''}`}
                     onClick={() => toggleService(service.id)}
+                    disabled={isSubmitting}
                   >
                     {service.name}
                   </button>
@@ -140,6 +152,7 @@ function PromotionForm({ promotion, onSubmit, onCancel }) {
           <FormButtons
             onCancel={onCancel}
             submitLabel={promotion ? 'Actualizar' : 'Crear'}
+            isSubmitting={isSubmitting}
           />
         </form>
     </EntityFormView>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/forms/Input';
 import Textarea from '../../../components/forms/Textarea';
@@ -5,10 +6,13 @@ import FormButtons from '../../../components/forms/FormButtons';
 import { Plus } from 'lucide-react';
 import EntityFormView from '../../../components/layout/EntityFormView';
 import Modal from '../../../components/common/Modal';
+import { useMutationLock } from '../../../hooks/useMutationLock';
 import { useServiceForm } from '../logic/ServiceForm.logic';
 import '../ServiceForm.css';
 
 function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryCreated }) {
+  const { isLocked: isSubmitting, runWithLock } = useMutationLock();
+  const { isLocked: isCreatingCategory, runWithLock: runWithCategoryLock } = useMutationLock();
   const {
     formData,
     showCategoryModal,
@@ -19,9 +23,17 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
     handleCreateCategory,
   } = useServiceForm(service, onCategoryCreated);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    await runWithLock(async () => {
+      await onSubmit(formData);
+    });
+  };
+
+  const handleSubmitCategory = async (e) => {
+    await runWithCategoryLock(async () => {
+      await handleCreateCategory(e);
+    });
   };
 
   return (
@@ -34,6 +46,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
               name="name"
               value={formData.name}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="Nombre del servicio"
             />
@@ -44,6 +57,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
                   name="category_service_id"
                   value={formData.category_service_id}
                   onChange={handleChange}
+                  disabled={isSubmitting}
                   required
                   className="service-form-select"
                   style={{ flex: 1 }}
@@ -59,6 +73,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
                   type="button"
                   variant="secondary"
                   onClick={() => setShowCategoryModal(true)}
+                  disabled={isSubmitting}
                   title="Crear nueva categoría"
                   style={{ padding: '8px 12px' }}
                 >
@@ -73,6 +88,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
             name="description"
             value={formData.description}
             onChange={handleChange}
+            disabled={isSubmitting}
             placeholder="Descripción del servicio"
             rows={3}
           />
@@ -85,6 +101,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
               step="0.01"
               value={formData.price}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="0.00"
             />
@@ -94,6 +111,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
               type="number"
               value={formData.duration_minutes}
               onChange={handleChange}
+              disabled={isSubmitting}
               required
               placeholder="0"
             />
@@ -106,6 +124,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
                 name="is_active"
                 checked={formData.is_active}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 className="service-form-checkbox"
               />
               <span>Activo</span>
@@ -115,6 +134,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
           <FormButtons
             onCancel={onCancel}
             submitLabel={service ? 'Actualizar' : 'Crear'}
+            isSubmitting={isSubmitting}
           />
         </form>
       </EntityFormView>
@@ -128,12 +148,13 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
         }}
         title="Nueva Categoria"
       >
-        <form onSubmit={handleCreateCategory} className="service-form-modal-form">
+        <form onSubmit={handleSubmitCategory} className="service-form-modal-form">
           <Input
             label="Nombre"
             name="name"
             value={newCategory.name}
             onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
+            disabled={isCreatingCategory}
             required
             placeholder="Nombre de la categoria"
           />
@@ -142,6 +163,7 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
             name="description"
             value={newCategory.description}
             onChange={(e) => setNewCategory((prev) => ({ ...prev, description: e.target.value }))}
+            disabled={isCreatingCategory}
             placeholder="Descripcion de la categoria"
             rows={3}
           />
@@ -153,10 +175,13 @@ function ServiceForm({ service, categories = [], onSubmit, onCancel, onCategoryC
                 setShowCategoryModal(false);
                 setNewCategory({ name: '', description: '' });
               }}
+              disabled={isCreatingCategory}
             >
               Cancelar
             </Button>
-            <Button type="submit">Crear Categoria</Button>
+            <Button type="submit" disabled={isCreatingCategory}>
+              {isCreatingCategory ? 'Creando...' : 'Crear Categoria'}
+            </Button>
           </div>
         </form>
       </Modal>

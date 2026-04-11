@@ -5,6 +5,7 @@ import ServiceForm from './components/ServiceForm';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 import { usePagination } from '../../hooks/usePagination';
+import { useMutationLock } from '../../hooks/useMutationLock';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
 import { servicesApi } from './api';
 
@@ -21,6 +22,7 @@ function ServicesPage() {
   const { confirm } = useConfirm();
   const [view, setView] = useState('list');
   const [selectedService, setSelectedService] = useState(null);
+  const { isLocked: isMutating, runWithLock } = useMutationLock();
 
   const fetchServicesPage = useCallback(({ page, pageSize }) => {
     return servicesApi.getAll(true, { page, pageSize });
@@ -39,11 +41,13 @@ function ServicesPage() {
   } = usePagination(fetchServicesPage, { pageSize: DEFAULT_PAGE_SIZE });
 
   const handleCreate = () => {
+    if (isMutating) return;
     setSelectedService(null);
     setView('form');
   };
 
   const handleEdit = (service) => {
+    if (isMutating) return;
     setSelectedService(service);
     setView('form');
   };
@@ -53,44 +57,48 @@ function ServicesPage() {
   };
 
   const handleDelete = async (service) => {
-    const confirmed = await confirm(
-      `¿Está seguro de eliminar el servicio "${service.name}"?`,
-      {
-        title: 'Confirmar eliminación',
-        confirmText: 'Eliminar',
-        cancelText: 'Cancelar',
-      }
-    );
+    await runWithLock(async () => {
+      const confirmed = await confirm(
+        `¿Está seguro de eliminar el servicio "${service.name}"?`,
+        {
+          title: 'Confirmar eliminación',
+          confirmText: 'Eliminar',
+          cancelText: 'Cancelar',
+        }
+      );
 
-    if (confirmed) {
-      const serviceId = service.id ?? service.md;
-      const result = await deleteService(serviceId);
-      if (result.success) {
-        await refresh();
-        showToast.success('Servicio eliminado exitosamente');
-      } else {
-        showToast.error(result.error);
+      if (confirmed) {
+        const serviceId = service.id ?? service.md;
+        const result = await deleteService(serviceId);
+        if (result.success) {
+          await refresh();
+          showToast.success('Servicio eliminado exitosamente');
+        } else {
+          showToast.error(result.error);
+        }
       }
-    }
+    });
   };
 
   const handleSubmit = async (formData) => {
     const selectedId = selectedService?.id ?? selectedService?.md;
-    const result = selectedService
-      ? await updateService(selectedId, formData)
-      : await createService(formData);
+    await runWithLock(async () => {
+      const result = selectedService
+        ? await updateService(selectedId, formData)
+        : await createService(formData);
 
-    if (result.success) {
-      await refresh();
-      setView('list');
-      showToast.success(
-        selectedService
-          ? 'Servicio actualizado exitosamente'
-          : 'Servicio creado exitosamente'
-      );
-    } else {
-      showToast.error(result.error);
-    }
+      if (result.success) {
+        await refresh();
+        setView('list');
+        showToast.success(
+          selectedService
+            ? 'Servicio actualizado exitosamente'
+            : 'Servicio creado exitosamente'
+        );
+      } else {
+        showToast.error(result.error);
+      }
+    });
   };
 
   const handleCancel = () => {
@@ -115,6 +123,7 @@ function ServicesPage() {
       services={services}
       loading={loading || paginationLoading}
       error={error}
+      isMutating={isMutating}
       onCreate={handleCreate}
       onEdit={handleEdit}
       onDelete={handleDelete}

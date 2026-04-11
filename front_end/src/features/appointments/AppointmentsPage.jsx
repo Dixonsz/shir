@@ -6,6 +6,7 @@ import AppointmentFormV2 from './AppointmentFormV2';
 import { useConfirm } from '../../providers/ConfirmProvider';
 import { showToast } from '../../providers/ToastProvider';
 import { usePagination } from '../../hooks/usePagination';
+import { useMutationLock } from '../../hooks/useMutationLock';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '../../utils/constants';
 import { appointmentsApi } from './api';
 
@@ -27,6 +28,7 @@ function AppointmentsPage() {
   const [initialDate, setInitialDate] = useState(null);
   const [fromCalendar, setFromCalendar] = useState(false);
   const [editingLoading, setEditingLoading] = useState(false);
+  const { isLocked: isMutating, runWithLock } = useMutationLock();
 
   const getAppointmentId = (appointment) => appointment?.id ?? appointment?.md;
 
@@ -93,12 +95,14 @@ function AppointmentsPage() {
   }, [location.state, loadAppointmentForEdit]);
 
   const handleCreate = () => {
+    if (isMutating) return;
     setSelectedAppointment(null);
     setInitialDate(null);
     setView('form');
   };
 
   const handleEdit = async (appointment) => {
+    if (isMutating) return;
     setEditingLoading(true);
     const detailedAppointment = await loadAppointmentForEdit(appointment);
     setSelectedAppointment(detailedAppointment);
@@ -112,45 +116,49 @@ function AppointmentsPage() {
   };
 
   const handleDelete = async (appointment) => {
-    const confirmed = await confirm(
-      `¿Está seguro de eliminar esta cita?`,
-      { title: 'Esta acción no se puede deshacer.' }
-    );
+    await runWithLock(async () => {
+      const confirmed = await confirm(
+        `¿Está seguro de eliminar esta cita?`,
+        { title: 'Esta acción no se puede deshacer.' }
+      );
 
-    if (confirmed) {
-      const appointmentId = appointment.id ?? appointment.md;
-      const result = await deleteAppointment(appointmentId);
-      if (result.success) {
-        await refresh();
-        showToast.success('Cita eliminada exitosamente');
-      } else {
-        showToast.error(result.error);
+      if (confirmed) {
+        const appointmentId = appointment.id ?? appointment.md;
+        const result = await deleteAppointment(appointmentId);
+        if (result.success) {
+          await refresh();
+          showToast.success('Cita eliminada exitosamente');
+        } else {
+          showToast.error(result.error);
+        }
       }
-    }
+    });
   };
 
   const handlesubmit = async (formData) => {
     const selectedId = selectedAppointment?.id ?? selectedAppointment?.md;
-    const result = selectedAppointment
-      ? await updateAppointment(selectedId, formData)
-      : await createAppointment(formData);
+    await runWithLock(async () => {
+      const result = selectedAppointment
+        ? await updateAppointment(selectedId, formData)
+        : await createAppointment(formData);
 
-    if (result.success) {
-      await refresh();
-      showToast.success(
-        selectedAppointment
-          ? 'Cita actualizada exitosamente'
-          : 'Cita creada exitosamente'
-      );
-      
-      if (fromCalendar) {
-        navigate('/dashboard');
+      if (result.success) {
+        await refresh();
+        showToast.success(
+          selectedAppointment
+            ? 'Cita actualizada exitosamente'
+            : 'Cita creada exitosamente'
+        );
+
+        if (fromCalendar) {
+          navigate('/dashboard');
+        } else {
+          setView('list');
+        }
       } else {
-        setView('list');
+        showToast.error(result.error);
       }
-    } else {
-      showToast.error(result.error);
-    }
+    });
   };
 
   const handleCancel = () => {
@@ -190,6 +198,7 @@ function AppointmentsPage() {
       clients={clients}
       members={members}
       loading={loading || paginationLoading}
+      isMutating={isMutating}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCreate={handleCreate}

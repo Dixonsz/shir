@@ -105,6 +105,9 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
     setError(null);
 
@@ -139,6 +142,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
         label="Nombre de la Campaña"
         value={formData.name}
         onChange={handleChange}
+        disabled={loading}
         required
         placeholder="Ej: Promocmón Navmdad 2026"
       />
@@ -149,6 +153,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
         label="Descripción"
         value={formData.description}
         onChange={handleChange}
+        disabled={loading}
         rows={4}
         placeholder="Describe la campaña..."
       />
@@ -159,6 +164,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
         label="Promocion Asociada"
         value={formData.promotion_id}
         onChange={handleChange}
+        disabled={loading}
       >
         <option value="">-- Ninguna --</option>
         {promotions.map((promo) => (
@@ -176,6 +182,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
           type="date"
           value={formData.start_date}
           onChange={handleChange}
+          disabled={loading}
         />
 
         <Input
@@ -185,6 +192,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
           type="date"
           value={formData.end_date}
           onChange={handleChange}
+          disabled={loading}
         />
       </div>
 
@@ -198,6 +206,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
               type="button" 
               onClick={handleRemoveImage}
               className="marketing-form-remove-button"
+              disabled={loading}
             >
               <X size={16} />
               Quitar imagen
@@ -210,6 +219,7 @@ const MarketingForm = ({ marketing, onSubmit, onCancel }) => {
               id="image"
               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml,.svg"
               onChange={handleImageChange}
+              disabled={loading}
               className="marketing-form-file-input"
             />
             <label htmlFor="image" className="marketing-form-upload-label">

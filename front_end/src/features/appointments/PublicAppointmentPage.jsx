@@ -228,6 +228,10 @@ export default function PublicAppointmentPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (saving) {
+      return;
+    }
+
     if (clientLookupStatus === 'idle' || clientLookupStatus === 'loading') {
       showToast.error('Primero debes verificar la cedula del cliente.');
       return;
