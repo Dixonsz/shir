@@ -19,7 +19,7 @@ export default function Hero() {
                         <span className="hero-kicker">Imagen, estilo y precisión</span>
                         <h1 className="hero-title">
                             Diseña tu mejor versión en
-                            <span className="hero-brand"> Shir Salón</span>
+                            <span className="hero-brand"> Shir Beauty & Hair</span>
                         </h1>
                         <p className="hero-subtitle">
                             Creamos experiencias premium que conectan con tu estilo, tu tiempo y tu forma de verte.

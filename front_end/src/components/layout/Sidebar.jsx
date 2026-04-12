@@ -84,7 +84,7 @@ function Sidebar({ isOpen = false, onClose }) {
           <Sparkles size={24} color="#fff" />
         </div>
         <div>
-          <span className="sidebar-logo-text">SHIR SALÓN</span>
+          <span className="sidebar-logo-text">Shir Beauty & Hair</span>
           <p className="sidebar-logo-subtext">Panel Administrativo</p>
         </div>
       </div>

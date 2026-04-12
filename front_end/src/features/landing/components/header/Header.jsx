@@ -33,7 +33,7 @@ export default function Header() {
                     <div className="logo-icon">
                         <span>✨</span>
                     </div>
-                    <span className="logo-text">SHIR SALÓN</span>
+                    <span className="logo-text">Shir Beauty & Hair</span>
                 </div>
                 <div className="header-nav">
                     <button className="header-nav-btn" onClick={goToHome}>
